@@ -10,20 +10,27 @@ class AddHiveNode(bpy.types.Operator):
 
     def modal(self, context, event):
         if event.type == 'MOUSEMOVE':
-            x, y = context.space_data.cursor_location
+            region = context.region
+            x, y = event.mouse_region_x - (region.width / 2), event.mouse_region_y - (region.height / 2)
             node = context.active_node
             if node is None:
                 return {'FINISHED'}
+
             node.location = x, y
 
         elif event.type == 'LEFTMOUSE':
             return {'FINISHED'}
 
-        elif event.type in ('RIGHTMOUSE', 'ESC'):
+        elif event.type == 'RIGHTMOUSE':
+            context.active_node.location = 0, 0
+            return {'FINISHED'}
+
+        elif event.type == 'ESC':
             nodetree = context.space_data.edit_tree
             node = context.active_node
             nodetree.nodes.remove(node)
             return {'CANCELLED'}
+
         return {'RUNNING_MODAL'}
 
     def invoke(self, context, event):
@@ -31,19 +38,21 @@ class AddHiveNode(bpy.types.Operator):
         #In Blender, we have to contact the clipboard directly
         from . import BlendManager
 
-        nodetreename = context.space_data.edit_tree.name
-        print("ADD NODE", self.type, nodetreename)
+        nodetree_name = context.space_data.edit_tree.name
+
         add_node = bpy.types.NODE_OT_add_node
         add_node.store_mouse_cursor(context, event)
+
         x, y = unscalepos(context.space_data.cursor_location)
 
-        bntm = BlendManager.blendmanager.blend_nodetree_managers[nodetreename]
-        pwc = bntm.pwc
+        blend_node_tree_manager = BlendManager.blendmanager.blend_nodetree_managers[nodetree_name]
+        pwc = blend_node_tree_manager.pwc
         pwc._select_worker(tuple(self.type.split(".")))
-        clip = bntm.clipboard
+        clip = blend_node_tree_manager.clipboard
         clip.drop_worker(x, y)
 
         context.window_manager.modal_handler_add(self)
+
         return {'RUNNING_MODAL'}
 
 
@@ -51,6 +60,7 @@ bpy.utils.register_class(AddHiveNode)
 
 
 class NodeItem:
+
     def __init__(self, manager, key, fullkey):
         self.manager = manager
         self.key = key

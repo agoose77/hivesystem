@@ -99,33 +99,43 @@ class BlenderLayoutWidget(BlenderWidget):
         if self.name is not None:
             layout = layout.row()
             layout.label("LAYOUT_WIDGET" + str(self.name))
-        if not self.children and not self.pre_buttons and not self.post_buttons: return
-        if not self._is_visible(): return
+
+        if not (self.children or self.pre_buttons or self.post_buttons):
+            return
+
+        if not self._is_visible():
+            return
+
         layout = layout.box()
-        """
-        #TODO: column/row layout (__init__ option, determined from the spyderform) 
-        """
+        #TODO: column/row layout (__init__ option, determined from the spyderform)
         for but in self.pre_buttons:
             but.draw(context, layout)
+
         for child in self.children:
             child.draw(context, layout)
+
         for but in self.post_buttons:
             but.draw(context, layout)
 
 
 class BlenderPlaceholderWidget(BlenderWidget):
+
     def __init__(self, parent, name, typ, advanced=False):
         self.name = name
         self.typ = typ
         self.value = None
         self.advanced = advanced
+
         BlenderWidget.__init__(self, parent)
 
-    def listen(self, callback): pass
+    def listen(self, callback):
+        pass
 
-    def set(self, value): self.value = value
+    def set(self, value):
+        self.value = value
 
-    def get(self): return self.value
+    def get(self):
+        return self.value
 
     def draw2(self, context, layout):
         txt = "Placeholder: name '%s', type '%s', value '%s'" % (self.name, self.typ, self.value)
@@ -133,16 +143,19 @@ class BlenderPlaceholderWidget(BlenderWidget):
 
 
 class BlenderLabelWidget(BlenderWidget):
+
     def __init__(self, parent, text, advanced=False):
         self.text = text
         self.advanced = advanced
+
         BlenderWidget.__init__(self, parent)
 
     def draw2(self, context, layout):
-        layout.label("LABEL_WIDGET" + self.text)
+        layout.label(self.text)
 
 
 class BlenderButtonWidget(BlenderWidget):
+
     def __init__(self, parent, txt, layout=None, advanced=False):
         self.txt = txt
         self.layout = layout  # "before" or "after"
@@ -150,6 +163,7 @@ class BlenderButtonWidget(BlenderWidget):
         self.widget = self  # for spyder.formtools.arraymanager_dynamic
         self._listeners = []
         self.advanced = advanced
+
         BlenderWidget.__init__(self, parent)
 
     def listen(self, callback):
@@ -167,12 +181,14 @@ class BlenderButtonWidget(BlenderWidget):
 
 
 class BlenderIntWidget(BlenderWidget):
+
     def __init__(self, parent, name, advanced=False):
         self.name = name
         self.value = None
         self.widget_id = define_widget(bpy.props.IntProperty, "intprop", self.get, self.set)
         self._listeners = []
         self.advanced = advanced
+
         BlenderWidget.__init__(self, parent)
 
     def listen(self, callback):
@@ -186,14 +202,20 @@ class BlenderIntWidget(BlenderWidget):
 
     def unblock(self):
         self._blockedcount -= 1
-        if self._blockedcount < 0: self._blockedcount = 0
+
+        if self._blockedcount < 0:
+            self._blockedcount = 0
 
     def set(self, value):
         self.value = value
-        for callback in self._listeners: callback(self.value)
+
+        for callback in self._listeners:
+            callback(self.value)
 
     def get(self):
-        if self.value is None: return 0
+        if self.value is None:
+            return 0
+
         return self.value
 
     def draw2(self, context, layout):
@@ -201,12 +223,14 @@ class BlenderIntWidget(BlenderWidget):
 
 
 class BlenderFloatWidget(BlenderWidget):
+
     def __init__(self, parent, name, advanced=False):
         self.name = name
         self.value = None
         self.widget_id = define_widget(bpy.props.FloatProperty, "floatprop", self.get, self.set)
         self._listeners = []
         self.advanced = advanced
+
         BlenderWidget.__init__(self, parent)
 
     def listen(self, callback):
@@ -241,6 +265,7 @@ class BlenderStringWidget(BlenderWidget):
         self.widget_id = define_widget(bpy.props.StringProperty, "stringprop", self.get, self.set)
         self._listeners = []
         self.advanced = advanced
+
         BlenderWidget.__init__(self, parent)
 
     def listen(self, callback):
@@ -254,14 +279,20 @@ class BlenderStringWidget(BlenderWidget):
 
     def unblock(self):
         self._blockedcount -= 1
-        if self._blockedcount < 0: self._blockedcount = 0
+
+        if self._blockedcount < 0:
+            self._blockedcount = 0
 
     def set(self, value):
         self.value = value
-        for callback in self._listeners: callback(self.value)
+
+        for callback in self._listeners:
+            callback(self.value)
 
     def get(self):
-        if self.value is None: return ""
+        if self.value is None:
+            return ""
+
         return str(self.value)
 
     def draw2(self, context, layout):
@@ -275,6 +306,7 @@ class BlenderBoolWidget(BlenderWidget):
         self.widget_id = define_widget(bpy.props.BoolProperty, "boolprop", self.get, self.set)
         self._listeners = []
         self.advanced = advanced
+
         BlenderWidget.__init__(self, parent)
 
     def listen(self, callback):
@@ -288,14 +320,20 @@ class BlenderBoolWidget(BlenderWidget):
 
     def unblock(self):
         self._blockedcount -= 1
-        if self._blockedcount < 0: self._blockedcount = 0
+
+        if self._blockedcount < 0:
+            self._blockedcount = 0
 
     def set(self, value):
         self.value = value
-        for callback in self._listeners: callback(self.value)
+
+        for callback in self._listeners:
+            callback(self.value)
 
     def get(self):
-        if self.value is None: return False
+        if self.value is None:
+            return False
+
         return self.value
 
     def draw2(self, context, layout):
@@ -320,16 +358,19 @@ class BlenderOptionWidget(BlenderWidget):
         def get_items2(dummy, dummy2):
             return self.get_items()
 
-        self.widget_id = define_widget(bpy.props.EnumProperty,
-                                       "enumprop", self.get_index, self.set_index, items=get_items2,
-                                       name=str(self.name))
+        self.widget_id = define_widget(bpy.props.EnumProperty, "enumprop", self.get_index, self.set_index,
+                                       items=get_items2, name=str(self.name))
         self._listeners = []
         self.advanced = advanced
-        if self.advanced: assert advanced_options is None
+        if self.advanced:
+            assert advanced_options is None
+
         self.advanced_options = None
         if advanced_options is not None:
             self.advanced_options = [str(o) for o in advanced_options]
-            for o in self.advanced_options: assert o in self.options
+            for o in self.advanced_options:
+                assert o in self.options
+
         BlenderWidget.__init__(self, parent)
 
     def listen(self, callback):
@@ -343,44 +384,61 @@ class BlenderOptionWidget(BlenderWidget):
 
     def unblock(self):
         self._blockedcount -= 1
-        if self._blockedcount < 0: self._blockedcount = 0
+
+        if self._blockedcount < 0:
+            self._blockedcount = 0
 
     def set(self, value):
         assert value is None or str(value) in self.options, (value, self.options)
         if value is None:
             self.value = None
+
         else:
             self.value = str(value)
-        for callback in self._listeners: callback(self.value)
+
+        for callback in self._listeners:
+            callback(self.value)
 
     def get(self):
         return self.value
 
     def get_index(self):
-        if self.value is None: return 0
+        if self.value is None:
+            return 0
+
         return self.options.index(self.value) + 1
 
     def set_index(self, index):
         if index == 0:
             self.value = None
+
         else:
             self.value = self.options[index - 1]
-        for callback in self._listeners: callback(self.value)
+
+        for callback in self._listeners:
+            callback(self.value)
 
     def get_items(self):
         items = [("<empty>", "", "Value is not defined", 0)]
-        op = self.options
-        opn = self.option_names
-        if opn is None: opn = op
-        opd = self.option_descriptions
-        if opd is None: opd = opn
-        opnr = range(1, len(op) + 1)
-        items2 = list(zip(op, opn, opd, opnr))
-        if self.advanced_options is not None:
-            if not level.minlevel(bpy.context, 2):
-                items2 = [i for i in items2 if i[0] not in self.advanced_options or i[0] == self.value]
-        return items + items2
+        options = self.options
+        option_names = self.option_names
+
+        if option_names is None:
+            option_names = options
+
+        option_descriptions = self.option_descriptions
+
+        if option_descriptions is None:
+            option_descriptions = option_names
+
+        option_range = range(1, len(options) + 1)
+        extra_items = list(zip(options, option_names, option_descriptions, option_range))
+
+        # If we can display advanced items
+        if self.advanced_options is not None and not level.minlevel(bpy.context, 2):
+            extra_items = [i for i in extra_items if i[0] not in self.advanced_options or i[0] == self.value]
+
+        return items + extra_items
 
     def draw2(self, context, layout):
         layout.prop(context.scene, self.widget_id, text=str(self.name))
-        

@@ -220,7 +220,8 @@ def draw_use_hive(self, context):
 
 def draw_hive_level(self, context):
     if BlendManager.use_hive_get(context):
-        self.layout.prop(context.screen, "hive_level")
+        self.layout.label("Hive level")
+        self.layout.prop(context.screen, "hive_level", text="")
 
 
 def draw_spyderhive(self, context):
@@ -265,3 +266,7 @@ def unregister():
     bpy.types.NODE_HT_header.remove(draw_hive_level)
     bpy.types.NODE_HT_header.remove(draw_use_hive)
     bpy.types.NODE_HT_header.remove(draw_spyderhive)
+
+if __name__ == "__main__":
+    unregister()
+    register()

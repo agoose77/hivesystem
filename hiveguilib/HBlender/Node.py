@@ -19,7 +19,6 @@ class HiveNode:
             label = name
             if a.label is not None:
                 label = a.label
-            label = "_SETATTRIB_" + label
 
             assert a.inhook or a.outhook  # TODO?
             if a.outhook:

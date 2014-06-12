@@ -1,4 +1,6 @@
-import bpy, os, logging
+import bpy
+import os
+
 from ..worker import WorkerFinder
 from . import Node, NodeSocket
 
@@ -727,13 +729,17 @@ blendmanager = None
 
 def initialize(*args, **kargs):
     global blendmanager
-    if blendmanager is not None: return
+    if blendmanager is not None:
+        return
+
     blendmanager = BlendManager(*args, **kargs)
 
 
 def unregister():
     global blendmanager
-    if blendmanager is None: return
+    if blendmanager is None:
+        return
+
     blendmanager.unregister()
     blendmanager = None
 
@@ -746,47 +752,67 @@ def get_defaultproject_data():
     cwd = os.path.abspath(os.getcwd())
     try:
         os.chdir(os.path.abspath(bpdir))
-        import glob
 
         files = []
-        for root, dirs, cfiles in os.walk('.'):
+        for root, directories, directory_files in os.walk('.'):
             removed = "__pycache__", ".svn", ".bzr"
-            for r in removed:
-                if r in dirs: dirs.remove(r)
-            for name in cfiles:
-                if name.endswith("~"): continue
-                if name.endswith(".pyc"): continue
+            for removable in removed:
+                if removable in directories:
+                    directories.remove(removable)
+
+            for name in directory_files:
+                if name.endswith("~") or name.endswith(".pyc"):
+                    continue
+
                 files.append(os.path.join(root, name))
+
         for f in files:
             block = f.replace(os.sep, "/")
-            if block.startswith("./"): block = block[2:]
-            content = open(f).read()
+            if block.startswith("./"):
+                block = block[2:]
+
+            opened_file = open(f)
+            content = opened_file.read()
+            opened_file.close()
+
             data.append((block, content))
+
     finally:
         os.chdir(cwd)
+
     return data
 
 
-def enable_hive(scene, importdata):
+def enable_hive(scene, import_data):
     if not blendmanager._activated:
         blendmanager.activate()
-    data = importdata
+
+    data = import_data
     for block, content in data:
         if block in bpy.data.texts:
             oldcontent = bpy.data.texts[block].as_string()
             if oldcontent != content and oldcontent != "<DELETED>":
                 raise Exception("Cannot enable Hive system: Blender text block '%s' already exists" % block)
+
     main = [block for block, content in data if block.find("/") == -1 and block.endswith(".py")]
-    if len(main) == 0: raise Exception("Could not find main script in default Blender project")
-    if len(main) > 1: raise Exception("Multiple main script candidates in default Blender project: %s" % str(main))
+    if len(main) == 0:
+        raise Exception("Could not find main script in default Blender project")
+
+    if len(main) > 1:
+        raise Exception("Multiple main script candidates in default Blender project: %s" % str(main))
+
     for block, content in data:
         if block not in bpy.data.texts:
             bpy.data.texts.new(block)
+
         bpy.data.texts[block].from_string(content)
+
     scene["__main__"] = main[0]
+
     try:
         blendmanager._loading = True
         blendmanager._sync_text_to_nodetree()
+
     finally:
         blendmanager._loading = False
 
@@ -796,33 +822,46 @@ def disable_hive(scene):
     for block, content in data:
         if block in bpy.data.texts:
             oldcontent = bpy.data.texts[block].as_string()
+
             if oldcontent == content or oldcontent == "<DELETED>":
                 try:
                     bpy.data.texts[block].remove()
+
                 except:
                     bpy.data.texts[block].from_string("<DELETED>")
+
     del scene["__main__"]
 
 
 def use_hive_get(context):
-    if context.scene is None: return False
+    if context.scene is None:
+        return False
+
     if "__main__" in context.scene and context.scene["__main__"]:
         return 1
+
     else:
         return 0
 
 
 def use_hive_set(context, value):
     global _last_hive_level
-    if blendmanager is None: return
-    if context.scene is None: return
+
+    if blendmanager is None:
+        return
+
+    if context.scene is None:
+        return
 
     current = use_hive_get(context)
-    if value == current: return
+    if value == current:
+        return
+
     if value:
         data = get_defaultproject_data()
         enable_hive(context.scene, data)
         _last_hive_level = 1
+
     else:
         disable_hive(context.scene)
 
@@ -832,17 +871,23 @@ _last_hive_level = None
 
 def change_hive_level(screen, context):
     global _last_hive_level
+
     try:
-        currlevel = int(screen.hive_level)
-    except:
+        current_level = int(screen.hive_level)
+
+    except TypeError:
         return
 
-    if _last_hive_level == currlevel: return
+    if _last_hive_level == current_level:
+        return
+
     if _last_hive_level is not None:
-        if currlevel == 1:
+        if current_level == 1:
             blendmanager.simplify_all()
+
         elif _last_hive_level == 1:
             blendmanager.unsimplify_all()
-    _last_hive_level = currlevel
+
+    _last_hive_level = current_level
 
 
