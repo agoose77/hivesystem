@@ -53,32 +53,49 @@ advanced_sparta = (
 
 
 def get_level(path):
-    if path is None: return 0
-    p = path[0]
-    if p == "sparta":
+    if path is None:
+        return 0
+
+    module = path[0]
+
+    if module == "sparta":
         if path[1:3] in advanced_sparta:
             return 2
+
         else:
             return 1
-    if p in ("segments", "spyderbees"): return 0  # visibility depends on workergui/spydergui
-    if p in ("hivemaps", "workers"): return 1
-    if p in ("dragonfly", "spydermaps"): return 3
 
-    if p == "bees":
-        if len(path) == 1: return 0
-        pp = path[1]
-        if pp in ("parameter", "io"): return 3
-        if pp in ("attribute", "pyattribute", "wasp", "part"): return 6
+    if module in ("segments", "spyderbees"):
+        return 0  # visibility depends on workergui/spydergui
+
+    if module in ("hivemaps", "workers"):
+        return 1
+
+    if module in ("dragonfly", "spydermaps"):
+        return 3
+
+    if module == "bees":
+        if len(path) == 1:
+            return 0
+
+        sub_module = path[1]
+        if sub_module in ("parameter", "io"):
+            return 3
+
+        if sub_module in ("attribute", "pyattribute", "wasp", "part"):
+            return 6
 
     return 6
 
 
 def minlevel(context, level):
     try:
-        currlevel = int(context.screen.hive_level)
-    except:
+        current_level = int(context.screen.hive_level)
+
+    except TypeError:
         return False
-    return currlevel >= level
+
+    return current_level >= level
 
 
 def active(context, path):
@@ -91,4 +108,3 @@ def active_workergui(context):
 
 def active_spydergui(context):
     return minlevel(context, 5)
-  
