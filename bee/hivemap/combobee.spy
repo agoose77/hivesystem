@@ -1,0 +1,16 @@
+Type CombobeeItem{
+  String pname
+  ObjectList objects
+}
+
+Type Combobee {
+  CombobeeItemArray combodict
+  ObjectList combolist = []
+  validate {
+    if combodict is None: return
+    names = []
+    for item in combodict:
+      assert item.pname not in names, item.pname
+      names.append(item.pname)
+  }
+}

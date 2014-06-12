@@ -1,0 +1,8 @@
+Type ParamComputer_698767 { #random identifier to prevent name clashes
+  String player
+  String engine_binary
+  *String engine_dir 
+  form {
+    engine_dir.type = "required"
+  }
+}

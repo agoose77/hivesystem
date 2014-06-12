@@ -1,0 +1,207 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'area',
+      workertype = 'spydermaps#area.spydermap',
+      position = Coordinate2D (
+        x = -199.0,
+        y = -108.0,
+      ),
+    ),
+    Worker (
+      workerid = 'tetrismain',
+      workertype = 'hivemaps:tetrismain.hivemap',
+      position = Coordinate2D (
+        x = 290.529411765,
+        y = -110.352941176,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'scorearea_id',
+          pvalue = 'score',
+        ),
+        WorkerParameter (
+          pname = 'mainarea_id',
+          pvalue = 'main',
+        ),
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+  ),
+  drones = DroneArray (
+    Drone (
+      droneid = 'canvas',
+      dronetype = 'dragonfly.pandahive.pandacanvas',
+      position = Coordinate2D (
+        x = -200.823529412,
+        y = -4.4117647059,
+      ),
+    ),
+  ),
+  attributes = HivemapAttributeArray (
+    HivemapAttribute (
+      attr_id = 'blockT',
+      attrtypename = 'TetrisBlock',
+      attrvalue = 'TetrisBlock (\n  col0 = BoolArray (\n    True,\n    True,\n    True,\n    False,\n  ),\n  col1 = BoolArray (\n    False,\n    True,\n    False,\n    False,\n  ),\n  col2 = BoolArray (\n    False,\n    False,\n    False,\n    False,\n  ),\n  col3 = BoolArray (\n    False,\n    False,\n    False,\n    False,\n  ),\n)',
+      position = Coordinate2D (
+        x = -110.279119318,
+        y = -184.863636364,
+      ),
+    ),
+    HivemapAttribute (
+      attr_id = 'blockS',
+      attrtypename = 'TetrisBlock',
+      attrvalue = 'TetrisBlock (\n  col0 = BoolArray (\n    True,\n    True,\n    False,\n    False,\n  ),\n  col1 = BoolArray (\n    False,\n    True,\n    True,\n    False,\n  ),\n  col2 = BoolArray (\n    False,\n    False,\n    False,\n    False,\n  ),\n  col3 = BoolArray (\n    False,\n    False,\n    False,\n    False,\n  ),\n)',
+      position = Coordinate2D (
+        x = -105.167613636,
+        y = -138.681818182,
+      ),
+    ),
+    HivemapAttribute (
+      attr_id = 'blockZ',
+      attrtypename = 'TetrisBlock',
+      attrvalue = 'TetrisBlock (\n  col0 = BoolArray (\n    False,\n    True,\n    True,\n    False,\n  ),\n  col1 = BoolArray (\n    True,\n    True,\n    False,\n    False,\n  ),\n  col2 = BoolArray (\n    False,\n    False,\n    False,\n    False,\n  ),\n  col3 = BoolArray (\n    False,\n    False,\n    False,\n    False,\n  ),\n)',
+      position = Coordinate2D (
+        x = -103.887073864,
+        y = -226.318181818,
+      ),
+    ),
+    HivemapAttribute (
+      attr_id = 'blockO',
+      attrtypename = 'TetrisBlock',
+      attrvalue = 'TetrisBlock (\n  col0 = BoolArray (\n    True,\n    True,\n    False,\n    False,\n  ),\n  col1 = BoolArray (\n    True,\n    True,\n    False,\n    False,\n  ),\n  col2 = BoolArray (\n    False,\n    False,\n    False,\n    False,\n  ),\n  col3 = BoolArray (\n    False,\n    False,\n    False,\n    False,\n  ),\n)',
+      position = Coordinate2D (
+        x = -105.114346591,
+        y = -82.8636363636,
+      ),
+    ),
+    HivemapAttribute (
+      attr_id = 'blockL',
+      attrtypename = 'TetrisBlock',
+      attrvalue = 'TetrisBlock (\n  col0 = BoolArray (\n    True,\n    True,\n    True,\n    False,\n  ),\n  col1 = BoolArray (\n    False,\n    False,\n    True,\n    False,\n  ),\n  col2 = BoolArray (\n    False,\n    False,\n    False,\n    False,\n  ),\n  col3 = BoolArray (\n    False,\n    False,\n    False,\n    False,\n  ),\n)',
+      position = Coordinate2D (
+        x = -117.414772727,
+        y = -41.9545454545,
+      ),
+    ),
+    HivemapAttribute (
+      attr_id = 'blockJ',
+      attrtypename = 'TetrisBlock',
+      attrvalue = 'TetrisBlock (\n  col0 = BoolArray (\n    True,\n    True,\n    True,\n    False,\n  ),\n  col1 = BoolArray (\n    True,\n    False,\n    False,\n    False,\n  ),\n  col2 = BoolArray (\n    False,\n    False,\n    False,\n    False,\n  ),\n  col3 = BoolArray (\n    False,\n    False,\n    False,\n    False,\n  ),\n)',
+      position = Coordinate2D (
+        x = -114.103693182,
+        y = -1.5,
+      ),
+    ),
+    HivemapAttribute (
+      attr_id = 'blockI',
+      attrtypename = 'TetrisBlock',
+      attrvalue = 'TetrisBlock (\n  col0 = BoolArray (\n    True,\n    True,\n    True,\n    True,\n  ),\n  col1 = BoolArray (\n    False,\n    False,\n    False,\n    False,\n  ),\n  col2 = BoolArray (\n    False,\n    False,\n    False,\n    False,\n  ),\n  col3 = BoolArray (\n    False,\n    False,\n    False,\n    False,\n  ),\n)',
+      position = Coordinate2D (
+        x = -115.959517045,
+        y = 60.4090909091,
+      ),
+    ),
+  ),
+  partbees = HivemapPartBeeArray (
+  ),
+  wasps = HivemapWaspArray (
+    HivemapWasp (
+      wasp_id = 'wasp_3',
+      injected = 'blockL',
+      target = 'tetrismain',
+      targetparam = 'blocks',
+      sting = True,
+      accumulate = True,
+      position = Coordinate2D (
+        x = -21.8611296789,
+        y = -31.8048128346,
+      ),
+    ),
+    HivemapWasp (
+      wasp_id = 'wasp_6',
+      injected = 'blockT',
+      target = 'tetrismain',
+      targetparam = 'blocks',
+      sting = True,
+      accumulate = True,
+      position = Coordinate2D (
+        x = -37.4974933153,
+        y = -185.804812835,
+      ),
+    ),
+    HivemapWasp (
+      wasp_id = 'wasp_5',
+      injected = 'blockS',
+      target = 'tetrismain',
+      targetparam = 'blocks',
+      sting = True,
+      accumulate = True,
+      position = Coordinate2D (
+        x = -32.5884024062,
+        y = -133.441176471,
+      ),
+    ),
+    HivemapWasp (
+      wasp_id = 'wasp_9',
+      injected = 'canvas',
+      target = 'area',
+      targetparam = 'canvas',
+      sting = False,
+      accumulate = False,
+      position = Coordinate2D (
+        x = -202.0,
+        y = -66.0,
+      ),
+    ),
+    HivemapWasp (
+      wasp_id = 'wasp_7',
+      injected = 'blockZ',
+      target = 'tetrismain',
+      targetparam = 'blocks',
+      sting = True,
+      accumulate = True,
+      position = Coordinate2D (
+        x = -37.6793114971,
+        y = -229.259358289,
+      ),
+    ),
+    HivemapWasp (
+      wasp_id = 'wasp_4',
+      injected = 'blockO',
+      target = 'tetrismain',
+      targetparam = 'blocks',
+      sting = True,
+      accumulate = True,
+      position = Coordinate2D (
+        x = -30.1338569516,
+        y = -77.8048128346,
+      ),
+    ),
+    HivemapWasp (
+      wasp_id = 'wasp_2',
+      injected = 'blockJ',
+      target = 'tetrismain',
+      targetparam = 'blocks',
+      sting = True,
+      accumulate = True,
+      position = Coordinate2D (
+        x = -17.4065842244,
+        y = 5.19518716536,
+      ),
+    ),
+    HivemapWasp (
+      wasp_id = 'wasp_1',
+      injected = 'blockI',
+      target = 'tetrismain',
+      targetparam = 'blocks',
+      sting = True,
+      accumulate = True,
+      position = Coordinate2D (
+        x = -41.6793114971,
+        y = 44.0133689835,
+      ),
+    ),
+  ),
+)

@@ -1,0 +1,90 @@
+Attribute has the following (all are optional):
+  - Input hook, bound from antenna
+  - Output hook, bound from output
+  - Name, bound from antenna, output, (meta)parameter or custom string
+  - Value, bound from parameter
+There is the "expanded" view:
+  One attribute with input hook for antenna
+  One attribute with output hook for output
+  One attribute with no hooks for each parameter (values shown for basic types)
+There is also the"canonical" view:
+  inp, outp and trig not named
+  evin,evout,evexc not shown
+  metaparameter "type" and parameter "value" is shown as attribute
+Block bees will be more special
+
+Signals are sent from lower layers to higher layers, where they are converted to
+more abstract events, which are then passed downward
+short-circuiting of signals is also possible.
+
+
+Layer 0: Qt graphics classes. 
+They are completely visual and very dumb. 
+- Canvas, node, attribute, hook, connection
+For example, connections have (x,y,z) endpoints, no connection to hooks.     
+However, embedding relationship (hook -> attribute -> node -> canvas) are maintained here.
+ 
+- parameter form (auto-gen using Spyder), connected to worker editing panel
+
+- Menu's, connected to hivemap manager
+
+Layer 1:
+Scene elements: canvases, nodes, attributes, connections
+Scene element classes are:
+ a visual view: they reflect the current visual state of the model, but contain no authoritative representation of parameters
+ abstract: they describe the visual state (colors, expanded/folded), but contain no drawing code
+ independent: links to other element classes are through the scene manager
+On this layer, connections are bound to hooks.
+
+Layer 2:
+Scene manager:
+Keeps dictionaries of all scene elements
+An even more abstract representation of the scene, interfacing with various scene components.
+Worker data attributes like push/pull mode and data type are not stored explicitly; however, the scene elements may have abstract states that are named after them, and in this way they are implicitly used by the "generator" scene components, and by the worker editing panel.
+
+Scene components:
+
+  Elements can be disabled, connections can be tentative, type mismatched, etc.
+  Visual layers are also maintained here. Note that a node can have a different attribute layout visibility for each visual layer! 
+  
+Scene styler: 
+  Intermediate between  
+  translates attributes like push/pull into colors, line styles, etc. that are
+   
+Worker editing panel, 
+ embeds parameter form 
+ connection editor (with travel-to option)
+   also store totally invalid connections (i.e. through meta-parameter change, Spyder model change, etc.)
+ attribute editor (including visibility and name/value binding)
+
+Parameter form generator (using Spyder, into .ui file, stored in generic dir, per-workerclass,user can edit)
+Canonical attribute layout generator/manager (as Spyder file, stored in generic dir, user can edit)
+  *Individual* attribute layouts are part of the hivemap
+Metaparameter manager, rebuild attributes and connections then
+
+Layer 3: hivemap manager
+Manages the hivemap model
+Receives and forwards events. Connected to all kinds of event translators and other components, such as:
+- Worker manager (keeps track of an editable worker models) 
+- Worker discoverer (discovers workers and builds editable worker models from their guiparams; the same for metaworkers)
+- Clipboard
+- Saver/loader
+- Loggers
+- Type checkers (correct type, push/pull, etc.; invalid connections are indicated but no Exceptions, errors can be  resolved later)
+
+Layer 4 (future): project manager
+- Project files keeper
+- Blender bridge for setting __main__ and __hive__ properties, (later: also for exporting models to Panda3D format)
+- Worker editor (building workers graphically from segments and code blocks)
+- Main hive editor, with:
+  - Drone editor
+  - Configure bee / init bee editor (into code blocks; auto-completion would be nice)
+  - Hive binding editor
+- General asset management and validation:
+  - Spyderhive/combohive editor
+  - Deployment into Blender, Panda3D
+ 
+Deep future:
+- Generation and sync between text and graphical representations
+- Running from within editor, real-time debugging (needs a concept of run-time node attributes, that can correspond to buffer/variable segments).
+- Hive map compiling from within editor

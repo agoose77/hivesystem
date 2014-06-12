@@ -1,0 +1,277 @@
+﻿Fast linkage of workers (segments) coded in C++
+
+Since the whole hive system is coded in Python, the linkage will also be done in Python. However, there is no reason why the nodes themselves need to be coded in Python. It is possible to define nodes in C++ (worker segments, actually) and link them using Python, without any Python overhead at runtime. This means that except for a lack of inlining (and possibly stack/heap allocation, I am not an expert on compilers), C++ segments linked to each other will be as fast as if they were linked by the C++ compiler. Therefore, a hive consisting of C++ segment workers will run at full C++ speed, about two orders of magnitude faster than Python. Here a proof of principle is provided.
+
+Non-hive system example, demonstrating the concept of Python <=> C++ wrapping of data and functions; this allows the arbitrary connection, within C++ and/or Python,  of nodes written in either language.
+Here is an example of a pure C++ implementation of two nodes. 
+Node 1 has a set_value method that accepts a float, and a get_value method that returns it. In hive system terms, set_value behaves as a (push, float) antenna, and a get_value behaves like a (pull, float) output.
+
+Node 2 has an add_inputfunc method that takes pointers to a method like get_value. This has no exact equivalent in the hive worker, but is equivalent to a hive drone socket (libcontext.socket_container).
+Node 2 also has a get_value method that behaves like a hive system (pull, float) output. It calls all registered inputfuncs and sums up their values. 
+
+typedef boost::function<float (void)> floatfunc;
+typedef boost::function<void (floatfunc *)> floatregisterfunc;
+
+class node1 {
+  public:
+  float value;
+  node1(float val): value(val) {}
+  void set_value(float val) {
+    value = val;
+  }
+  float get_value() {
+    return value;
+  }
+};
+
+class node2 {
+  private:
+  std::vector<floatfunc *> _inputfuncs;
+  public:
+  node2() {}
+  void add_inputfunc(floatfunc *inputfunc){
+    _inputfuncs.push_back(inputfunc);
+  }
+  float get_value() {
+    float value = 0;
+    std::vector<floatfunc *>::iterator it;
+    for (it = _inputfuncs.begin(); it != _inputfuncs.end(); it++) {
+      value += (**it)();
+    }
+    return value;
+  }
+};
+
+The Boost library is used here so that member functions (methods) can be bound, and exposed to other nodes (and later to Python). This will be explained step by step below.
+
+Let's start with what we would  do if we were connecting the nodes inside C++:
+
+int main() {
+  node1 n1(10);
+  node1 n1a(8);
+  node2 n2;
+  floatfunc f1 = boost::bind(&node1::get_value, &n1);
+  n2.add_inputfunc(&f1);
+  floatfunc f1a = boost::bind(&node1::get_value, &n1a);
+  n2.add_inputfunc(&f1a);
+  printf("%.3f\n", n1.get_value());  
+  printf("%.3f\n", n1a.get_value());
+  printf("%.3f\n", n2.get_value());  
+}
+
+n2.get_value() will now return the sum of 10 and 8.
+
+Now, how to expose this to Python?
+
+The main problem is that we need the class definitions of node1 and node2, which would be very hard  to expose to Python natively, without wrapping in Pyobjects. The following helper functions get rid of the class definition requirement through the use of instancing and binding:
+
+extern "C" node1 *node1_get_instance(float value) {
+  node1 *ret = new node1(value);
+  return ret;
+}
+
+extern "C" node2 *node2_get_instance() {
+  node2 *ret = new node2();
+  return ret;
+}
+
+extern "C" floatfunc *node1_get_value (node1 *self) {
+  floatfunc *ret = new floatfunc;
+  *ret = boost::bind(&node1::get_value, self);
+  return ret;
+}
+
+extern "C" floatregisterfunc *node2_add_inputfunc (node2 *self) {
+  floatregisterfunc *ret = new floatregisterfunc;
+  *ret = boost::bind(&node2::add_inputfunc, self, _1);
+  return ret;  
+}
+
+extern "C" floatfunc *node2_get_value (node2 *self) {
+  floatfunc *ret = new floatfunc;
+  *ret = boost::bind(&node2::get_value, self);
+  return ret;
+}
+
+Declare these functions as declspec(dllexport) under Windows or compile as -fPIC under Linux. The C++ (actually, it's almost C now) linking code would become as follows:
+
+int main() {  
+  node1 *n1 = node1_get_instance(10);
+  node1 *n1a = node1_get_instance(8);
+  node2 *n2 = node2_get_instance();
+
+  floatfunc *f1 = node1_get_value(n1);
+  floatfunc *f1a = node1_get_value(n1a);
+  floatregisterfunc *add_inputfunc = node2_add_inputfunc(n2);
+  (*add_inputfunc)(f1);
+  (*add_inputfunc)(f1a);
+
+  floatfunc *f2 = node2_get_value(n2);
+  printf("%.3f\n", (*f1)());  
+  printf("%.3f\n", (*f1a)());
+  printf("%.3f\n", (*f2)());
+}
+
+We are still using the type declaration of node1 and node2 to compile this code, but that is because we are respecting type-safety: we could re-declare the (node1 *) and (node2 *) return arguments as (void *) and it would still work.  This is exactly what we will do in Python, using the ctypes library. However, because floatfunc and floatregisterfunc are C function pointers not callable from Python, we need first two helper functions to wrap their execution:
+
+extern "C" float evalfloatfunc(floatfunc *f) {
+  return (*f)();
+}
+
+extern "C" void evalfloatregisterfunc(floatregisterfunc *f, floatfunc *arg) {
+  (*f)(arg);
+}
+
+After that, we can port all of the above C++ linkage code in main() to Python. First, the import of the library:
+
+import ctypes
+
+nodes = ctypes.CDLL("nodes.dll")
+nodes.node1_get_instance.restype = ctypes.c_void_p
+nodes.node1_get_value.restype = ctypes.c_void_p
+nodes.node2_get_instance.restype = ctypes.c_void_p
+nodes.node2_get_value.restype = ctypes.c_void_p
+nodes.node2_add_inputfunc.restype = ctypes.c_void_p
+nodes.evalfloatfunc.restype = ctypes.c_float
+nodes.evalfloatregisterfunc.restype = ctypes.c_void_p
+
+And then, the actual linkage. The meaning of the code is shown as a comment with ==>
+  
+n1 = nodes.node1_get_instance(ctypes.c_float(10.0))
+# ==> n1 = node1(10.0)
+n1a = nodes.node1_get_instance(ctypes.c_float(8.0))
+# ==> n1a = node1(8.0)
+n2 = nodes.node2_get_instance()
+# ==> n2 = node2()
+
+f1 = nodes.node1_get_value(n1)
+# ==> f1 = n1.get_value (f1 is a pointer-to-bound-method)
+f1a = nodes.node1_get_value(n1a)
+# ==> f1a = n1a.get_value (f1a is a pointer-to-bound-method)
+
+add_inputfunc = nodes.node2_add_inputfunc(n2)
+# ==> add_inputfunc = n2.add_inputfunc 
+
+nodes.evalfloatregisterfunc(add_inputfunc, f1)
+# ==> n2.add_inputfunc(f1)
+nodes.evalfloatregisterfunc(add_inputfunc, f1a)
+# ==> n2.add_inputfunc(f1a)
+
+f2 = nodes.node2_get_value(n2)
+# ==> f2 = n2.get_value (f2 is a pointer-to-bound-method)
+
+print(nodes.evalfloatfunc(f1))
+# ==> print n1.get_value()
+print(nodes.evalfloatfunc(f1a))
+# ==> print n1a.get_value()
+print(nodes.evalfloatfunc(f2))
+# ==> print n2.get_value()
+
+(Note: A lot of syntactic sugar will be needed to make this workable for actual application-level Python programming, but this is not very urgent: the main target use of this code will be the re-implementation and Python wrapping of bee.segments.* in C++)
+
+The code above exposes the C++ nodes for linkage to Python segments. The reverse, exposing Python segments to C++ nodes, is also possible, but ctypes can only generate naked function pointers, not boost::function pointers. So what we need is a wrapper on the C++ side:
+
+typedef float (*nakedfloatfunc)(void);
+
+extern "C" floatfunc *wrapnakedfloatfunc(nakedfloatfunc fx) {
+  floatfunc *ret = new floatfunc(fx);
+  return ret;
+}
+
+(this wrapper can also be used to expose operators coded in C to C++ nodes).
+Then we can expose to C++ any Python function that takes nothing and returns float:
+
+nakedfloatfunc = ctypes.CFUNCTYPE(ctypes.c_float)  
+nodes.wrapnakedfloatfunc.argtypes = [nakedfloatfunc]
+nodes.wrapnakedfloatfunc.restype = ctypes.c_void_p
+
+...
+
+def pyfive():
+  return 5.0
+
+cfive = nodes.wrapnakedfloatfunc(nakedfloatfunc(pyfive))
+nodes.evalfloatregisterfunc(add_inputfunc, cfive)
+# ==> n2.add_inputfunc(pyfive)
+
+...
+
+print nodes.evalfloatfunc(cfive)
+# ==> pyfive() = 5.0
+
+print(nodes.evalfloatfunc(f2))
+# ==> print n2.get_value() = 10.0 + 8.0 + 5.0 = 23.0
+
+In short, it is possible to link nodes (workers, segments) written in C++ to each other and to Python nodes, without any unnecessary overhead at runtime. 
+
+Implementation in the hive system
+
+Workers will still be constructed in Python. However, all the underlying segments (transistor, variable, as well as user-coded modifier and operator segments) will be implemented in C++.
+
+The implementation of C++ workers/segments will consist of a number of C++ helper functions, typedefs, and perhaps a few macros. On the Python side, these helper functions will then be wrapped inside the same kind of segments as those for Python workers, and a bee.cpp.worker metaclass will be 
+developed that looks much like bee.worker. 
+
+Actually, for a node developer, the syntax for building a worker consisting of C++ segments will be exactly the same as those for Python nodes, except that not every type signature will be available  (for example, a weaver emitting a (float, float, int, float) type signature must have been implemented in 
+C++ before it is available for worker building; to deal with non-implemented type signatures, a void*[] calling convention can be implemented). 
+
+Important difference for antenna and input is that they must have a dual linking capability. At hive compile time, they will receive, from the hive system, references to other workers/segments written in Python. In the bee.cpp implementation, these references must be properly wrapped (with ctypes.c_float, ctypes.CFUNCTYPE or whatever, as described above) before passed on to C++. 
+In contrast, if the other worker is also a bee.cpp.worker, the references can be passed on directly. As discussed above, this relegates Python to the role of linker, making C++ segments (bee.cpp workers) calling each other directly, which is very fast!
+
+Conversely, boost::function pointers/C float data exposed/returned by C++ must be wrapped in Python if the downstream target is a Python worker, and can be passed on directly if the downstream worker is a bee.cpp.worker.
+
+Here is an example of the building of a bee.cpp.worker:
+
+On the C++ side, we are assuming the existence of a function "add", with the signature
+boost::function<float (float, float)>, which has been compiled into a shared library ("add.dll").
+
+import bee.cpp
+from bee.cpp.segments import *
+
+“””
+imports bee.cpp.segments.antenna,
+  bee.cpp.segments.antenna, ...  
+“””
+
+class mynode(bee.cpp.worker):
+  inp1 = antenna(“push”, “float”)
+  v_inp1 = variable(“float”)
+  startvalue(v_inp1, 0)
+  connect(inp1, v_inp1)
+
+  inp2 = antenna(“push”, “float”)
+  v_inp2 = variable(“float”)
+  startvalue(v_inp2, 0)
+  connect(inp2, v_inp2)
+
+  w = weaver((“float”,”float”), v_inp1, v_inp2)
+  t = transistor((“float”, “float”))
+  connect(w,t)
+  trigger(v_inp1, t)
+  trigger(v_inp2, t)
+
+  o = operator(ctypes.CDLL(“add.dll”).add, (“float”, “float”), “float”)
+  connect(t,o)
+
+  outp = output(“push”, “float”)  
+  connect(o, outp)
+
+Segments and segment features specific to C++ nodes:
+
+“operator”: this subnode takes a boost::function pointer instead of a Python callable object.
+“operator_c”: a version of “operator” that accepts naked function pointers instead of boost::function pointers. 
+
+A bee.cpp.worker can have an additional segment called “constructor”,  which takes a pointer to a get_instance() C function, e.g. “constructor(ctypes.CDLL(“nodes.dll”).node1_get_instance)“. At hive  startup, this function is evaluated and the returned class instance is stored. In the discussion below, this class instance is referred to as "this".
+C++ functions registered as “modifier” segments do not receive the Python “self” object, but "this" instead.
+
+“modifier”: this segment is implemented differently than the bee.segments version. It is not a Python decorator, but a normal segment. It takes a C++ pointer to a binding function. This binding function must accept "this", and must return a boost::function pointer (usually, pointer to a bound method of "this"), no parameters taken or returned. This function is what is evaluated when the "modifier" is triggered. Like bee.segments.modifier, bee.cpp.segments.modifier must be triggerable from Python also.
+
+"variable", "buffer", "triggerfunc". Currently, "variable", "buffer" store their values internally, and all three segments are accessible from self: this is how modifier segments work. However, C++ modifiers won't receive self, but "this" instead. Therefore, a way  must be found to bind these segments to "this", storing their values externally on "this". 
+One way would be additional arguments for the definition of these segments: a binder for "triggerfunc", and a getter and a setter for the others. Binder, getter and setter must be functions that  accept "this" and return an appropriate function pointer (usually a bound method of "this"). 
+Alternatively, a separate "bind" segment could be implemented to specify these getter/setter/binder functions. This may make more sense because a bee.cpp.worker does not necessarily have a modifier (like the example above).
+
+In addition, all three segments must continue to support full access (including triggering and read/write value access) from Python code, in the same way as their bee.segments counterparts do.
+
+Long-term development
+
+In the future, it should be possible to develop a tool to automatically convert a bee.worker into a bee.cpp.worker, based on Shedskin or RPython, by compiling all Python modifiers, operators and additional methods as C++ and modifying the worker definition accordingly.
+

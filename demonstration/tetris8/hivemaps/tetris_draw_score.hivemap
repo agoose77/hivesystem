@@ -1,0 +1,131 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'get_score',
+      workertype = 'dragonfly.convert.pull.cast',
+      position = Coordinate2D (
+        x = -73.75,
+        y = 73.75,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type1',
+          pvalue = 'int',
+        ),
+        WorkerParameter (
+          pname = 'type2',
+          pvalue = 'str',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'set_score',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = 77.3611111108,
+        y = 48.1111111111,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'str',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'w_draw',
+      workertype = 'dragonfly.canvas.draw3',
+      position = Coordinate2D (
+        x = 256.166666666,
+        y = 31.388888889,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'str',
+        ),
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'get_score',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'set_score',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'set_score',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'w_draw',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+  io = HivemapIOArray (
+    HivemapIO (
+      io_id = 'draw',
+      io = 'antenna',
+      worker = 'set_score',
+      workerio = 'trig',
+      mode = 'push',
+      datatype = 'trigger',
+      position = Coordinate2D (
+        x = -279.027777778,
+        y = -4.91666666633,
+      ),
+    ),
+    HivemapIO (
+      io_id = 'score',
+      io = 'antenna',
+      worker = 'get_score',
+      workerio = 'inp',
+      mode = 'pull',
+      datatype = 'int',
+      position = Coordinate2D (
+        x = -172.0,
+        y = 77.25,
+      ),
+    ),
+  ),
+  parameters = HivemapParameterArray (
+    HivemapParameter (
+      extern_id = 'scorearea_id',
+      intern_id = 'scorearea_id_',
+      paramtypename = 'str',
+      position = Coordinate2D (
+        x = 247.813725491,
+        y = 161.444444444,
+      ),
+    ),
+  ),
+  attributes = HivemapAttributeArray (
+  ),
+  partbees = HivemapPartBeeArray (
+  ),
+  wasps = HivemapWaspArray (
+    HivemapWasp (
+      wasp_id = 'wasp_2',
+      injected = 'scorearea_id_',
+      target = 'w_draw',
+      targetparam = 'identifier',
+      sting = False,
+      accumulate = False,
+      position = Coordinate2D (
+        x = 264.552538965,
+        y = 95.9731020612,
+      ),
+    ),
+  ),
+)

@@ -1,0 +1,42 @@
+Workermap (
+  segments = WorkerSegmentArray (
+    WorkerSegment (
+      segid = 'string',
+      segtype = 'segments.output.pull_output_str',
+      position = Coordinate2D (
+        x = 156.0,
+        y = 29.0,
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'v_string',
+      segtype = 'segments.variable.variable_str',
+      position = Coordinate2D (
+        x = -122.0,
+        y = 100.0,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'is_parameter',
+          pvalue = 'True',
+        ),
+      ),
+      profile = 'default',
+    ),
+  ),
+  connections = WorkerSegmentConnectionArray (
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'v_string',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'string',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+)

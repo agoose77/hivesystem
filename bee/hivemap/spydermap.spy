@@ -1,0 +1,38 @@
+Type SpydermapWasp {
+  String wasp_id
+  String spydertypename
+  String spydervalue
+  String target
+  String targetparam 
+  Coordinate2D position = Coordinate2D(0,0) 
+  validate {
+    import spyder
+    assert spyder.validvar2(spydertypename)
+  }  
+}
+
+Type Spydermap {
+  String spyderhive
+  StringArray names
+  ObjectList objectdata
+  StringArray parameters = []
+  SpydermapWaspArray wasps = []
+  *Coordinate2DArray coordinates
+  *Coordinate2DArray paramcoordinates
+  validate {
+    assert len(names) == len(objectdata)
+    _used_names = set()
+    for name in names:
+      assert name not in _used_names
+      _used_names.add(name)
+    if coordinates is not None:
+      assert len(coordinates) == len(names)   
+    for p in parameters:
+      assert p not in names, p  
+    if paramcoordinates is not None:
+      assert len(paramcoordinates) == len(parameters)
+    for wasp in wasps:
+      assert wasp.wasp_id not in _used_names, wasp
+      assert wasp.target == "" or wasp.target in _used_names, wasp             
+  }
+}

@@ -1,0 +1,43 @@
+import sys, os
+
+progsFolder= get_special_folder_path("CSIDL_COMMON_PROGRAMS")
+scripts = os.path.join(sys.prefix , 'Scripts')
+
+def install():
+  #Hive System Programs folder
+  hiveShortcuts = os.path.join(progsFolder, 'Hive System')
+  if not os.path.isdir(hiveShortcuts):
+    os.mkdir(hiveShortcuts)
+  directory_created(hiveShortcuts)
+
+  #Hive GUI
+  hiveguiLink = os.path.join(hiveShortcuts, 'hivegui.lnk')
+  if os.path.isfile(hiveguiLink):
+    os.remove(hiveguiLink)#we want to make a new one
+  target = os.path.join(sys.prefix, "python.exe") 
+  create_shortcut(target, 'Hive GUI', hiveguiLink, 
+    os.path.join(scripts, "hivegui.py") + '"')
+  file_created(hiveguiLink)
+
+  #Worker GUI
+  workerguiLink = os.path.join(hiveShortcuts, 'workergui.lnk')
+  if os.path.isfile(workerguiLink):
+    os.remove(workerguiLink)#we want to make a new one
+  target = os.path.join(sys.prefix, "python.exe") 
+  create_shortcut(target, 'Worker GUI', workerguiLink, 
+    os.path.join(scripts, "workergui.py") + '"')
+  file_created(workerguiLink)
+
+  #Spyder GUI
+  spyderguiLink = os.path.join(hiveShortcuts, 'spydergui.lnk')
+  if os.path.isfile(spyderguiLink):
+    os.remove(spyderguiLink)#we want to make a new one
+  target = os.path.join(sys.prefix, "python.exe") 
+  create_shortcut(target, 'Spyder GUI', spyderguiLink, 
+    os.path.join(scripts, "spydergui.py") + '"')
+  file_created(spyderguiLink)
+
+if len(sys.argv) > 1:
+  if sys.argv[1] == "-install": install()
+  
+  

@@ -1,0 +1,39 @@
+Spydermap (
+  spyderhive = 'spyderhives.action3hive.action3hive',
+  names = StringArray (
+    'attribute_1',
+    'attribute_2',
+  ),
+  objectdata = ObjectList (
+    CharacterActionItem (
+      identifier = 'swim',
+      action = CharacterAction (
+        animation = 'splash-animation',
+        soundfile = 'splash.wav',
+      ),
+    ),
+    CharacterActionItem (
+      identifier = 'crouch',
+      action = CharacterAction (
+        animation = 'crouching',
+        soundfile = 'crouch.wav',
+      ),
+    ),
+  ),
+  parameters = StringArray (
+  ),
+  wasps = SpydermapWaspArray (
+  ),
+  coordinates = Coordinate2DArray (
+    Coordinate2D (
+      x = -308.0,
+      y = 158.0,
+    ),
+    Coordinate2D (
+      x = -315.0,
+      y = 79.0,
+    ),
+  ),
+  paramcoordinates = Coordinate2DArray (
+  ),
+)

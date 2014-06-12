@@ -1,0 +1,93 @@
+Workermap (
+  segments = WorkerSegmentArray (
+    WorkerSegment (
+      segid = 'custom_class_code_1',
+      segtype = 'segments.custom_code.custom_class_code',
+      position = Coordinate2D (
+        x = -147.0,
+        y = 158.0,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'code',
+          pvalue = 'def set_playfunc(self, playfunc):\n  self.play = playfunc',
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'custom_place_code_1',
+      segtype = 'segments.custom_code.custom_place_code',
+      position = Coordinate2D (
+        x = -170.0,
+        y = 205.0,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'code',
+          pvalue = 's = socket_single_required(self.set_playfunc)\nlibcontext.socket(("animation", "play"), s)\n',
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'do_play',
+      segtype = 'segments.modifier.modifier',
+      position = Coordinate2D (
+        x = 89.0,
+        y = 108.0,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'code',
+          pvalue = 'self.play(self.v_inp)',
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'inp',
+      segtype = 'segments.antenna.push_antenna_id',
+      position = Coordinate2D (
+        x = -321.0,
+        y = 137.0,
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'v_inp',
+      segtype = 'segments.variable.variable_id',
+      position = Coordinate2D (
+        x = -140.0,
+        y = 111.0,
+      ),
+      profile = 'input',
+    ),
+  ),
+  connections = WorkerSegmentConnectionArray (
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'v_inp',
+        io = 'on_update',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'do_play',
+        io = 'trigger',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'inp',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'v_inp',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+)

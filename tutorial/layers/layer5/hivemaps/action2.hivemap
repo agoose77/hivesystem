@@ -1,0 +1,268 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'action',
+      workertype = 'dragonfly.blocks.block',
+      position = Coordinate2D (
+        x = -538.173160173,
+        y = -223.264069264,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'spydertype',
+          pvalue = 'CharacterAction',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'action2conf',
+      workertype = 'spydermaps#action2conf.spydermap',
+      position = Coordinate2D (
+        x = -124.444444444,
+        y = 221.111111111,
+      ),
+    ),
+    Worker (
+      workerid = 'actiondict',
+      workertype = 'dragonfly.logic.dictionary',
+      position = Coordinate2D (
+        x = -197.841452206,
+        y = 21.7401960787,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'CharacterAction',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'get_action',
+      workertype = 'dragonfly.blocks.getter',
+      position = Coordinate2D (
+        x = -411.550307765,
+        y = -228.613636364,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'spydertype',
+          pvalue = 'CharacterAction',
+        ),
+      ),
+      blockvalues = StringArray (
+        'animation',
+        'soundfile',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+      ),
+    ),
+    Worker (
+      workerid = 'play_animation',
+      workertype = 'workers.play_animation.play_animation',
+      position = Coordinate2D (
+        x = 511.775303587,
+        y = -273.898395722,
+      ),
+    ),
+    Worker (
+      workerid = 'play_sound',
+      workertype = 'workers.play_sound.play_sound',
+      position = Coordinate2D (
+        x = 512.424646279,
+        y = -445.759358289,
+      ),
+    ),
+    Worker (
+      workerid = 'set_action',
+      workertype = 'dragonfly.blocks.setter',
+      position = Coordinate2D (
+        x = 25.722182765,
+        y = 57.2878787878,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'spydertype',
+          pvalue = 'CharacterAction',
+        ),
+      ),
+      blockvalues = StringArray (
+      ),
+    ),
+    Worker (
+      workerid = 'transistor_2',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = 307.745251226,
+        y = -226.218137254,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'String',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'transistor_3',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = 246.710902685,
+        y = -420.928921569,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'String',
+        ),
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'set_action',
+        io = 'control',
+      ),
+      end = WorkerConnector (
+        workerid = 'action',
+        io = 'control',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'action',
+        io = 'model',
+      ),
+      end = WorkerConnector (
+        workerid = 'get_action',
+        io = 'model',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'get_action',
+        io = 'animation',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_2',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'transistor_2',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'play_animation',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'get_action',
+        io = 'soundfile',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_3',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'transistor_3',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'play_sound',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'actiondict',
+        io = 'outvalue',
+      ),
+      end = WorkerConnector (
+        workerid = 'set_action',
+        io = '_set',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'set_action',
+        io = 'on_set',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_2',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'set_action',
+        io = 'on_set',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_3',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+  io = HivemapIOArray (
+    HivemapIO (
+      io_id = 'actionplay',
+      io = 'antenna',
+      worker = 'actiondict',
+      workerio = 'inkey',
+      mode = 'push',
+      datatype = 'id',
+      position = Coordinate2D (
+        x = -574.391927083,
+        y = 140.0,
+      ),
+    ),
+  ),
+  attributes = HivemapAttributeArray (
+  ),
+  partbees = HivemapPartBeeArray (
+  ),
+  wasps = HivemapWaspArray (
+    HivemapWasp (
+      wasp_id = 'wasp_1',
+      injected = 'actiondict',
+      target = 'action2conf',
+      targetparam = 'dictionary',
+      sting = False,
+      accumulate = False,
+      position = Coordinate2D (
+        x = -248.117647059,
+        y = 221.058823529,
+      ),
+    ),
+  ),
+)

@@ -1,0 +1,93 @@
+Workermap (
+  segments = WorkerSegmentArray (
+    WorkerSegment (
+      segid = 'custom_class_code_1',
+      segtype = 'segments.custom_code.custom_class_code',
+      position = Coordinate2D (
+        x = -59.0,
+        y = 23.0,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'code',
+          pvalue = 'def set_displayfunc(self, displayfunc):\n  self.display = displayfunc# ',
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'custom_place_code_1',
+      segtype = 'segments.custom_code.custom_place_code',
+      position = Coordinate2D (
+        x = -63.0,
+        y = -26.0,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'code',
+          pvalue = 's = socket_single_required(self.set_displayfunc)\nlibcontext.socket("display", s)\n# ',
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'do_display',
+      segtype = 'segments.modifier.modifier',
+      position = Coordinate2D (
+        x = 63.0,
+        y = 136.0,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'code',
+          pvalue = 'self.display(self.v_string)\n# ',
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'string',
+      segtype = 'segments.antenna.push_antenna_str',
+      position = Coordinate2D (
+        x = -324.0,
+        y = 160.0,
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'v_string',
+      segtype = 'segments.variable.variable_str',
+      position = Coordinate2D (
+        x = -150.0,
+        y = 159.0,
+      ),
+      profile = 'input',
+    ),
+  ),
+  connections = WorkerSegmentConnectionArray (
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'string',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'v_string',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'v_string',
+        io = 'on_update',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'do_display',
+        io = 'trigger',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+)

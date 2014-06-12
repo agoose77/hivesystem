@@ -1,0 +1,137 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'show1',
+      workertype = 'dragonfly.canvas.show1',
+      position = Coordinate2D (
+        x = 106.0,
+        y = -10.0,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('object', 'coloredtextbox')",
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'startsensor',
+      workertype = 'dragonfly.sys.startsensor',
+      position = Coordinate2D (
+        x = -311.0,
+        y = -81.0,
+      ),
+    ),
+    Worker (
+      workerid = 'transistor_1',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = -71.0,
+        y = 31.5,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('object', 'coloredtextbox')",
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'v_coloredtextbox',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -278.0,
+        y = 100.0,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('object', 'coloredtextbox')",
+        ),
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'v_coloredtextbox',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_1',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'transistor_1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'show1',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'startsensor',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_1',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+  drones = DroneArray (
+    Drone (
+      droneid = 'canvas',
+      dronetype = 'dragonfly.pandahive.pandacanvas',
+      position = Coordinate2D (
+        x = -138.0,
+        y = 248.0,
+      ),
+    ),
+    Drone (
+      droneid = 'coloredtextbox_panda',
+      dronetype = 'workers.coloredtextbox_panda.coloredtextbox_panda',
+      position = Coordinate2D (
+        x = -32.0,
+        y = 247.0,
+      ),
+    ),
+  ),
+  attributes = HivemapAttributeArray (
+    HivemapAttribute (
+      attr_id = 'coloredtextbox',
+      attrtypename = 'ColoredTextBox',
+      attrvalue = "ColoredTextBox (\n  text = 'Hello world!',\n  textcolor = Color4 (\n    r = 255,\n    g = 0,\n    b = 0,\n    a = 255.0,\n  ),\n  box = Box2D (\n    x = 50,\n    y = 50,\n    sizex = 600,\n    sizey = 200,\n    mode = 'pixels',\n  ),\n  boxcolor = Color4 (\n    r = 255,\n    g = 255,\n    b = 255,\n    a = 255.0,\n  ),\n)",
+      position = Coordinate2D (
+        x = -261.0,
+        y = 174.0,
+      ),
+    ),
+  ),
+  partbees = HivemapPartBeeArray (
+  ),
+  wasps = HivemapWaspArray (
+    HivemapWasp (
+      wasp_id = 'wasp_1',
+      injected = 'coloredtextbox',
+      target = 'v_coloredtextbox',
+      targetparam = 'value',
+      sting = True,
+      accumulate = False,
+      position = Coordinate2D (
+        x = -251.0,
+        y = 137.0,
+      ),
+    ),
+  ),
+)

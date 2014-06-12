@@ -1,0 +1,33 @@
+Spydermap (
+  spyderhive = 'bee.spyderhive.spyderdicthive',
+  names = StringArray (
+    'run',
+    'shoot',
+  ),
+  objectdata = ObjectList (
+    CharacterAction (
+      animation = 'running.animation',
+      soundfile = 'run.wav',
+    ),
+    CharacterAction (
+      animation = 'shooting.animation',
+      soundfile = 'shoot.wav',
+    ),
+  ),
+  parameters = StringArray (
+  ),
+  wasps = SpydermapWaspArray (
+  ),
+  coordinates = Coordinate2DArray (
+    Coordinate2D (
+      x = -279.0,
+      y = 134.0,
+    ),
+    Coordinate2D (
+      x = -288.0,
+      y = 67.0,
+    ),
+  ),
+  paramcoordinates = Coordinate2DArray (
+  ),
+)

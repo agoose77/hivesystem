@@ -1,0 +1,170 @@
+import bee, libcontext
+from libcontext.socketclasses import *
+from libcontext.pluginclasses import *
+
+import functools
+
+class canvasdrone(bee.drone): 
+  _placed = False
+  _reserve_identifiers = None
+  _draw3afuncs = None
+  _draw32funcs = None
+  _draw3updates = None
+  def _get_identifier(self,idtype,idnr):
+    return "%s%d-%s-%d" % (self.classname, self.canvasinstance,idtype,idnr)
+  def _parse_identifier(self, identifier):
+    i = identifier.split('-')
+    if len(i) != 3:
+      return None
+    if i[0] != "%s%d" % (self.classname, self.canvasinstance):
+      return None
+    try:
+      n = int(i[2])
+    except:
+      return None
+    return i[1], n
+  def _get_new_idnr(self, idtype):
+  
+    if idtype not in self.instances: self.instances[idtype] = {0:None}
+    newnr = max(self.instances[idtype].keys())+1
+    return newnr
+  def _get_oldplugins(self):
+    oldplugs = []
+    currplugs = libcontext.get_curr_context().plugins
+    for p in currplugs:
+      oldplugs += [id(pp) for pp in currplugs[p]]
+    oldplugs = set(oldplugs)
+    return oldplugs
+      
+  def draw(self, drawfunc, drawobjecttype, drawobject, box,parameters=None):
+    idnr = self._get_new_idnr(drawobjecttype)    
+    identifier = self._get_identifier(drawobjecttype,idnr)    
+    self.instances[drawobjecttype][idnr] = drawfunc(drawobject,identifier,box,parameters)
+    return identifier
+
+  def set_draw3afunc(self, drawobjecttype, draw3afunc):
+    self._draw3afuncs[drawobjecttype] = draw3afunc
+  def set_draw32func(self, drawobjecttype, draw32func):
+    self._draw32funcs[drawobjecttype] = draw32func
+  def set_draw3update(self, drawobjecttype, draw3update):
+    self._draw3updates[drawobjecttype] = draw3update
+    
+  def draw3a(self, drawobjecttype, identifier, box, parameters, drawobject):
+    drawfunc = self._draw3afuncs[drawobjecttype]
+    self.instances[None][identifier] = drawfunc(drawobject,identifier,box,parameters)
+  def draw3b(self, drawfunc, identifier, drawobject):
+    self.instances[None][identifier] = drawfunc(drawobject)
+  def draw32(self, drawobjecttype, identifier, parameters, drawobject):
+    drawfunc = self._draw32funcs[drawobjecttype]
+    self.instances[None][identifier] = drawfunc(drawobject,identifier,parameters)
+    
+  def update(self, updatefunc, drawobjecttype, identifier):
+    if drawobjecttype not in self.instances: return False
+    i = self._parse_identifier(identifier)
+    if i is None or i[0] != str(drawobjecttype): return False
+    objects = self.instances[drawobjecttype]
+    if i[1] not in objects: return False
+    updatefunc(objects[i[1]])
+    return True
+
+  def update3a(self, drawobjecttype, registered_identifier, identifier):
+    if identifier != registered_identifier: return False
+    if identifier not in self.instances[None]: return False
+    updatefunc = self._draw3updates[drawobjecttype]
+    updatefunc(self.instances[None][identifier])
+    return True
+    
+  def update3b(self, updatefunc, registered_identifier, identifier):
+    if identifier != registered_identifier: return False
+    if identifier not in self.instances[None]: return False
+    updatefunc(self.instances[None][identifier])
+    return True
+  
+  def set_parent(self, parent):
+    self.parent = parent
+  
+  def reserve(self, identifier, drawobjecttype=None, drawfunc=None, box=None, parameters=None, updatefunc=None):
+    if self._placed is True:
+      raise Exception("canvasdrone.reserve must be called before place()")
+    newlocals = dict(locals())
+    for var in list(locals().keys()):
+      if var == "self": continue
+      v = locals()[var]
+      newlocals[var] = bee.resolve(v, self.parent)
+    n = newlocals
+
+    #no workaround :(
+    identifier,drawobjecttype,drawfunc,box,parameters,updatefunc = \
+     n["identifier"],n["drawobjecttype"],n["drawfunc"],n["box"],n["parameters"],n["updatefunc"]
+    
+    if self._reserve_identifiers == None:
+      self._reserve_identifiers = {}
+    if drawobjecttype is None and drawfunc is None:
+      raise ValueError("You must specify an object type or a drawing function")
+    if drawobjecttype is not None and drawfunc is not None:
+      raise ValueError("You specified both an object type AND a drawing function")
+
+    if None not in self.instances: self.instances[None] = {}            
+    if drawobjecttype is not None:      
+      if updatefunc is not None:
+        raise ValueError("You can only specify an update function if you specify a drawing function")
+      self._reserve_identifiers[identifier] = (drawobjecttype, (box,parameters), None)
+    else:      
+      draw = functools.partial(drawfunc,identifier=identifier,box=box,parameters=parameters)
+      self._reserve_identifiers[identifier] = (None, draw, updatefunc)
+      
+  def place(self, oldplugs):
+    self._placed = True
+    plugs = dict(libcontext.get_curr_context().plugins)
+    for plug in plugs:
+      if not isinstance(plug, tuple): continue      
+      for key0,key,func,typespecific in (
+       ("draw0","draw",self.draw,True),
+       ("show0","show",self.draw,True),
+       ("update0","update",self.update,False),
+      ):
+        if plug[0] == "canvas" and plug[1] == key0:
+          p = plugs[plug]
+          for pp in p:
+            if id(pp) in oldplugs: continue
+            if len(pp.args) == 1 and len(pp.kargs) == 0:
+              newfunc = functools.partial(func,pp.args[0],plug[2])
+              ptitle = ("canvas",key,plug[2]) if typespecific else ("canvas",key)
+              libcontext.plugin(ptitle,plugin_supplier(newfunc))
+    if self._reserve_identifiers is not None:
+      needed_types, needed_types2 = set(), set()
+      for identifier in self._reserve_identifiers:
+        drawobjecttype, v, up = self._reserve_identifiers[identifier]
+        if drawobjecttype is None:
+          f = functools.partial(self.draw3b, v, identifier)
+          p = plugin_supplier(f)
+        else:
+          box,parameters = v
+          if self._draw3afuncs is None: self._draw3afuncs = {}
+          if self._draw32funcs is None: self._draw32funcs = {}
+          if self._draw3updates is None: self._draw3updates = {}
+          if box is not None:
+            if drawobjecttype not in needed_types:
+              needed_types.add(drawobjecttype)
+            f = functools.partial(self.set_draw3afunc, drawobjecttype)
+            s = socket_single_required(f)
+            libcontext.socket(("canvas","draw0",drawobjecttype), s)
+            f = functools.partial(self.set_draw3update, drawobjecttype)
+            s = socket_single_required(f)
+            libcontext.socket(("canvas","update0",drawobjecttype), s)              
+            f = functools.partial(self.update3a, drawobjecttype, identifier)
+            libcontext.plugin(("canvas","update"), plugin_supplier(f))              
+            f = functools.partial(self.draw3a, drawobjecttype, identifier, box, parameters)
+          else:
+            if drawobjecttype not in needed_types:
+              needed_types.add(drawobjecttype)
+            f = functools.partial(self.set_draw32func, drawobjecttype)
+            s = socket_single_required(f)
+            libcontext.socket(("canvas","draw2",drawobjecttype), s)            
+            f = functools.partial(self.draw32, drawobjecttype, identifier, parameters)
+        p = plugin_supplier(f)
+        libcontext.plugin(("canvas","draw3",identifier), p)
+        if up:
+          f = functools.partial(self.update3b, up, identifier)
+          libcontext.plugin(("canvas","update"), plugin_supplier(f))
+        

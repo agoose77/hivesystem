@@ -1,0 +1,20 @@
+python tut-1.py << _Eod_
+e2-e4
+d7-d5
+e4-e5
+f7-f5
+e5xf6
+e7xf6
+Qd1-e2
+Qd8-e7
+a2-a4
+b7-b5
+a4xb5
+Kb8-a6
+b5-b6
+Bc8-d7
+b6-b7
+c7-c6
+b7xa8R
+quit
+_Eod_

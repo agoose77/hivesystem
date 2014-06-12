@@ -1,0 +1,38 @@
+Spydermap (
+  spyderhive = 'spyderhives.myspyderframe.myspyderframe',
+  names = StringArray (
+    'helloworld',
+  ),
+  objectdata = ObjectList (
+    ColoredTextBox ( 
+      coloredtext = ColoredText (
+        text = 'Hello World!',
+        textcolor = Color4 (
+          r = 255,
+          g = 0,
+          b = 0,
+          a = 255,
+        ),
+      ),
+      box = Box2D (
+        x = 50,
+        y = 50,
+        sizex = 600,
+        sizey = 200,
+        mode = 'pixels',
+      ),
+    ),  
+  ),
+  parameters = StringArray (
+  ),
+  wasps = SpydermapWaspArray (
+  ),
+  coordinates = Coordinate2DArray (
+    Coordinate2D (
+      x = -294.0,
+      y = 177.0,
+    ),
+  ),
+  paramcoordinates = Coordinate2DArray (
+  ),
+)

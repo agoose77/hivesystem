@@ -1,0 +1,468 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'dragonfly.io.commandsensor0',
+      workertype = 'dragonfly.io.commandsensor',
+      position = Coordinate2D (
+        x = -862.804374912,
+        y = -494.412609598,
+      ),
+    ),
+    Worker (
+      workerid = 'components.workers.except_valueerror.except_valueerror0',
+      workertype = 'components.workers.except_valueerror.except_valueerror',
+      position = Coordinate2D (
+        x = -848.382099588,
+        y = -118.716176634,
+      ),
+    ),
+    Worker (
+      workerid = 'components.workers.chessboard2.chessboard20',
+      workertype = 'components.workers.chessboard2.chessboard2',
+      position = Coordinate2D (
+        x = -336.072770045,
+        y = -79.9907660462,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'player',
+          pvalue = 'White',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.sys.exitactuator0',
+      workertype = 'dragonfly.sys.exitactuator',
+      position = Coordinate2D (
+        x = -403.229856446,
+        y = -397.059156604,
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.sys.on_next0',
+      workertype = 'dragonfly.sys.on_next',
+      position = Coordinate2D (
+        x = -704.757599765,
+        y = -94.0741084352,
+      ),
+    ),
+    Worker (
+      workerid = 'components.workers.chesskeeper.chesskeeper0',
+      workertype = 'components.workers.chesskeeper.chesskeeper',
+      position = Coordinate2D (
+        x = -790.879398503,
+        y = -385.686339988,
+      ),
+    ),
+    Worker (
+      workerid = 'components.workers.chessprocessor2.chessprocessor20',
+      workertype = 'components.workers.chessprocessor2.chessprocessor2',
+      position = Coordinate2D (
+        x = -727.991174465,
+        y = -254.050442412,
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.std.transistor0',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = -548.381990831,
+        y = -75.1983453725,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'str',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'components.workers.human.human0',
+      workertype = 'components.workers.human.human',
+      position = Coordinate2D (
+        x = -707.123426295,
+        y = -499.341917272,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'player',
+          pvalue = 'White',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.io.display0',
+      workertype = 'dragonfly.io.display',
+      position = Coordinate2D (
+        x = -311.865160219,
+        y = -287.021602789,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type_inp',
+          pvalue = 'str',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.std.variable0',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -513.588585237,
+        y = -203.217452174,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = 'White',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'str',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'components.workers.computer.computer0',
+      workertype = 'components.workers.computer.computer',
+      position = Coordinate2D (
+        x = -498.528089243,
+        y = -484.291027575,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'par1_player',
+          pvalue = 'Black',
+        ),
+        WorkerParameter (
+          pname = 'par2_engine_binary',
+          pvalue = 'glaurung',
+        ),
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'components.workers.chessprocessor2.chessprocessor20',
+        io = 'evexc',
+      ),
+      end = WorkerConnector (
+        workerid = 'components.workers.except_valueerror.except_valueerror0',
+        io = 'raisin',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = -885.604395153,
+          y = -204.326762208,
+        ),
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'components.workers.chessprocessor2.chessprocessor20',
+        io = 'turn',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.std.transistor0',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = -673.471653898,
+          y = -304.659815504,
+        ),
+        Coordinate2D (
+          x = -618.049586363,
+          y = -251.148853746,
+        ),
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.std.transistor0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.std.variable0',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = -561.990420587,
+          y = -157.394966656,
+        ),
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.sys.on_next0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.std.transistor0',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'components.workers.chessprocessor2.chessprocessor20',
+        io = 'made_move',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.sys.on_next0',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = -797.693529407,
+          y = -153.682459115,
+        ),
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.io.commandsensor0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'components.workers.human.human0',
+        io = 'com',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.std.variable0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'components.workers.human.human0',
+        io = 'turn',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.sys.on_next0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'components.workers.computer.computer0',
+        io = 'trigger_move',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = -592.76797529,
+          y = -132.972666853,
+        ),
+        Coordinate2D (
+          x = -604.352275511,
+          y = -184.072431675,
+        ),
+        Coordinate2D (
+          x = -595.973462009,
+          y = -541.478964941,
+        ),
+        Coordinate2D (
+          x = -554.365856869,
+          y = -551.542942277,
+        ),
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'components.workers.chesskeeper.chesskeeper0',
+        io = 'gamekeeper',
+      ),
+      end = WorkerConnector (
+        workerid = 'components.workers.chessprocessor2.chessprocessor20',
+        io = 'inp_gamekeeper',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'components.workers.human.human0',
+        io = 'move',
+      ),
+      end = WorkerConnector (
+        workerid = 'components.workers.chessprocessor2.chessprocessor20',
+        io = 'inp_move',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'components.workers.computer.computer0',
+        io = 'move',
+      ),
+      end = WorkerConnector (
+        workerid = 'components.workers.chessprocessor2.chessprocessor20',
+        io = 'inp_move',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = -514.018615234,
+          y = -571.300674578,
+        ),
+        Coordinate2D (
+          x = -714.630118804,
+          y = -573.220401885,
+        ),
+        Coordinate2D (
+          x = -796.218529348,
+          y = -563.62176535,
+        ),
+        Coordinate2D (
+          x = -917.161349682,
+          y = -570.340810924,
+        ),
+        Coordinate2D (
+          x = -924.84025891,
+          y = -405.244262531,
+        ),
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'components.workers.chessprocessor2.chessprocessor20',
+        io = 'outp_move',
+      ),
+      end = WorkerConnector (
+        workerid = 'components.workers.chesskeeper.chesskeeper0',
+        io = 'make_move',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = -633.47431332,
+          y = -186.187090118,
+        ),
+        Coordinate2D (
+          x = -845.940327833,
+          y = -172.287444308,
+        ),
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'components.workers.chessprocessor2.chessprocessor20',
+        io = 'outp_move',
+      ),
+      end = WorkerConnector (
+        workerid = 'components.workers.computer.computer0',
+        io = 'make_move',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.std.variable0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'components.workers.chessboard2.chessboard20',
+        io = 'turn',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'components.workers.chessboard2.chessboard20',
+        io = 'get_move',
+      ),
+      end = WorkerConnector (
+        workerid = 'components.workers.chessprocessor2.chessprocessor20',
+        io = 'inp_move',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = -272.08352228,
+          y = -15.4200130326,
+        ),
+        Coordinate2D (
+          x = -452.7789178,
+          y = -4.49886275393,
+        ),
+        Coordinate2D (
+          x = -683.115905496,
+          y = -16.4128448761,
+        ),
+        Coordinate2D (
+          x = -932.316698219,
+          y = -16.4128448761,
+        ),
+        Coordinate2D (
+          x = -945.223512184,
+          y = -257.670982851,
+        ),
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'components.workers.chessprocessor2.chessprocessor20',
+        io = 'outp_move',
+      ),
+      end = WorkerConnector (
+        workerid = 'components.workers.chessboard2.chessboard20',
+        io = 'make_move',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = -515.327323941,
+          y = -255.685319164,
+        ),
+        Coordinate2D (
+          x = -389.237679815,
+          y = -254.69248732,
+        ),
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'components.workers.chessprocessor2.chessprocessor20',
+        io = 'finished',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.sys.exitactuator0',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'components.workers.chessprocessor2.chessprocessor20',
+        io = 'outp_move',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.io.display0',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'components.workers.chessprocessor2.chessprocessor20',
+        io = 'turn',
+      ),
+      end = WorkerConnector (
+        workerid = 'components.workers.computer.computer0',
+        io = 'turn',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+)

@@ -1,0 +1,86 @@
+World3D (
+  materials = NewMaterialArray (
+    NewMaterial (
+      pname = 'red',
+      color = Color (
+        r = 255,
+        g = 0,
+        b = 0,
+      ),
+      transparency = 0.0,
+    ),
+    NewMaterial (
+      pname = 'green',
+      color = Color (
+        r = 0,
+        g = 255,
+        b = 0,
+      ),
+      transparency = 0.0,
+    ),
+    NewMaterial (
+      pname = 'blue',
+      color = Color (
+        r = 0,
+        g = 0,
+        b = 255,
+      ),
+      transparency = 0.0,
+    ),
+    NewMaterial (
+      pname = 'white',
+      color = Color (
+        r = 255,
+        g = 255,
+        b = 255,
+      ),
+      transparency = 0.0,
+    ),
+  ),
+  objects = ObjectList3D (
+    AxisSystem (
+      origin = Coordinate (
+        x = 5.0,
+        y = -3.0,
+        z = 0.0,
+      ),
+      x = Coordinate (
+        x = 1.0,
+        y = 0.0,
+        z = 0.0,
+      ),
+      y = Coordinate (
+        x = 0.0,
+        y = 1.0,
+        z = 0.0,
+      ),
+      z = Coordinate (
+        x = 0.0,
+        y = 0.0,
+        z = 1.0,
+      ),
+    ),
+    AxisSystem (
+      origin = Coordinate (
+        x = -5.0,
+        y = -3.0,
+        z = 3.0,
+      ),
+      x = Coordinate (
+        x = 0.866025403784,
+        y = -0.25,
+        z = -0.433012701892,
+      ),
+      y = Coordinate (
+        x = 0.5,
+        y = 0.433012701892,
+        z = 0.75,
+      ),
+      z = Coordinate (
+        x = 0.0,
+        y = -0.866025403784,
+        z = 0.5,
+      ),
+    ),
+  ),
+)

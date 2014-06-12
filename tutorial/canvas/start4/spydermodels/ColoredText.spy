@@ -1,0 +1,5 @@
+Type ColoredText:Degenerate {
+  String text
+  Color4 textcolor = (0,0,0,255)
+}
+

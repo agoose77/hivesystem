@@ -1,0 +1,78 @@
+Workermap (
+  segments = WorkerSegmentArray (
+    WorkerSegment (
+      segid = 'custom_import_code_1',
+      segtype = 'segments.custom_code.custom_import_code',
+      position = Coordinate2D (
+        x = -161.0,
+        y = 224.0,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'code',
+          pvalue = 'import somelibrary',
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'do_play',
+      segtype = 'segments.modifier.modifier',
+      position = Coordinate2D (
+        x = 88.0,
+        y = 108.0,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'code',
+          pvalue = 'somelibrary.play_animation(self.v_inp)',
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'inp',
+      segtype = 'segments.antenna.push_antenna_str',
+      position = Coordinate2D (
+        x = -272.0,
+        y = 132.0,
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'v_inp',
+      segtype = 'segments.variable.variable_str',
+      position = Coordinate2D (
+        x = -133.0,
+        y = 113.0,
+      ),
+      profile = 'input',
+    ),
+  ),
+  connections = WorkerSegmentConnectionArray (
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'inp',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'v_inp',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'v_inp',
+        io = 'on_update',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'do_play',
+        io = 'trigger',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+)

@@ -1,0 +1,40 @@
+Type NodeIO {
+  String ioname
+  Enum type_("bool", "int", "float", "(str,identifier)", "(str,keycode)", "(str,message)", "(str,property)", "(str,process)", "str", "(object,matrix)", "(object,bge)", "object", "custom")
+  *String customtype
+  form {
+    ioname.name = "Name"
+    type_.name = "Type"
+    type_.optiontitles = "Bool", "Integer", "Float", "ID String", "Key String", "Message String", "Property String", "Process ID String",  "Generic String", "Matrix Object", "BGE Object", "Generic Object", "Custom"
+    customtype.name = "Custom Type"
+  }
+  validate {
+    assert isidentifier(ioname)
+    if type_ == "custom": assert customtype is not None
+    if customtype is not None: assert type_ == "custom"
+  }
+}
+
+Type AdvancedNodeIO {
+  String ioname
+  Enum mode("pull", "trigger", "push")
+  *Enum type_("bool", "int", "float", "(str,identifier)", "(str,keycode)", "(str,message)", "(str,property)", "(str,process)", "str", "(object,matrix)", "(object,bge)", "object", "custom")
+  *String customtype  
+  form {
+    ioname.name = "Name"
+    mode.name = "Mode"
+    mode.optiontitles = "Pull", "Trigger", "Push"    
+    type_.name = "Type"
+    type_.optiontitles = "Bool", "Integer", "Float", "ID String", "Key String", "Message String", "Property String", "Process ID String",  "Generic String", "Matrix Object", "BGE Object", "Generic Object", "Custom"
+    customtype.name = "Custom Type"  
+  }
+  validate {
+    assert isidentifier(ioname)
+    if mode == "trigger": assert type_ is None
+    if mode != "trigger": assert type_ is not None
+    if type_ == "custom": assert customtype is not None
+    if customtype is not None: assert type_ == "custom"    
+  }
+}
+
+#TODO: Qt, reset option to None!

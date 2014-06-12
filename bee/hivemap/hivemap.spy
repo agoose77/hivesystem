@@ -1,0 +1,107 @@
+Type HivemapIO {
+  String io_id
+  Enum io("antenna","output")
+  String worker
+  String workerio
+  String mode
+  String datatype
+  Coordinate2D position = Coordinate2D(0,0)
+}
+
+Type WorkerParameter {
+  String pname
+  String pvalue
+}
+
+Type Worker {
+  String workerid
+  String workertype
+  Coordinate2D position = Coordinate2D(0,0)
+  *WorkerParameterArray parameters
+  *WorkerParameterArray metaparameters
+  *StringArray blockvalues
+}
+
+Type WorkerConnector {
+  String workerid
+  String io
+}
+
+Type WorkerConnection {
+  WorkerConnector start
+  WorkerConnector end
+  Coordinate2DArray interpoints = Coordinate2DArray()
+}
+
+Type Drone {
+  String droneid
+  String dronetype
+  Coordinate2D position = Coordinate2D(0,0)
+  *StringArray parameters
+}
+
+Type HivemapParameter {
+  String extern_id
+  String intern_id
+  String paramtypename
+  *String gui_defaultvalue
+  Coordinate2D position = Coordinate2D(0,0)
+}
+
+Type HivemapAttribute {
+  String attr_id
+  String attrtypename
+  String attrvalue
+  *Coordinate2D position
+  validate {
+    assert spyder.validvar2(attrtypename) or attrtypename in ("float", "int", "bool", "str", "id")
+  }
+}
+
+Type HivemapPyAttribute {
+  String attr_id
+  String code
+  *String code_variable
+  *Coordinate2D position
+}
+
+Type HivemapPartBee {
+  String part_id
+  String bee_id
+  String part
+  *Coordinate2D position
+}
+
+Type HivemapWasp {
+  String wasp_id
+  String injected
+  String target
+  String targetparam
+  Bool sting
+  Bool accumulate = False
+  Coordinate2D position = Coordinate2D(0,0)
+}
+
+Type Hivemap {
+  WorkerArray workers
+  WorkerConnectionArray connections
+  *HivemapIOArray io
+  *DroneArray drones
+  *HivemapParameterArray parameters
+  *HivemapAttributeArray attributes  
+  *HivemapPartBeeArray partbees  
+  *HivemapPyAttributeArray pyattributes
+  *HivemapWaspArray wasps
+
+  validate {
+    workerids = [w.workerid for w in workers]
+    for c in connections:
+      id1, id2 = c.start.workerid, c.end.workerid
+      assert id1 in workerids
+      assert id2 in workerids
+    if io is not None:
+      for c in io:
+        assert c.io_id not in workerids, c.io_id
+        assert c.worker in workerids, c.worker
+  }
+}

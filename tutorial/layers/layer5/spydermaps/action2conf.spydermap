@@ -1,0 +1,15 @@
+Spydermap (
+  spyderhive = 'spyderhives.action2conf.action2conf',
+  names = StringArray (
+  ),
+  objectdata = ObjectList (
+  ),
+  parameters = StringArray (
+  ),
+  wasps = SpydermapWaspArray (
+  ),
+  coordinates = Coordinate2DArray (
+  ),
+  paramcoordinates = Coordinate2DArray (
+  ),
+)

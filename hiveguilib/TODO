@@ -1,0 +1,38 @@
+BUG: cannot copy variable (mapping of "value")
+BUG: group dragging does not seem to update, at least after pasting
+BUG: renaming does not always work
+
+simple implementation of blockbees/blockworkers
+
+block workers, metaparameters and attribute profiles:
+  compare with old profile, only change what is needed
+  reconnect connections, re-assess their validity
+  create new attributes if necessary
+
+attribute/nodeui tooltips
+
+undo
+
+More Param Tabs:
+- Blocks (blockbee)
+- Connections
+- Layers
+- Add to General: color, font, etc.
+
+Hivegui tabs:
+- Layers
+- Parameters 
+- Blocks (blockbee conf)
+
+Project manager:
+Mainhive:
+- Drones
+- Configure
+- Init
+- Custom code blocks
+General:
+- Combo hives
+- Project deployment (BGE, Panda)
+- Other kinds of resource management
+
+Add to Blender

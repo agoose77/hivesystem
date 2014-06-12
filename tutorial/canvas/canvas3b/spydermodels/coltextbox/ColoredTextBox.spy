@@ -1,0 +1,9 @@
+Type ColoredTextBox {
+  String text
+  Color4 textcolor = (0,0,0,255)
+  Box2D box
+  Color4 boxcolor = (255,255,255,255)
+}
+
+Method to_coloredtextbox(ColoredTextBox) to_coloredtextbox
+Method sting(ColoredTextBox) to_coloredtextbox

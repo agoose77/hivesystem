@@ -1,0 +1,748 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'block_1',
+      workertype = 'dragonfly.blocks.block',
+      position = Coordinate2D (
+        x = 499.921164773,
+        y = 876.863636364,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = "ColoredTextBox (\n  text = 'Hello World!',\n  textcolor = Color4 (\n    r = 255,\n    g = 0,\n    b = 0,\n    a = 255.0,\n  ),\n  box = Box2D (\n    x = 50,\n    y = 50,\n    sizex = 600,\n    sizey = 200,\n    mode = 'pixels',\n  ),\n  boxcolor = Color4 (\n    r = 255,\n    g = 255,\n    b = 255,\n    a = 255.0,\n  ),\n)",
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'spydertype',
+          pvalue = 'ColoredTextBox',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'create',
+      workertype = 'dragonfly.std.pushconnector',
+      position = Coordinate2D (
+        x = -271.013494318,
+        y = 220.863636364,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'trigger',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'delkey',
+      workertype = 'dragonfly.io.keyboardsensor_trigger',
+      position = Coordinate2D (
+        x = -607.228477772,
+        y = -124.808991009,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'keycode',
+          pvalue = 'DELETE',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'display_1',
+      workertype = 'dragonfly.io.display',
+      position = Coordinate2D (
+        x = 774.71796875,
+        y = -218.8,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'header',
+          pvalue = 'Deleted:',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type_inp',
+          pvalue = 'id',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'display_2',
+      workertype = 'dragonfly.io.display',
+      position = Coordinate2D (
+        x = 74.9796875,
+        y = -269.3,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'header',
+          pvalue = 'Created:',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type_inp',
+          pvalue = 'id',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'getter_1',
+      workertype = 'dragonfly.blocks.getter',
+      position = Coordinate2D (
+        x = -442.056818182,
+        y = 80.8636363636,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'spydertype',
+          pvalue = 'ColoredTextBox',
+        ),
+      ),
+      blockvalues = StringArray (
+      ),
+    ),
+    Worker (
+      workerid = 'is_empty',
+      workertype = 'dragonfly.logic.filter',
+      position = Coordinate2D (
+        x = 352.857142857,
+        y = -135.714285714,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'trigger',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'maxx',
+      workertype = 'dragonfly.std.variable_int',
+      position = Coordinate2D (
+        x = -455.797767857,
+        y = 574.114285714,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = '500',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'maxy',
+      workertype = 'dragonfly.std.variable_int',
+      position = Coordinate2D (
+        x = -460.940625,
+        y = 453.542857143,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = '400',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'minx',
+      workertype = 'dragonfly.std.variable_int',
+      position = Coordinate2D (
+        x = -456.626785714,
+        y = 639.542857143,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = '50',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'miny',
+      workertype = 'dragonfly.std.variable_int',
+      position = Coordinate2D (
+        x = -454.626785714,
+        y = 510.971428571,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = '50',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'randomx',
+      workertype = 'dragonfly.random.randint',
+      position = Coordinate2D (
+        x = -116.623376623,
+        y = 571.558441558,
+      ),
+    ),
+    Worker (
+      workerid = 'randomy',
+      workertype = 'dragonfly.random.randint',
+      position = Coordinate2D (
+        x = -123.362723214,
+        y = 447.227272727,
+      ),
+    ),
+    Worker (
+      workerid = 'remove2',
+      workertype = 'dragonfly.canvas.remove2',
+      position = Coordinate2D (
+        x = 737.242417279,
+        y = -122.617647059,
+      ),
+    ),
+    Worker (
+      workerid = 'selector_1',
+      workertype = 'dragonfly.logic.selector',
+      position = Coordinate2D (
+        x = 108.500323206,
+        y = -372.133160957,
+      ),
+    ),
+    Worker (
+      workerid = 'setter_1',
+      workertype = 'dragonfly.blocks.setter',
+      position = Coordinate2D (
+        x = 252.458806818,
+        y = 444.363636364,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'spydertype',
+          pvalue = 'ColoredTextBox',
+        ),
+      ),
+      blockvalues = StringArray (
+        'box.x',
+        'box.y',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+      ),
+    ),
+    Worker (
+      workerid = 'show1',
+      workertype = 'dragonfly.canvas.show1',
+      position = Coordinate2D (
+        x = 129.882352941,
+        y = 10.8823529412,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'ColoredTextBox',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'spacekey',
+      workertype = 'dragonfly.io.keyboardsensor_trigger',
+      position = Coordinate2D (
+        x = -589.849150849,
+        y = 154.144855145,
+      ),
+    ),
+    Worker (
+      workerid = 'start',
+      workertype = 'dragonfly.sys.startsensor',
+      position = Coordinate2D (
+        x = -626.062215909,
+        y = 254.945454545,
+      ),
+    ),
+    Worker (
+      workerid = 'transistor_1',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = -18.2993399064,
+        y = 105.07486631,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'ColoredTextBox',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'transistor_2',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = 567.18487395,
+        y = -183.109243697,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'id',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'transistor_3',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = -138.658803972,
+        y = -409.443585826,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'id',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'transistor_4',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = 84.4641335227,
+        y = 454.522727273,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'int',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'transistor_5',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = 39.9186789773,
+        y = 328.159090909,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'int',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'weaver_1',
+      workertype = 'dragonfly.std.weaver',
+      position = Coordinate2D (
+        x = -274.285714286,
+        y = 587.142857143,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('int', 'int')",
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'weaver_2',
+      workertype = 'dragonfly.std.weaver',
+      position = Coordinate2D (
+        x = -270.0,
+        y = 472.857142857,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('int', 'int')",
+        ),
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'transistor_1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'show1',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'transistor_2',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'remove2',
+        io = 'identifier',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'selector_1',
+        io = 'selected',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_2',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'selector_1',
+        io = 'empty',
+      ),
+      end = WorkerConnector (
+        workerid = 'is_empty',
+        io = 'filter',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'is_empty',
+        io = 'false',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_2',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'is_empty',
+        io = 'false',
+      ),
+      end = WorkerConnector (
+        workerid = 'selector_1',
+        io = 'unregister',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'show1',
+        io = 'identifier',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_3',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'start',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'create',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'setter_1',
+        io = 'control',
+      ),
+      end = WorkerConnector (
+        workerid = 'block_1',
+        io = 'control',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'block_1',
+        io = 'model',
+      ),
+      end = WorkerConnector (
+        workerid = 'getter_1',
+        io = 'model',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'getter_1',
+        io = '_self',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_1',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'randomx',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_4',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'transistor_4',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'setter_1',
+        io = 'box.x',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'randomy',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_5',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'transistor_5',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'setter_1',
+        io = 'box.y',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'create',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_4',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'create',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_5',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'create',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_1',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'weaver_1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'randomx',
+        io = 'minmax',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'weaver_2',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'randomy',
+        io = 'minmax',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'minx',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'weaver_1',
+        io = 'inp1',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'maxx',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'weaver_1',
+        io = 'inp2',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'miny',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'weaver_2',
+        io = 'inp1',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'maxy',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'weaver_2',
+        io = 'inp2',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'spacekey',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'create',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'delkey',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'is_empty',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'transistor_2',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'display_1',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'create',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_3',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'transistor_3',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'display_2',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'transistor_3',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'selector_1',
+        io = 'register_and_select',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+  drones = DroneArray (
+    Drone (
+      droneid = 'canvas',
+      dronetype = 'dragonfly.pandahive.pandacanvas',
+      position = Coordinate2D (
+        x = 58.0789930556,
+        y = 651.277777778,
+      ),
+    ),
+    Drone (
+      droneid = 'coloredtextbox_panda',
+      dronetype = 'workers.coloredtextbox_panda.coloredtextbox_panda',
+      position = Coordinate2D (
+        x = 8.980113636,
+        y = 608.626262626,
+      ),
+    ),
+  ),
+  attributes = HivemapAttributeArray (
+  ),
+  partbees = HivemapPartBeeArray (
+  ),
+)

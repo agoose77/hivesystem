@@ -1,0 +1,294 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'display_1',
+      workertype = 'dragonfly.io.display',
+      position = Coordinate2D (
+        x = 146.0,
+        y = 26.0,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type_inp',
+          pvalue = 'str',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'keyboardsensor_trigger_1',
+      workertype = 'dragonfly.io.keyboardsensor_trigger',
+      position = Coordinate2D (
+        x = -643.0,
+        y = 152.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'keycode',
+          pvalue = '1',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'keyboardsensor_trigger_2',
+      workertype = 'dragonfly.io.keyboardsensor_trigger',
+      position = Coordinate2D (
+        x = -625.0,
+        y = -45.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'keycode',
+          pvalue = '2',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'startsensor_1',
+      workertype = 'dragonfly.sys.startsensor',
+      position = Coordinate2D (
+        x = -241.428571429,
+        y = -88.5714285714,
+      ),
+    ),
+    Worker (
+      workerid = 'transistor_1',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = -359.0,
+        y = 202.0,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'str',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'transistor_2',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = -353.0,
+        y = 58.5,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'str',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'transistor_3',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = -5.92857142857,
+        y = 151.142857143,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'str',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'variable_1',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -225.0,
+        y = 166.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = 'Hello world!',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'str',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'variable_2',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -585.0,
+        y = 272.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = 'Bye world!',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'str',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'variable_3',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -640.0,
+        y = 57.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = 'Hello again world!',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'str',
+        ),
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'keyboardsensor_trigger_1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_1',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'keyboardsensor_trigger_2',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_2',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'keyboardsensor_trigger_1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_3',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'keyboardsensor_trigger_2',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_3',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'startsensor_1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_3',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'transistor_1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'variable_1',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'transistor_2',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'variable_1',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'variable_1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_3',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'variable_2',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_1',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'variable_3',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_2',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'transistor_3',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'display_1',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+  attributes = HivemapAttributeArray (
+  ),
+  partbees = HivemapPartBeeArray (
+  ),
+)

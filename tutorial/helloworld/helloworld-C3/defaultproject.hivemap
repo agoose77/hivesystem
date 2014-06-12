@@ -1,0 +1,70 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'mydisplay_1',
+      workertype = 'workers.mydisplay.mydisplay',
+      position = Coordinate2D (
+        x = 66.0,
+        y = 79.0,
+      ),
+    ),
+    Worker (
+      workerid = 'mytext_1',
+      workertype = 'workers.mytext.mytext',
+      position = Coordinate2D (
+        x = -200.0,
+        y = 176.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'v_string',
+          pvalue = 'Hello world!',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'sync_1',
+      workertype = 'dragonfly.std.sync',
+      position = Coordinate2D (
+        x = -49.0,
+        y = 131.5,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'str',
+        ),
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'sync_1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'mydisplay_1',
+        io = 'string',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'mytext_1',
+        io = 'string',
+      ),
+      end = WorkerConnector (
+        workerid = 'sync_1',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+  attributes = HivemapAttributeArray (
+  ),
+  partbees = HivemapPartBeeArray (
+  ),
+)

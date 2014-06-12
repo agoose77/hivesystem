@@ -1,0 +1,29 @@
+Type TetrisBlock {
+  BoolArray col0[4] = (False,False,False,False)
+  BoolArray col1[4] = (False,False,False,False)
+  BoolArray col2[4] = (False,False,False,False)
+  BoolArray col3[4] = (False,False,False,False)
+  form {
+    self.subtype = "column"
+  }
+}
+
+Define Bgrid(TetrisBlock b) {
+  values = []
+  for x,col in enumerate([b.col0,b.col1,b.col2,b.col3]):
+    for y,ele in enumerate(col):
+      if ele: values.append((x,y))  
+  
+  if len(values) == 0:
+    grid = Bgrid (
+      minx = 0,
+      maxx = 0,
+      miny = 0,
+      maxy = 0,
+    )
+  else:  
+    grid = Bgrid (
+      values = values
+    )
+  return grid  
+}

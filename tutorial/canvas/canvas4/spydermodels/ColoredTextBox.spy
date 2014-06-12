@@ -1,0 +1,4 @@
+Type ColoredTextBox {
+  ColoredText coloredtext
+  Box2D box
+}

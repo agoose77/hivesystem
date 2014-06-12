@@ -1,0 +1,138 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'action1conf',
+      workertype = 'spydermaps#action1conf.spydermap',
+      position = Coordinate2D (
+        x = -135.0,
+        y = 225.0,
+      ),
+    ),
+    Worker (
+      workerid = 'animdict',
+      workertype = 'dragonfly.logic.dictionary',
+      position = Coordinate2D (
+        x = 10.5882352941,
+        y = 158.823529412,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'str',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'play_animation',
+      workertype = 'workers.play_animation.play_animation',
+      position = Coordinate2D (
+        x = 327.235294118,
+        y = -21.3529411765,
+      ),
+    ),
+    Worker (
+      workerid = 'play_sound',
+      workertype = 'workers.play_sound.play_sound',
+      position = Coordinate2D (
+        x = 327.588235294,
+        y = -169.941176471,
+      ),
+    ),
+    Worker (
+      workerid = 'sounddict',
+      workertype = 'dragonfly.logic.dictionary',
+      position = Coordinate2D (
+        x = -161.764705882,
+        y = -82.9411764706,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'str',
+        ),
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'animdict',
+        io = 'outvalue',
+      ),
+      end = WorkerConnector (
+        workerid = 'play_animation',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'sounddict',
+        io = 'outvalue',
+      ),
+      end = WorkerConnector (
+        workerid = 'play_sound',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+  io = HivemapIOArray (
+    HivemapIO (
+      io_id = 'animplay',
+      io = 'antenna',
+      worker = 'animdict',
+      workerio = 'inkey',
+      mode = 'push',
+      datatype = 'id',
+      position = Coordinate2D (
+        x = -481.0,
+        y = 168.0,
+      ),
+    ),
+    HivemapIO (
+      io_id = 'soundplay',
+      io = 'antenna',
+      worker = 'sounddict',
+      workerio = 'inkey',
+      mode = 'push',
+      datatype = 'id',
+      position = Coordinate2D (
+        x = -476.0,
+        y = -178.0,
+      ),
+    ),
+  ),
+  attributes = HivemapAttributeArray (
+  ),
+  partbees = HivemapPartBeeArray (
+  ),
+  wasps = HivemapWaspArray (
+    HivemapWasp (
+      wasp_id = 'wasp_2',
+      injected = 'sounddict',
+      target = 'action1conf',
+      targetparam = 'sounddict',
+      sting = False,
+      accumulate = False,
+      position = Coordinate2D (
+        x = -237.0,
+        y = 201.0,
+      ),
+    ),
+    HivemapWasp (
+      wasp_id = 'wasp_1',
+      injected = 'animdict',
+      target = 'action1conf',
+      targetparam = 'animdict',
+      sting = False,
+      accumulate = False,
+      position = Coordinate2D (
+        x = -234.0,
+        y = 254.0,
+      ),
+    ),
+  ),
+)

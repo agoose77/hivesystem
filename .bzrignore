@@ -1,0 +1,7 @@
+RE:.*/__pycache__$
+manual.tgz
+manual.tgz.asc
+bee/hivemap/WISDOM
+bee/hivemap/spycache
+.~lock.tutorial.odt#
+sparta/models/isidentifier.TYPES

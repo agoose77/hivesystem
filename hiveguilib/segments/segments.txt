@@ -1,0 +1,18 @@
+connect, 
+X antenna, 
+X output, 
+X modifier, 
+X buffer: pushbuffer, pullbuffer
+X variable, 
+X transistor, 
+parameter, 
+trigger, 
+pretrigger
+triggerfunc 
+startvalue, 
+X operator, 
+X weaver, 
+X unweaver, 
+X test (push-bool to push-trigger)
+(O) toggler, 
+(O) untoggler 

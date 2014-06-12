@@ -1,0 +1,124 @@
+﻿Metanodes
+
+The hive system defines nodes with static types, which can be annoying for users because they will have many nodes to select from, only differing in type, and when they change the type they have to destroy the node and build a new one with different types. 
+
+The idea is to define metanodes. The bee.metaworker class builds not a worker context, but a  metaworker: a class that takes type arguments (e.g. from the GUI) and then returns a worker context. 
+
+The implementation will be  similar to C++ templates: there will be a template segment, that can be used instead of static type identifiers such as “int”, “float”, etc. 
+
+Here is an example:
+
+A meta worker  for push-adding two floats
+
+import bee.meta
+from bee.meta.segments import *
+
+“””
+imports l bee.meta.segments.antenna,
+  bee.meta.segments.output, ...  
+  AND bee.meta.segments.template
+  also, bee.meta.segments.null specifies 0, 0.0, "", or whatever is appropriate as null, as the startvalue
+“””
+
+def add(v1, v2):
+  return type(v1)(v1 + v2)
+
+class mynode(bee.meta.worker):
+  t1 = template(“int”, “float”, “string”, “vector”)
+  t2 = template(“int”, “float”, “string”, “vector”)
+  inp1 = antenna(“push”, t1)
+  inp2 = antenna(“push”, t2)
+  outp = output(“push”, t1)  
+  v_inp1 = variable(t1)
+  startvalue(v_inp1, null(t1))
+  connect(inp1, v_inp1)
+  v_inp2 = variable(t2)
+  startvalue(v_inp2, null(t2))
+  connect(inp2, v_inp2)
+  w = weaver((t1, t2), v_inp1, v_inp2)
+  t = transistor((t1, t2))
+  connect(w, t)
+  trigger(v_inp1, t)
+  trigger(v_inp2, t)  
+  o = operator(add, (t1, t2), t1)
+  connect(t, o)
+  connect(o, outp)
+
+In principle, templates can be used not only for types, but also for mode.  Even operator selection should be possible, so that the user can select “add”, “multiply”, etc. in the GUI and the node with the correct operator is built from the template value.
+
+Metaworkers can be used not only to implement segment templates, but also worker templates, which are meant to facilitate worker declaration. Here is the implementation of the operator_numeric node template, which takes any number N of numeric push inputs and immediately returns a single float push output using an operator that is defined with a parameter called "callback". 
+The segment can take input in unwoven form (using N input channels called inp1, inp2, ...) or in woven form (a single input channel inp_tuple sending an N-tuple). 
+
+The operator_numeric node template
+
+import bee.meta
+from bee.meta.segments import *
+
+class operator_numeric(bee.meta.worker):
+  tp_inp = template_tuple(“float”, “int”, “bool”)
+  callback = parameter("object")
+
+  inp = antenna_array(“push”, tp_inp)
+  v_inp = variable_array(tp_inp)
+  startvalue_array(v_inp, null(tp_inp))
+  connect(inp, v_inp)
+
+  inp_tuple = antenna(“push”, tp_inp)
+  v_inp_tuple = variable(tp_inp)
+  startvalue_tuple(v_inp2, 0)
+  connect(inp_tuple, v_inp_tuple)
+
+  w = weaver_array(tp_inp, v_inp)
+  trans = transistor(tp_inp)
+  connect(w, trans)
+  connect(v_inp_tuple, trans)
+  triggerarray(v_inp, trans)
+  trigger(v_inp_tuple, trans)
+
+  o = operator(get_parameter("callback"), tp_inp, “float”)
+  connect(trans,o)
+  
+  outp = output(“push”, “float”)  
+  connectarray(o, outp)
+
+
+A worker for push-adding two push floats, using the operator_numeric node template
+
+mynode = operator_numeric(
+  (“float”, “float”),
+  callback = float.__add__ #=> addition operator for the "float" class
+)
+
+“””
+Results in the following I/O for mynode:
+inputnodes:
+inp1: push, float
+inp2: push, float
+inp_tuple: push, (float, float)
+
+outputnodes:
+outp: push, float
+“””
+
+mynode2 = operator_numeric(
+  (“float”, "int", “float”),
+  callback = sum #Python builtin "sum"
+)
+
+“””
+Results in the following I/O for mynode2:
+inputnodes:
+inp1: push, float
+inp2: push, int
+inp3: push, float
+inp_tuple: push, (float, int, float)
+
+outputnodes:
+outp: push, float
+“””
+
+
+Even C++ metanodes would be possible, but probably quite complicated to define (register not single C++ operators but a dictionary of C++ operators, each for a different combination of template values).
+
+  
+

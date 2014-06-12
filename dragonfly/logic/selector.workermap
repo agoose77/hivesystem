@@ -1,0 +1,557 @@
+Workermap (
+  segments = WorkerSegmentArray (
+    WorkerSegment (
+      segid = 'b_register_and_select',
+      segtype = 'segments.buffer.push_buffer_id',
+      position = Coordinate2D (
+        x = -292.324561404,
+        y = -156.004385965,
+      ),
+      profile = 'full',
+    ),
+    WorkerSegment (
+      segid = 'custom_place_code1',
+      segtype = 'segments.custom_code.custom_place_code',
+      position = Coordinate2D (
+        x = 53.0,
+        y = -266.0,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'code',
+          pvalue = 'self.identifiers = [] ',
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'empty',
+      segtype = 'segments.output.pull_output_bool',
+      position = Coordinate2D (
+        x = 405.0,
+        y = 320.0,
+      ),
+      profile = 'full',
+    ),
+    WorkerSegment (
+      segid = 'last',
+      segtype = 'segments.variable.variable_int',
+      position = Coordinate2D (
+        x = -220.105263158,
+        y = 236.842105263,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'is_parameter',
+          pvalue = 'False',
+        ),
+        WorkerSegmentParameter (
+          pname = 'value',
+          pvalue = '-1',
+        ),
+      ),
+      profile = 'parameter_output',
+    ),
+    WorkerSegment (
+      segid = 'm_get_selected',
+      segtype = 'segments.modifier.modifier',
+      position = Coordinate2D (
+        x = 137.0,
+        y = -92.1666666667,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'code',
+          pvalue = 'self.v_selected = self.identifiers[self.v_sel]        ',
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'm_register_identifier',
+      segtype = 'segments.modifier.modifier',
+      position = Coordinate2D (
+        x = 116.697368421,
+        y = -159.092105263,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'code',
+          pvalue = 'if self.v_register in self.identifiers: raise KeyError(self.v_register)\nself.identifiers.append(self.v_register)\nself.v_empty = False                                  ',
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'm_select',
+      segtype = 'segments.modifier.modifier',
+      position = Coordinate2D (
+        x = -18.75,
+        y = 72.5,
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'm_select_next',
+      segtype = 'segments.modifier.modifier',
+      position = Coordinate2D (
+        x = -359.0,
+        y = 319.75,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'code',
+          pvalue = 'sel = self.v_sel\nif sel < -1:\n  sel = len(self.identifiers) - sel\n  if sel < -1: sel = -1\nself.v_sel = sel + 1\nif self.v_sel == len(self.identifiers):\n  self.v_sel = 0',
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'm_select_prev',
+      segtype = 'segments.modifier.modifier',
+      position = Coordinate2D (
+        x = -348.75,
+        y = 236.0,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'code',
+          pvalue = 'sel = self.v_sel    \nif sel < -1:\n  sel = len(self.identifiers) - sel\n  if sel < -1: sel = -1\nif sel == -1: sel = len(self.identifiers)\nself.v_sel = sel - 1                                                 ',
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'm_unregister',
+      segtype = 'segments.modifier.modifier',
+      position = Coordinate2D (
+        x = -274.666666667,
+        y = -289.333333333,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'code',
+          pvalue = 'self.identifiers.pop(self.v_sel)\nif not self.identifiers: self.v_empty = True\nif self.v_sel >= len(self.identifiers): self.v_sel = -1                         ',
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'm_unregister_identifier',
+      segtype = 'segments.modifier.modifier',
+      position = Coordinate2D (
+        x = -90.6666666667,
+        y = -334.666666667,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'code',
+          pvalue = 'self.identifiers.remove(self.v_unregister)\nif not self.identifiers: self.v_empty = True\nif self.v_sel >= len(self.identifiers): self.v_sel = -1                 ',
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'register',
+      segtype = 'segments.antenna.push_antenna_id',
+      position = Coordinate2D (
+        x = -468.666666667,
+        y = -53.3157894737,
+      ),
+      profile = 'full',
+    ),
+    WorkerSegment (
+      segid = 'register_and_select',
+      segtype = 'segments.antenna.push_antenna_id',
+      position = Coordinate2D (
+        x = -478.263157895,
+        y = -182.460526316,
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'select',
+      segtype = 'segments.antenna.push_antenna_int',
+      position = Coordinate2D (
+        x = -448.416666667,
+        y = 125.083333333,
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'select_identifier',
+      segtype = 'segments.antenna.push_antenna_id',
+      position = Coordinate2D (
+        x = -464.0,
+        y = 45.25,
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'select_last',
+      segtype = 'segments.transistor.transistor_int',
+      position = Coordinate2D (
+        x = -8.0,
+        y = 229.0,
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'select_next',
+      segtype = 'segments.antenna.push_antenna_trigger',
+      position = Coordinate2D (
+        x = -463.75,
+        y = 322.5,
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'select_prev',
+      segtype = 'segments.antenna.push_antenna_trigger',
+      position = Coordinate2D (
+        x = -463.75,
+        y = 233.75,
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'selected',
+      segtype = 'segments.output.pull_output_id',
+      position = Coordinate2D (
+        x = 389.0,
+        y = 229.0,
+      ),
+      profile = 'full',
+    ),
+    WorkerSegment (
+      segid = 'unregister',
+      segtype = 'segments.antenna.push_antenna_trigger',
+      position = Coordinate2D (
+        x = -445.416666667,
+        y = -283.666666667,
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'unregister_identifier',
+      segtype = 'segments.antenna.push_antenna_id',
+      position = Coordinate2D (
+        x = -461.083333333,
+        y = -342.333333333,
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'v_empty',
+      segtype = 'segments.variable.variable_bool',
+      position = Coordinate2D (
+        x = -199.25,
+        y = 334.25,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'is_parameter',
+          pvalue = 'False',
+        ),
+        WorkerSegmentParameter (
+          pname = 'value',
+          pvalue = 'True',
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'v_register',
+      segtype = 'segments.variable.variable_id',
+      position = Coordinate2D (
+        x = -34.7543859653,
+        y = -67.0175438596,
+      ),
+      profile = 'input',
+    ),
+    WorkerSegment (
+      segid = 'v_sel',
+      segtype = 'segments.variable.variable_int',
+      position = Coordinate2D (
+        x = 155.5,
+        y = 179.75,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'is_parameter',
+          pvalue = 'False',
+        ),
+        WorkerSegmentParameter (
+          pname = 'value',
+          pvalue = '0',
+        ),
+      ),
+      profile = 'input',
+    ),
+    WorkerSegment (
+      segid = 'v_select_identifier',
+      segtype = 'segments.variable.variable_id',
+      position = Coordinate2D (
+        x = -233.75,
+        y = 75.0,
+      ),
+      profile = 'input',
+    ),
+    WorkerSegment (
+      segid = 'v_selected',
+      segtype = 'segments.variable.variable_id',
+      position = Coordinate2D (
+        x = 3.25,
+        y = 17.5,
+      ),
+      profile = 'output',
+    ),
+    WorkerSegment (
+      segid = 'v_unregister',
+      segtype = 'segments.variable.variable_id',
+      position = Coordinate2D (
+        x = -257.333333333,
+        y = -346.666666667,
+      ),
+      profile = 'input',
+    ),
+  ),
+  connections = WorkerSegmentConnectionArray (
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'v_empty',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'empty',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'v_selected',
+        io = 'pre_output',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'm_get_selected',
+        io = 'trigger',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'register',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'v_register',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'v_register',
+        io = 'on_update',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'm_register_identifier',
+        io = 'trigger',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'last',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'select_last',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'select_last',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'v_sel',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'select',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'v_sel',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'v_selected',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'selected',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = 313.671875,
+          y = 38.0,
+        ),
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'register_and_select',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'b_register_and_select',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'select_identifier',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'v_select_identifier',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'v_select_identifier',
+        io = 'on_update',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'm_select',
+        io = 'trigger',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'select_next',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'm_select_next',
+        io = 'trigger',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'select_prev',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'm_select_prev',
+        io = 'trigger',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'b_register_and_select',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'v_register',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'b_register_and_select',
+        io = 'on_update',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'b_register_and_select',
+        io = 'output',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = -414.760416667,
+          y = -62.8333333333,
+        ),
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'b_register_and_select',
+        io = 'on_update',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'select_last',
+        io = 'trigger',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'unregister',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'm_unregister',
+        io = 'trigger',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'unregister_identifier',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'v_unregister',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'v_unregister',
+        io = 'on_update',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'm_unregister_identifier',
+        io = 'trigger',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+)

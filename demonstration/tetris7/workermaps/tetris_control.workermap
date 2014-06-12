@@ -1,0 +1,161 @@
+Workermap (
+  segments = WorkerSegmentArray (
+    WorkerSegment (
+      segid = 'blockgrid',
+      segtype = 'segments.antenna.pull_antenna',
+      position = Coordinate2D (
+        x = -267.0,
+        y = 108.0,
+      ),
+      metaparameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'type',
+          pvalue = "('object', 'bgrid')",
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'get_grids',
+      segtype = 'segments.custom_code.custom_class_code',
+      position = Coordinate2D (
+        x = -233.0,
+        y = 41.0,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'code',
+          pvalue = 'def get_grids(self):\n    self.get_grid1()\n    self.get_grid2()\n                                                                                                  ',
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'grid1',
+      segtype = 'segments.buffer.pull_buffer',
+      position = Coordinate2D (
+        x = -129.538461538,
+        y = 220.0,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'triggerfunc',
+          pvalue = 'get_grid1',
+        ),
+        WorkerSegmentParameter (
+          pname = 'val',
+          pvalue = '',
+        ),
+      ),
+      metaparameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'type',
+          pvalue = "('object', 'bgrid')",
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'grid2',
+      segtype = 'segments.buffer.pull_buffer',
+      position = Coordinate2D (
+        x = -128.538461538,
+        y = 106.0,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'triggerfunc',
+          pvalue = 'get_grid2',
+        ),
+        WorkerSegmentParameter (
+          pname = 'val',
+          pvalue = '',
+        ),
+      ),
+      metaparameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'type',
+          pvalue = "('object', 'bgrid')",
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'm_place_init',
+      segtype = 'segments.modifier.modifier',
+      position = Coordinate2D (
+        x = -112.857142857,
+        y = -87.1428571429,
+      ),
+      parameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'code',
+          pvalue = 'self.get_grids()\ndx = int(self.grid1.maxx/2)-self.grid2.minx\nself.grid2.maxx += dx\nself.grid2.minx += dx\ndy = self.grid1.maxy - self.grid2.maxy  \nself.grid2.maxy += dy\nself.grid2.miny += dy    \n                                                                             ',
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'maingrid',
+      segtype = 'segments.antenna.pull_antenna',
+      position = Coordinate2D (
+        x = -275.0,
+        y = 216.0,
+      ),
+      metaparameters = WorkerSegmentParameterArray (
+        WorkerSegmentParameter (
+          pname = 'type',
+          pvalue = "('object', 'bgrid')",
+        ),
+      ),
+      profile = 'default',
+    ),
+    WorkerSegment (
+      segid = 'place_init',
+      segtype = 'segments.antenna.push_antenna_trigger',
+      position = Coordinate2D (
+        x = -280.285714286,
+        y = -96.0,
+      ),
+      profile = 'default',
+    ),
+  ),
+  connections = WorkerSegmentConnectionArray (
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'maingrid',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'grid1',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'blockgrid',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'grid2',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerSegmentConnection (
+      start = WorkerSegmentConnector (
+        segid = 'place_init',
+        io = 'outp',
+      ),
+      end = WorkerSegmentConnector (
+        segid = 'm_place_init',
+        io = 'trigger',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+)

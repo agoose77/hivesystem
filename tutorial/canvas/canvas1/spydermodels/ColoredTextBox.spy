@@ -1,0 +1,7 @@
+Type ColoredTextBox {
+  String text
+  Color4 textcolor = (0,0,0,255)
+  Box2D box
+  Color4 boxcolor = (255,255,255,255)
+}
+

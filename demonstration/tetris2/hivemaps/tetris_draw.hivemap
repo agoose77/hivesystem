@@ -1,0 +1,168 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'do_draw',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = 345.5,
+        y = -135.5,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('object', 'bgrid')",
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'drawgrid',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = 161.666666667,
+        y = 263.0,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('object', 'bgrid')",
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'update',
+      workertype = 'dragonfly.canvas.update3',
+      position = Coordinate2D (
+        x = 358.333333333,
+        y = -265.0,
+      ),
+    ),
+    Worker (
+      workerid = 'w_draw',
+      workertype = 'dragonfly.canvas.draw3',
+      position = Coordinate2D (
+        x = 457.583333333,
+        y = -163.833333333,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('object', 'bgrid')",
+        ),
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'do_draw',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'w_draw',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'drawgrid',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'do_draw',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+  io = HivemapIOArray (
+    HivemapIO (
+      io_id = 'draw',
+      io = 'antenna',
+      worker = 'update',
+      workerio = 'update',
+      mode = 'push',
+      datatype = 'trigger',
+      position = Coordinate2D (
+        x = -166.666666667,
+        y = -225.333333333,
+      ),
+    ),
+    HivemapIO (
+      io_id = 'start',
+      io = 'antenna',
+      worker = 'do_draw',
+      workerio = 'trig',
+      mode = 'push',
+      datatype = 'trigger',
+      position = Coordinate2D (
+        x = -160.0,
+        y = -134.666666667,
+      ),
+    ),
+  ),
+  parameters = HivemapParameterArray (
+    HivemapParameter (
+      extern_id = 'mainarea_id',
+      intern_id = 'mainarea_id_',
+      paramtypename = 'str',
+      position = Coordinate2D (
+        x = 198.666666667,
+        y = -234.0,
+      ),
+    ),
+  ),
+  attributes = HivemapAttributeArray (
+    HivemapAttribute (
+      attr_id = 'emptygrid',
+      attrtypename = 'Bgrid',
+      attrvalue = 'Bgrid (\n  minx = 0,\n  maxx = 0,\n  miny = 0,\n  maxy = 0,\n)',
+      position = Coordinate2D (
+        x = -20.0,
+        y = 258.0,
+      ),
+    ),
+  ),
+  partbees = HivemapPartBeeArray (
+  ),
+  wasps = HivemapWaspArray (
+    HivemapWasp (
+      wasp_id = 'wasp_2',
+      injected = 'emptygrid',
+      target = 'drawgrid',
+      targetparam = 'value',
+      sting = True,
+      accumulate = False,
+      position = Coordinate2D (
+        x = 84.7023809524,
+        y = 256.880952381,
+      ),
+    ),
+    HivemapWasp (
+      wasp_id = 'wasp_3',
+      injected = 'mainarea_id_',
+      target = 'w_draw',
+      targetparam = 'identifier',
+      sting = False,
+      accumulate = False,
+      position = Coordinate2D (
+        x = 441.75,
+        y = -209.192307692,
+      ),
+    ),
+    HivemapWasp (
+      wasp_id = 'wasp_1',
+      injected = 'mainarea_id_',
+      target = 'update',
+      targetparam = 'identifier',
+      sting = False,
+      accumulate = False,
+      position = Coordinate2D (
+        x = 290.416666667,
+        y = -248.833333333,
+      ),
+    ),
+  ),
+)

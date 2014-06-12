@@ -1,0 +1,16 @@
+Type StateMachineState {
+  String state
+  String process
+  validate {
+    assert len(state) > 0
+  }
+  error {
+    'assert len(state) > 0'
+    =>
+    'The name of the state cannot be empty'
+  }
+  form {
+    state.name = "State"
+    process.name = "Process (optional)"
+  }
+}

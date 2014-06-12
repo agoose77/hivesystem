@@ -1,0 +1,37 @@
+Spydermap (
+  spyderhive = 'bee.spyderhive.spyderframe',
+  names = StringArray (
+    'scorearea',
+  ),
+  objectdata = ObjectList (
+    CanvasSlot (
+      canvasname = 'canvas',
+      slotname = 'score',
+      slottype = 'str',
+      box = Box2D (
+        x = 170,
+        y = 100,
+        sizex = 80,
+        sizey = 40,
+        mode = 'pixels',
+      ),
+    ),
+  ),
+  parameters = StringArray (
+    'canvas',
+  ),
+  wasps = SpydermapWaspArray (
+  ),
+  coordinates = Coordinate2DArray (
+    Coordinate2D (
+      x = -127.0,
+      y = 112.0,
+    ),
+  ),
+  paramcoordinates = Coordinate2DArray (
+    Coordinate2D (
+      x = -181.0,
+      y = 15.0,
+    ),
+  ),
+)

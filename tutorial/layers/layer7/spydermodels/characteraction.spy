@@ -1,0 +1,32 @@
+Type CharacterAction {
+  String animation
+  String soundfile
+}
+
+Type CharacterActionItem {
+  String identifier
+  CharacterAction action
+}
+
+Type AnimationItem {
+  String identifier
+  String animation
+}
+
+Type SoundItem {
+  String identifier
+  String soundfile
+}
+
+def split_character_action_item(cai):
+  animationitem = AnimationItem (
+    cai.identifier,
+    cai.action.animation,
+  )
+  sounditem = SoundItem (
+    cai.identifier,
+    cai.action.soundfile,
+  )
+  return [animationitem,sounditem]
+
+Define ObjectList(CharacterActionItem) split_character_action_item

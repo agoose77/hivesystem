@@ -1,0 +1,797 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'blockgrid',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -225.25,
+        y = -480.5,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('object', 'bgrid')",
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'blockgridcontrol',
+      workertype = 'dragonfly.grid.bgridcontrol',
+      position = Coordinate2D (
+        x = 308.661695076,
+        y = -398.565656566,
+      ),
+    ),
+    Worker (
+      workerid = 'cycle',
+      workertype = 'dragonfly.time.cycle',
+      position = Coordinate2D (
+        x = -103.583333333,
+        y = -749.333333333,
+      ),
+    ),
+    Worker (
+      workerid = 'exit',
+      workertype = 'dragonfly.sys.exitactuator',
+      position = Coordinate2D (
+        x = 739.108225108,
+        y = -803.307359307,
+      ),
+    ),
+    Worker (
+      workerid = 'k_down',
+      workertype = 'dragonfly.io.keyboardsensor_trigger',
+      position = Coordinate2D (
+        x = -190.0,
+        y = -1132.66666667,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'keycode',
+          pvalue = 'DOWN',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'k_left',
+      workertype = 'dragonfly.io.keyboardsensor_trigger',
+      position = Coordinate2D (
+        x = -168.0,
+        y = -882.666666667,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'keycode',
+          pvalue = 'LEFT',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'k_return',
+      workertype = 'dragonfly.io.keyboardsensor_trigger',
+      position = Coordinate2D (
+        x = -206.399147727,
+        y = -1060.3030303,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'keycode',
+          pvalue = 'RETURN',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'k_right',
+      workertype = 'dragonfly.io.keyboardsensor_trigger',
+      position = Coordinate2D (
+        x = -179.333333333,
+        y = -943.333333333,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'keycode',
+          pvalue = 'RIGHT',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'k_space',
+      workertype = 'dragonfly.io.keyboardsensor_trigger',
+      position = Coordinate2D (
+        x = -208.774857955,
+        y = -998.848484848,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'keycode',
+          pvalue = 'SPACE',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'maingrid',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -216.5,
+        y = -259.75,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('object', 'bgrid')",
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'period',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -238.75,
+        y = -752.166666667,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = '0.3',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'float',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'rewards',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = 240.714285714,
+        y = -1150.42857143,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = 'TetrisReward (\n  blck = 1,\n  line = 10,\n  line2 = 50,\n  line3 = 100,\n  line4 = 200,\n)',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'TetrisReward',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'score',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = 697.140310669,
+        y = -1260.28350734,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = '0',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'int',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'select_block',
+      workertype = 'hivemaps:tetris_select_block.hivemap',
+      position = Coordinate2D (
+        x = 299.817077021,
+        y = -26.3484848479,
+      ),
+    ),
+    Worker (
+      workerid = 'start',
+      workertype = 'dragonfly.sys.startsensor',
+      position = Coordinate2D (
+        x = -207.5,
+        y = -605.0,
+      ),
+    ),
+    Worker (
+      workerid = 'start2',
+      workertype = 'dragonfly.sys.startsensor',
+      position = Coordinate2D (
+        x = 545.357142857,
+        y = -1220.71428571,
+      ),
+    ),
+    Worker (
+      workerid = 'tetris_draw_score',
+      workertype = 'hivemaps:tetris_draw_score.hivemap',
+      position = Coordinate2D (
+        x = 823.492063492,
+        y = -1075.02164502,
+      ),
+    ),
+    Worker (
+      workerid = 'tetriscontrol',
+      workertype = 'workers.tetris_control.tetris_control',
+      position = Coordinate2D (
+        x = 445.928571429,
+        y = -783.69047619,
+      ),
+    ),
+    Worker (
+      workerid = 'tetrisdraw',
+      workertype = 'hivemaps:tetris_draw.hivemap',
+      position = Coordinate2D (
+        x = 145.666666667,
+        y = -569.166666667,
+      ),
+    ),
+    Worker (
+      workerid = 'tetrisdraw_draw',
+      workertype = 'dragonfly.std.pushconnector',
+      position = Coordinate2D (
+        x = 8.47510822511,
+        y = -1210.3982684,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'trigger',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'update_score',
+      workertype = 'dragonfly.convert.trigger',
+      position = Coordinate2D (
+        x = 651.428571429,
+        y = -1004.28571429,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'int',
+        ),
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'blockgrid',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'blockgridcontrol',
+        io = 'grid',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'select_block',
+        io = 'selected',
+      ),
+      end = WorkerConnector (
+        workerid = 'blockgridcontrol',
+        io = 'set',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'maingrid',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetrisdraw',
+        io = 'maingrid',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'blockgrid',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetrisdraw',
+        io = 'blockgrid',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'blockgrid',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetriscontrol',
+        io = 'blockgrid',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'maingrid',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetriscontrol',
+        io = 'maingrid',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'start',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'select_block',
+        io = 'select',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'start',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetriscontrol',
+        io = 'place_init',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'start',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetrisdraw',
+        io = 'start',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'start',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetrisdraw',
+        io = 'draw',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'period',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'cycle',
+        io = 'period',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'cycle',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetriscontrol',
+        io = 'move_down',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'cycle',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetrisdraw',
+        io = 'draw',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'tetriscontrol',
+        io = 'dropped',
+      ),
+      end = WorkerConnector (
+        workerid = 'select_block',
+        io = 'select',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'tetriscontrol',
+        io = 'dropped',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetriscontrol',
+        io = 'place_init',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = 543.605654762,
+          y = -1039.69047619,
+        ),
+        Coordinate2D (
+          x = 292.938988095,
+          y = -1045.02380952,
+        ),
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'tetriscontrol',
+        io = 'lost',
+      ),
+      end = WorkerConnector (
+        workerid = 'exit',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'k_left',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetriscontrol',
+        io = 'move_left',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'k_right',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetriscontrol',
+        io = 'move_right',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'k_right',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetrisdraw_draw',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'k_left',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetrisdraw_draw',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'tetrisdraw_draw',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetrisdraw',
+        io = 'draw',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'k_down',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetriscontrol',
+        io = 'drop',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'k_down',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetrisdraw_draw',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'k_return',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetriscontrol',
+        io = 'rotate_cw',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'k_space',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetriscontrol',
+        io = 'rotate_ccw',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'k_space',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetrisdraw_draw',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'k_return',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetrisdraw_draw',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'start2',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetris_draw_score',
+        io = 'draw',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'score',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetris_draw_score',
+        io = 'score',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'tetriscontrol',
+        io = 'newscore',
+      ),
+      end = WorkerConnector (
+        workerid = 'score',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'tetriscontrol',
+        io = 'newscore',
+      ),
+      end = WorkerConnector (
+        workerid = 'update_score',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'update_score',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetris_draw_score',
+        io = 'draw',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'score',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetriscontrol',
+        io = 'score',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = 498.192664566,
+          y = -1274.58870215,
+        ),
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'rewards',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetriscontrol',
+        io = 'rewards',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+  parameters = HivemapParameterArray (
+    HivemapParameter (
+      extern_id = 'blocks',
+      intern_id = 'blocks_',
+      paramtypename = "('object', 'array', 'bgrid')",
+      position = Coordinate2D (
+        x = -223.0,
+        y = 32.0769230769,
+      ),
+    ),
+    HivemapParameter (
+      extern_id = 'mainarea_id',
+      intern_id = 'mainarea_id_',
+      paramtypename = 'str',
+      position = Coordinate2D (
+        x = -244.0,
+        y = -17.0,
+      ),
+    ),
+    HivemapParameter (
+      extern_id = 'scorearea_id',
+      intern_id = 'scorearea_id_',
+      paramtypename = 'str',
+      position = Coordinate2D (
+        x = -242.0,
+        y = -60.0,
+      ),
+    ),
+  ),
+  attributes = HivemapAttributeArray (
+    HivemapAttribute (
+      attr_id = 'maingrid_init',
+      attrtypename = 'Bgrid',
+      attrvalue = 'Bgrid (\n  maxx = 9,\n  miny = 0,\n  maxy = 19,\n)',
+      position = Coordinate2D (
+        x = -384.51016865,
+        y = -243.611111111,
+      ),
+    ),
+    HivemapAttribute (
+      attr_id = 'emptygrid',
+      attrtypename = 'Bgrid',
+      attrvalue = 'Bgrid (\n)',
+      position = Coordinate2D (
+        x = -343.081597222,
+        y = -452.182539682,
+      ),
+    ),
+  ),
+  partbees = HivemapPartBeeArray (
+  ),
+  wasps = HivemapWaspArray (
+    HivemapWasp (
+      wasp_id = 'wasp_5',
+      injected = 'scorearea_id_',
+      target = 'tetris_draw_score',
+      targetparam = 'scorearea_id',
+      sting = False,
+      accumulate = False,
+      position = Coordinate2D (
+        x = 836.416035353,
+        y = -1033.17676767,
+      ),
+    ),
+    HivemapWasp (
+      wasp_id = 'wasp_4',
+      injected = 'mainarea_id_',
+      target = 'tetrisdraw',
+      targetparam = 'mainarea_id',
+      sting = False,
+      accumulate = False,
+      position = Coordinate2D (
+        x = 110.15625,
+        y = -517.363636364,
+      ),
+    ),
+    HivemapWasp (
+      wasp_id = 'wasp_2',
+      injected = 'emptygrid',
+      target = 'blockgrid',
+      targetparam = 'value',
+      sting = True,
+      accumulate = False,
+      position = Coordinate2D (
+        x = -213.75,
+        y = -449.0,
+      ),
+    ),
+    HivemapWasp (
+      wasp_id = 'wasp_3',
+      injected = 'blocks_',
+      target = 'select_block',
+      targetparam = 'blocks',
+      sting = False,
+      accumulate = False,
+      position = Coordinate2D (
+        x = 319.357796718,
+        y = 9.63383838373,
+      ),
+    ),
+    HivemapWasp (
+      wasp_id = 'wasp_1',
+      injected = 'maingrid_init',
+      target = 'maingrid',
+      targetparam = 'value',
+      sting = True,
+      accumulate = False,
+      position = Coordinate2D (
+        x = -295.171130953,
+        y = -281.892857143,
+      ),
+    ),
+  ),
+)

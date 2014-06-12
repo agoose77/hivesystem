@@ -1,0 +1,7 @@
+Type TetrisReward {
+  Integer blck
+  Integer line
+  Integer line2
+  Integer line3
+  Integer line4
+}

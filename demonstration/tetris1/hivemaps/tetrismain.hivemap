@@ -1,0 +1,95 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'score',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = 652.13423428,
+        y = -597.394618451,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = '0',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'int',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'start2',
+      workertype = 'dragonfly.sys.startsensor',
+      position = Coordinate2D (
+        x = 132.668080357,
+        y = -381.91428571,
+      ),
+    ),
+    Worker (
+      workerid = 'tetris_draw_score',
+      workertype = 'hivemaps:tetris_draw_score.hivemap',
+      position = Coordinate2D (
+        x = 888.176438492,
+        y = -228.42164502,
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'start2',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetris_draw_score',
+        io = 'draw',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'score',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'tetris_draw_score',
+        io = 'score',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+  parameters = HivemapParameterArray (
+    HivemapParameter (
+      extern_id = 'scorearea_id',
+      intern_id = 'scorearea_id_',
+      paramtypename = 'str',
+      position = Coordinate2D (
+        x = 913.75625,
+        y = -97.8,
+      ),
+    ),
+  ),
+  attributes = HivemapAttributeArray (
+  ),
+  partbees = HivemapPartBeeArray (
+  ),
+  wasps = HivemapWaspArray (
+    HivemapWasp (
+      wasp_id = 'wasp_5',
+      injected = 'scorearea_id_',
+      target = 'tetris_draw_score',
+      targetparam = 'scorearea_id',
+      sting = False,
+      accumulate = False,
+      position = Coordinate2D (
+        x = 926.722285353,
+        y = -161.47676767,
+      ),
+    ),
+  ),
+)

@@ -1,0 +1,33 @@
+Type IntRange {
+  Integer minimum
+  Integer maximum
+  form {
+    minimum.name = "Minimum"
+    maximum.name = "Maximum"
+  }  
+  validate {
+    assert minimum <= maximum
+  }
+  error {
+    'assert minimum <= maximum'
+    =>
+    'Minimum value {minimum} cannot be larger than maximum value {maximum}'
+  }  
+}
+
+Type FloatRange {
+  Float minimum
+  Float maximum
+  form {
+    minimum.name = "Minimum"
+    maximum.name = "Maximum"
+  }  
+  validate {
+    assert minimum <= maximum
+  }
+  error {
+    'assert minimum <= maximum'
+    =>
+    'Minimum value {minimum} cannot be larger than maximum value {maximum}'
+  }  
+}

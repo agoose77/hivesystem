@@ -1,0 +1,153 @@
+MovingPandaArray (
+  MovingPanda (
+    pname = 'pandaclass',
+    hivemap = 'pandawalk.web',
+    mode = 'actor',
+    model = ObjectList3D (
+      ActorClass3D (
+        meshfilename = 'models/panda-model',
+        meshformat = 'egg',
+        animations = MeshArray (
+          Mesh (
+            pname = 'walk',
+            filename = 'models/panda-walk4',
+            format = 'egg',
+            animations = StringArray (
+            ),
+          ),
+        ),
+        axis = AxisSystem (
+          origin = Coordinate (
+            x = 0.0,
+            y = 0.0,
+            z = 0.0,
+          ),
+          x = Coordinate (
+            x = 0.005,
+            y = 0.0,
+            z = 0.0,
+          ),
+          y = Coordinate (
+            x = 0.0,
+            y = 0.005,
+            z = 0.0,
+          ),
+          z = Coordinate (
+            x = 0.0,
+            y = 0.0,
+            z = 0.005,
+          ),
+        ),
+        actorclassname = 'pandaclass',
+      ),
+    ),
+    image = 'pandaicon.png',
+    box = Box2D (
+      x = 50,
+      y = 470,
+      sizex = 96,
+      sizey = 96,
+      mode = 'pixels',
+    ),
+    transparency = True,
+  ),
+  MovingPanda (
+    pname = 'pandaclass2',
+    hivemap = 'pandawalk2.web',
+    mode = 'actor',
+    model = ObjectList3D (
+      ActorClass3D (
+        meshfilename = 'models/panda-model',
+        meshformat = 'egg',
+        animations = MeshArray (
+          Mesh (
+            pname = 'walk',
+            filename = 'models/panda-walk4',
+            format = 'egg',
+            animations = StringArray (
+            ),
+          ),
+        ),
+        axis = AxisSystem (
+          origin = Coordinate (
+            x = 0.0,
+            y = 0.0,
+            z = 0.0,
+          ),
+          x = Coordinate (
+            x = 0.002,
+            y = 0.0,
+            z = 0.0,
+          ),
+          y = Coordinate (
+            x = 0.0,
+            y = 0.002,
+            z = 0.0,
+          ),
+          z = Coordinate (
+            x = 0.0,
+            y = 0.0,
+            z = 0.002,
+          ),
+        ),
+        actorclassname = 'pandaclass2',
+      ),
+    ),
+    image = 'pandaicon.png',
+    box = Box2D (
+      x = 200,
+      y = 500,
+      sizex = 48,
+      sizey = 48,
+      mode = 'pixels',
+    ),
+    transparency = True,
+  ),
+  MovingPanda (
+    pname = 'pandaclass3',
+    hivemap = 'pandajump.web',
+    mode = 'model',
+    model = ObjectList3D (
+      EntityClass3D (
+        entityclassname = 'pandaclass3',
+        objects = ObjectList (
+          Model3D (
+            meshfilename = 'models/panda',
+            meshformat = 'egg',
+            axis = AxisSystem (
+              origin = Coordinate (
+                x = 0.0,
+                y = 0.0,
+                z = 0.0,
+              ),
+              x = Coordinate (
+                x = 0.3,
+                y = 0.0,
+                z = 0.0,
+              ),
+              y = Coordinate (
+                x = 0.0,
+                y = 0.3,
+                z = 0.0,
+              ),
+              z = Coordinate (
+                x = 0.0,
+                y = 0.0,
+                z = 0.3,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+    image = 'pandaicon2.png',
+    box = Box2D (
+      x = 280,
+      y = 480,
+      sizex = 144,
+      sizey = 112,
+      mode = 'pixels',
+    ),
+    transparency = True,
+  ),
+)

@@ -1,0 +1,20 @@
+Hivemap (
+  workers = WorkerArray (
+  ),
+  connections = WorkerConnectionArray (
+  ),
+  drones = DroneArray (
+    Drone (
+      droneid = 'mycanvas',
+      dronetype = 'workers.mycanvas_panda.mycanvas_panda',
+      position = Coordinate2D (
+        x = -137.0,
+        y = 248.0,
+      ),
+    ),
+  ),
+  attributes = HivemapAttributeArray (
+  ),
+  partbees = HivemapPartBeeArray (
+  ),
+)

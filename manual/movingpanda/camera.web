@@ -1,0 +1,264 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'dragonfly.time.interpolation0',
+      workertype = 'dragonfly.time.interpolation',
+      position = Coordinate2D (
+        x = 63.0,
+        y = -201.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'v_start',
+          pvalue = 'Coordinate (\n  x = 180.0,\n  y = -20.0,\n  z = 0.0,\n)',
+        ),
+        WorkerParameter (
+          pname = 'v_end',
+          pvalue = 'Coordinate (\n  x = 360.0,\n  y = -20.0,\n  z = 0.0,\n)',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'Coordinate',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.time.interpolation1',
+      workertype = 'dragonfly.time.interpolation',
+      position = Coordinate2D (
+        x = 260.0,
+        y = -198.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'v_start',
+          pvalue = 'Coordinate (\n  x = 0.0,\n  y = -20.0,\n  z = 0.0,\n)',
+        ),
+        WorkerParameter (
+          pname = 'v_end',
+          pvalue = 'Coordinate (\n  x = 180.0,\n  y = -20.0,\n  z = 0.0,\n)',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'Coordinate',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.time.sequence0',
+      workertype = 'dragonfly.time.sequence',
+      position = Coordinate2D (
+        x = 87.0,
+        y = -20.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'weight2',
+          pvalue = '1.0',
+        ),
+        WorkerParameter (
+          pname = 'weight1',
+          pvalue = '1.0',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'number',
+          pvalue = '2',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.sys.startsensor0',
+      workertype = 'dragonfly.sys.startsensor',
+      position = Coordinate2D (
+        x = -253.0,
+        y = 129.0,
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.time.interval_time0',
+      workertype = 'dragonfly.time.interval_time',
+      position = Coordinate2D (
+        x = -96.0,
+        y = -8.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'time',
+          pvalue = '30.0',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.scene.bound.setHpr0',
+      workertype = 'dragonfly.scene.bound.setHpr',
+      position = Coordinate2D (
+        x = 105.0,
+        y = 225.0,
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.time.interval_time0',
+        io = 'value',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.time.sequence0',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.sys.startsensor0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.time.interval_time0',
+        io = 'start',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.sys.startsensor0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation0',
+        io = 'start',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.time.sequence0',
+        io = 'outp1',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation0',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.time.sequence0',
+        io = 'outp2',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation1',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.scene.bound.setHpr0',
+        io = 'setHpr',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.scene.bound.setHpr0',
+        io = 'setHpr',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation0',
+        io = 'reach_end',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation1',
+        io = 'start',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation0',
+        io = 'reach_end',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation0',
+        io = 'stop',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation1',
+        io = 'reach_end',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation1',
+        io = 'stop',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation1',
+        io = 'reach_end',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation0',
+        io = 'start',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation1',
+        io = 'reach_end',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.time.interval_time0',
+        io = 'start',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = 141.0,
+          y = -291.0,
+        ),
+        Coordinate2D (
+          x = 10.0,
+          y = -290.0,
+        ),
+        Coordinate2D (
+          x = -242.0,
+          y = -213.0,
+        ),
+      ),
+    ),
+  ),
+)

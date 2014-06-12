@@ -1,0 +1,17 @@
+Type MovingPanda:ThreeDee {
+  String pname
+  String hivemap
+  Enum mode("model","actor")
+  ObjectList3D model
+  String image
+  Box2D box
+  Bool transparency = False
+  validate {
+    assert len(model) == 1
+    if (mode == "model"):
+      assert model[0].typename() == "EntityClass3D" 
+    if (mode == "actor"):
+      assert model[0].typename() == "ActorClass3D" 
+      assert model[0].actorclassname == pname
+  }
+}

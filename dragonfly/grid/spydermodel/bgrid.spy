@@ -1,0 +1,28 @@
+Type Bgrid {
+ *Integer minx
+ *Integer maxx
+ *Integer miny
+ *Integer maxy
+ *GridCoordinate2DArray values
+ validate {
+   if minx is not None and maxx is not None:
+     assert minx <= maxx
+   if miny is not None and maxy is not None:
+     assert miny <= maxy   
+   if values is not None and len(values) == 0:
+     assert minx is not None
+     assert maxx is not None
+     assert miny is not None
+     assert maxy is not None          
+ }
+ form { 
+   minx.type = "required"
+   maxx.type = "required"
+   miny.type = "required"
+   maxy.type = "required"   
+   values.type = "required"
+   values.length = 20
+ }
+}
+
+Method sting(Bgrid) make_bgrid

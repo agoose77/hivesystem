@@ -1,0 +1,152 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'aaa_myspydermap',
+      workertype = 'spydermaps#myspydermap.spydermap',
+      position = Coordinate2D (
+        x = -179.0,
+        y = 159.0,
+      ),
+    ),
+    Worker (
+      workerid = 'coloredtext',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -311.0,
+        y = 114.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = "ColoredText (\n  text = 'Hello World!',\n  textcolor = Color4 (\n    r = 255,\n    g = 0,\n    b = 0,\n    a = 255.0,\n  ),\n)",
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'ColoredText',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'draw3',
+      workertype = 'dragonfly.canvas.draw3',
+      position = Coordinate2D (
+        x = 173.0,
+        y = -50.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'identifier',
+          pvalue = 'id_helloworld',
+        ),
+        WorkerParameter (
+          pname = 'static',
+          pvalue = 'True',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'ColoredText',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'start',
+      workertype = 'dragonfly.sys.startsensor',
+      position = Coordinate2D (
+        x = -297.0,
+        y = -186.0,
+      ),
+    ),
+    Worker (
+      workerid = 'transistor_1',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = 11.0,
+        y = -35.0,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'ColoredText',
+        ),
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'coloredtext',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_1',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'transistor_1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'draw3',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'start',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_1',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+  drones = DroneArray (
+    Drone (
+      droneid = 'canvas',
+      dronetype = 'dragonfly.blenderhive.blendercanvas',
+      position = Coordinate2D (
+        x = -137.0,
+        y = 248.0,
+      ),
+    ),
+    Drone (
+      droneid = 'coloredtext_blender',
+      dronetype = 'workers.coloredtext_blender.coloredtext_blender',
+      position = Coordinate2D (
+        x = -29.0,
+        y = 251.0,
+      ),
+    ),
+  ),
+  attributes = HivemapAttributeArray (
+  ),
+  partbees = HivemapPartBeeArray (
+  ),
+  wasps = HivemapWaspArray (
+    HivemapWasp (
+      wasp_id = 'wasp_1',
+      injected = 'canvas',
+      target = 'aaa_myspydermap',
+      targetparam = 'canvas',
+      sting = False,
+      accumulate = False,
+      position = Coordinate2D (
+        x = -143.0,
+        y = 202.0,
+      ),
+    ),
+  ),
+)

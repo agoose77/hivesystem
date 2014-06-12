@@ -1,0 +1,46 @@
+NodeUi can be two things, type 1 or type 2
+
+NodeUi type 1:
+NodeUi is a collection of subnodes inside a node (hive map), at the GUI level
+NodeUi derives from QGraphicsWidget
+NodeUi contains one NodeUiScene
+NodeUiScene derives from QGraphicsScene
+NodeUiScene contains the actual node widgets
+
+NodeView is an NodeUi editor
+NodeView derived from QGraphicsView
+A NodeView has one NodeUi (_currentNodeUi), but a NodeUi can have multiple view
+
+NodeEditor is a top level window, containing an address bar and a NodeView (_nodeView)
+
+NodeUi type 2:
+NodeUi is a collection of attributes (antennas/outputs) inside a node (worker), at the GUI level
+AttributeUi derives from QGraphicsWidget
+
+Example, a hive contains 10 nodes and one subhive with 3 nodes.
+There are 4 editing windows open
+
+Then:
+There are 2 NodeUi's (type 1)
+There are 2 NodeUiScenes
+There are 13 + 1 NodeUi's (type 2)
+There are 4 NodeViews
+There are 4 NodeEditors
+
+The subhive's NodeUi is a type 1 AND a type 2
+As a type 2, it gets rendered as a worker-like hive in the main hive, and contain AttributeUi
+As a type 1 (_canOpenThis), it can be the target of a NodeView
+
+In Coral:
+- Type 1 NodeUi can contain AttributeUi's, but they are proxied 
+- Type 1 NodeUi is just a grouping feature! They are instances, not classes!
+
+=> We want to disable this; there should be only a single NodeUiScene!!!
+=> So, editing subnodes is forbidden!!
+Address bar is useless!!
+
+What we *do* want is a way to deal graciously with loading a hive map where the bee arguments and connections don't match the guiparams:
+- Mark the offending bees and connections in red
+- Allow re-discovery of red bees / all bees.
+
+The coralNode class is a bit of a mystery (defined in C++ code), but a Python example is provided by /home/sjoerd/coral-repo/coral/build/coralStandaloneBuild/coral/timeNode.py

@@ -1,0 +1,37 @@
+Type WorkerSegmentParameter {
+  String pname
+  String pvalue
+}
+
+Type WorkerSegment {
+  String segid
+  String segtype
+  Coordinate2D position = Coordinate2D(0,0)
+  *WorkerSegmentParameterArray parameters
+  *WorkerSegmentParameterArray metaparameters
+  String profile = "default"
+}
+
+Type WorkerSegmentConnector {
+  String segid
+  String io
+}
+
+Type WorkerSegmentConnection {
+  WorkerSegmentConnector start
+  WorkerSegmentConnector end
+  Coordinate2DArray interpoints = Coordinate2DArray()
+}
+
+
+Type Workermap {
+  WorkerSegmentArray segments
+  WorkerSegmentConnectionArray connections
+  validate {
+    segids = [seg.segid for seg in segments]
+    for c in connections:
+      id1, id2 = c.start.segid, c.end.segid
+      assert id1 in segids, id1
+      assert id2 in segids, id2
+  }
+}

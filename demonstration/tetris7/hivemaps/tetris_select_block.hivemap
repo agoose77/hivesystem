@@ -1,0 +1,379 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'chosen',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -260.0,
+        y = -50.7692307692,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('object', 'bgrid')",
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'chosencontrol',
+      workertype = 'dragonfly.grid.bgridcontrol',
+      position = Coordinate2D (
+        x = 177.705882353,
+        y = -12.3529411765,
+      ),
+    ),
+    Worker (
+      workerid = 'do_select',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = 14.6606334842,
+        y = 67.6538461538,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('object', 'bgrid')",
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'do_select2',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = -109.230769231,
+        y = -375.384615385,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('object', 'bgrid')",
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'four',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -426.411764706,
+        y = -212.470588235,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = '4',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'int',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'randint',
+      workertype = 'dragonfly.random.randint',
+      position = Coordinate2D (
+        x = -114.949579832,
+        y = -239.092436975,
+      ),
+    ),
+    Worker (
+      workerid = 'rotate',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = -0.151260504243,
+        y = -254.983193277,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'int',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'sel',
+      workertype = 'dragonfly.random.choice',
+      position = Coordinate2D (
+        x = -115.294117647,
+        y = 103.0,
+      ),
+    ),
+    Worker (
+      workerid = 'trigger',
+      workertype = 'dragonfly.std.pushconnector',
+      position = Coordinate2D (
+        x = -304.705882353,
+        y = -334.117647059,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'trigger',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'uptofour',
+      workertype = 'dragonfly.std.weaver',
+      position = Coordinate2D (
+        x = -309.588235294,
+        y = -151.176470588,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('int', 'int')",
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'w_blocks',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -248.117647059,
+        y = 97.6470588235,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'object',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'zero',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -427.764705882,
+        y = -125.941176471,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = '0',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'int',
+        ),
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'w_blocks',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'sel',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'zero',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'uptofour',
+        io = 'inp1',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'four',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'uptofour',
+        io = 'inp2',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'uptofour',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'randint',
+        io = 'minmax',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'randint',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'rotate',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'rotate',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'chosencontrol',
+        io = 'rotate',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'chosen',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'chosencontrol',
+        io = 'grid',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'chosen',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'do_select2',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'trigger',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'do_select',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'sel',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'do_select',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'do_select',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'chosen',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'trigger',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'rotate',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'trigger',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'do_select2',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+  io = HivemapIOArray (
+    HivemapIO (
+      io_id = 'selected',
+      io = 'output',
+      worker = 'do_select2',
+      workerio = 'outp',
+      mode = 'push',
+      datatype = "('object', 'bgrid')",
+      position = Coordinate2D (
+        x = 146.050420168,
+        y = -414.537815126,
+      ),
+    ),
+    HivemapIO (
+      io_id = 'select',
+      io = 'antenna',
+      worker = 'trigger',
+      workerio = 'inp',
+      mode = 'push',
+      datatype = 'trigger',
+      position = Coordinate2D (
+        x = -436.470588235,
+        y = -317.647058824,
+      ),
+    ),
+  ),
+  parameters = HivemapParameterArray (
+    HivemapParameter (
+      extern_id = 'blocks',
+      intern_id = 'blocks_',
+      paramtypename = "('object', 'array', 'bgrid')",
+      position = Coordinate2D (
+        x = -251.529411765,
+        y = 182.058823529,
+      ),
+    ),
+  ),
+  attributes = HivemapAttributeArray (
+  ),
+  partbees = HivemapPartBeeArray (
+  ),
+  wasps = HivemapWaspArray (
+    HivemapWasp (
+      wasp_id = 'wasp_1',
+      injected = 'blocks_',
+      target = 'w_blocks',
+      targetparam = 'value',
+      sting = False,
+      accumulate = False,
+      position = Coordinate2D (
+        x = -246.176470588,
+        y = 141.191176471,
+      ),
+    ),
+  ),
+)

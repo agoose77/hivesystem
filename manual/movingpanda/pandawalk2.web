@@ -1,0 +1,292 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'dragonfly.time.interpolation0',
+      workertype = 'dragonfly.time.interpolation',
+      position = Coordinate2D (
+        x = 237.0,
+        y = -164.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'v_start',
+          pvalue = 'Coordinate (\n  x = 0.0,\n  y = 0.0,\n  z = 0.0,\n)',
+        ),
+        WorkerParameter (
+          pname = 'v_end',
+          pvalue = 'Coordinate (\n  x = 0.0,\n  y = -10.0,\n  z = 0.0,\n)',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'Coordinate',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.time.sequence0',
+      workertype = 'dragonfly.time.sequence',
+      position = Coordinate2D (
+        x = 44.9074074074,
+        y = -188.222222222,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'weight4',
+          pvalue = '1.0',
+        ),
+        WorkerParameter (
+          pname = 'weight3',
+          pvalue = '8.0',
+        ),
+        WorkerParameter (
+          pname = 'weight2',
+          pvalue = '1.0',
+        ),
+        WorkerParameter (
+          pname = 'weight1',
+          pvalue = '8.0',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'number',
+          pvalue = '4',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.scene.bound.animation0',
+      workertype = 'dragonfly.scene.bound.animation',
+      position = Coordinate2D (
+        x = 209.0,
+        y = -22.0,
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.time.interval_time0',
+      workertype = 'dragonfly.time.interval_time',
+      position = Coordinate2D (
+        x = -170.0,
+        y = -180.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'time',
+          pvalue = '18.0',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.scene.bound.setPos0',
+      workertype = 'dragonfly.scene.bound.setPos',
+      position = Coordinate2D (
+        x = 226.0,
+        y = 199.0,
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.io.keyboardsensor_trigger0',
+      workertype = 'dragonfly.io.keyboardsensor_trigger',
+      position = Coordinate2D (
+        x = -203.0,
+        y = 151.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'keycode',
+          pvalue = 'E',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.io.keyboardsensor_trigger1',
+      workertype = 'dragonfly.io.keyboardsensor_trigger',
+      position = Coordinate2D (
+        x = -243.0,
+        y = -38.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'keycode',
+          pvalue = 'S',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.std.variable0',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -188.0,
+        y = 247.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = 'walk',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'str',
+        ),
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.io.keyboardsensor_trigger0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.scene.bound.animation0',
+        io = 'loop',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.std.variable0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.scene.bound.animation0',
+        io = 'animation_name',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = 13.0,
+          y = 216.0,
+        ),
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.io.keyboardsensor_trigger1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.scene.bound.animation0',
+        io = 'stop',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.time.interval_time0',
+        io = 'value',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.time.sequence0',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.io.keyboardsensor_trigger0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation0',
+        io = 'start',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.io.keyboardsensor_trigger1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation0',
+        io = 'stop',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.time.sequence0',
+        io = 'outp1',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation0',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.io.keyboardsensor_trigger0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.time.interval_time0',
+        io = 'start',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.io.keyboardsensor_trigger1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.time.interval_time0',
+        io = 'pause',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.scene.bound.setPos0',
+        io = 'setPos',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = 345.0,
+          y = 105.0,
+        ),
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation0',
+        io = 'reach_end',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.time.interval_time0',
+        io = 'stop',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.time.interpolation0',
+        io = 'reach_end',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.scene.bound.animation0',
+        io = 'stop',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+)

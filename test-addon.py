@@ -1,0 +1,2 @@
+import hive
+hive.register()

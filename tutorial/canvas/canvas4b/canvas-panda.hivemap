@@ -1,0 +1,420 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'coloredtext',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -307.470588235,
+        y = -21.2941176471,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = "ColoredText (\n  text = 'Hello World!',\n  textcolor = Color4 (\n    r = 255,\n    g = 0,\n    b = 0,\n    a = 255.0,\n  ),\n)",
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'ColoredText',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'draw1',
+      workertype = 'dragonfly.canvas.draw1',
+      position = Coordinate2D (
+        x = 219.419575217,
+        y = -412.201298702,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'ColoredText',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'draw3',
+      workertype = 'dragonfly.canvas.draw3',
+      position = Coordinate2D (
+        x = 237.368421053,
+        y = -297.819548872,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'identifier',
+          pvalue = 'id_helloworld',
+        ),
+        WorkerParameter (
+          pname = 'static',
+          pvalue = 'False',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'ColoredText',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'identifier',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -21.0,
+        y = 178.058823529,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = 'id_helloworld',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'id',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'reserve',
+      workertype = 'dragonfly.canvas.reserve',
+      position = Coordinate2D (
+        x = 250.05882353,
+        y = -205.352941176,
+      ),
+    ),
+    Worker (
+      workerid = 'start',
+      workertype = 'dragonfly.sys.startsensor',
+      position = Coordinate2D (
+        x = -179.0,
+        y = 42.3529411765,
+      ),
+    ),
+    Worker (
+      workerid = 'transistor_1',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = -18.8235294118,
+        y = -195.470588235,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'ColoredText',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'transistor_2',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = 225.029411765,
+        y = -24.1764705882,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('id', ('object', 'box2d'))",
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'transistor_3',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = 52.6666666667,
+        y = -363.333333333,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('ColoredText', ('object', 'box2d'))",
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'v_box1',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = 76.4705882353,
+        y = 98.8235294118,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('object', 'box2d')",
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'v_box2',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -239.862745098,
+        y = -401.509803922,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('object', 'box2d')",
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'weaver_1',
+      workertype = 'dragonfly.std.weaver',
+      position = Coordinate2D (
+        x = 198.0,
+        y = 124.0,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('id', ('object', 'box2d'))",
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'weaver_2',
+      workertype = 'dragonfly.std.weaver',
+      position = Coordinate2D (
+        x = -106.666666667,
+        y = -404.0,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = "('ColoredText', ('object', 'box2d'))",
+        ),
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'coloredtext',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_1',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'weaver_1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_2',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'transistor_2',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'reserve',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'v_box1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'weaver_1',
+        io = 'inp2',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'identifier',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'weaver_1',
+        io = 'inp1',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'transistor_1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'draw3',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'start',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_2',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'start',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_1',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'v_box2',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'weaver_2',
+        io = 'inp2',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'coloredtext',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'weaver_2',
+        io = 'inp1',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'weaver_2',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_3',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'transistor_3',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'draw1',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'start',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'transistor_3',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+  drones = DroneArray (
+    Drone (
+      droneid = 'canvas',
+      dronetype = 'dragonfly.pandahive.pandacanvas',
+      position = Coordinate2D (
+        x = -137.0,
+        y = 248.0,
+      ),
+    ),
+    Drone (
+      droneid = 'coloredtext_panda',
+      dronetype = 'workers.coloredtext_panda.coloredtext_panda',
+      position = Coordinate2D (
+        x = -29.0,
+        y = 251.0,
+      ),
+    ),
+  ),
+  attributes = HivemapAttributeArray (
+    HivemapAttribute (
+      attr_id = 'box1',
+      attrtypename = 'Box2D',
+      attrvalue = "Box2D (\n  x = 50,\n  y = 50,\n  sizex = 600,\n  sizey = 200,\n  mode = 'pixels',\n)",
+      position = Coordinate2D (
+        x = -277.0,
+        y = 197.157894737,
+      ),
+    ),
+    HivemapAttribute (
+      attr_id = 'box2',
+      attrtypename = 'Box2D',
+      attrvalue = "Box2D (\n  x = 150,\n  y = 350,\n  sizex = 600,\n  sizey = 200,\n  mode = 'pixels',\n)",
+      position = Coordinate2D (
+        x = -279.330827068,
+        y = 133.77443609,
+      ),
+    ),
+  ),
+  partbees = HivemapPartBeeArray (
+  ),
+  wasps = HivemapWaspArray (
+    HivemapWasp (
+      wasp_id = 'wasp_2',
+      injected = 'box2',
+      target = 'v_box2',
+      targetparam = 'value',
+      sting = True,
+      accumulate = False,
+      position = Coordinate2D (
+        x = -344.383439171,
+        y = -410.264705882,
+      ),
+    ),
+    HivemapWasp (
+      wasp_id = 'wasp_1',
+      injected = 'box1',
+      target = 'v_box1',
+      targetparam = 'value',
+      sting = True,
+      accumulate = False,
+      position = Coordinate2D (
+        x = -4.70588235294,
+        y = 88.2352941176,
+      ),
+    ),
+  ),
+)

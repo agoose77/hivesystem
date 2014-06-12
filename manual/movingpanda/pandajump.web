@@ -1,0 +1,458 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'dragonfly.std.transistor1',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = 138.278195208,
+        y = 383.983775181,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'float',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.time.interval_time0',
+      workertype = 'dragonfly.time.interval_time',
+      position = Coordinate2D (
+        x = 14.0,
+        y = 96.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'time',
+          pvalue = '0.7',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.op.pull.sub0',
+      workertype = 'dragonfly.op.pull.sub',
+      position = Coordinate2D (
+        x = 181.0,
+        y = 104.0,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'float',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.std.transistor0',
+      workertype = 'dragonfly.std.transistor',
+      position = Coordinate2D (
+        x = 345.840244551,
+        y = -23.4174198122,
+      ),
+      parameters = WorkerParameterArray (
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'float',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.op.pull.mul0',
+      workertype = 'dragonfly.op.pull.mul',
+      position = Coordinate2D (
+        x = 4.0,
+        y = -185.0,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'float',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.op.pull.mul1',
+      workertype = 'dragonfly.op.pull.mul',
+      position = Coordinate2D (
+        x = 164.0,
+        y = -206.0,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'float',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.op.pull.mul2',
+      workertype = 'dragonfly.op.pull.mul',
+      position = Coordinate2D (
+        x = 257.0,
+        y = -126.0,
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'float',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.io.ticksensor0',
+      workertype = 'dragonfly.io.ticksensor',
+      position = Coordinate2D (
+        x = -127.519670388,
+        y = 329.81490342,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'on',
+          pvalue = 'False',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.io.keyboardsensor_trigger0',
+      workertype = 'dragonfly.io.keyboardsensor_trigger',
+      position = Coordinate2D (
+        x = -231.0,
+        y = 41.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'keycode',
+          pvalue = 'SPACE',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.std.variable2',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = 76.0,
+        y = 220.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = '1.0',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'float',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.std.variable3',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -65.1503596898,
+        y = 410.060777595,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = '-0.1',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'float',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.std.variable0',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -171.0,
+        y = -111.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = '5.0',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'float',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.std.variable1',
+      workertype = 'dragonfly.std.variable',
+      position = Coordinate2D (
+        x = -178.0,
+        y = -243.0,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'value',
+          pvalue = '4.0',
+        ),
+      ),
+      metaparameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'type',
+          pvalue = 'float',
+        ),
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.scene.bound.translateY0',
+      workertype = 'dragonfly.scene.bound.translateY',
+      position = Coordinate2D (
+        x = 330.414720014,
+        y = 360.196191902,
+      ),
+    ),
+    Worker (
+      workerid = 'dragonfly.scene.bound.setZ0',
+      workertype = 'dragonfly.scene.bound.setZ',
+      position = Coordinate2D (
+        x = 367.291600213,
+        y = 143.903154351,
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.io.keyboardsensor_trigger0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.time.interval_time0',
+        io = 'start',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.std.variable0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.op.pull.mul0',
+        io = 'inp1',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.std.variable1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.op.pull.mul0',
+        io = 'inp2',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.time.interval_time0',
+        io = 'value',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.op.pull.sub0',
+        io = 'inp2',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.std.variable2',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.op.pull.sub0',
+        io = 'inp1',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.op.pull.sub0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.op.pull.mul1',
+        io = 'inp1',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.op.pull.mul0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.op.pull.mul1',
+        io = 'inp2',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.time.interval_time0',
+        io = 'value',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.op.pull.mul2',
+        io = 'inp1',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.op.pull.mul1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.op.pull.mul2',
+        io = 'inp2',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.op.pull.mul2',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.std.transistor0',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.io.keyboardsensor_trigger0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.io.ticksensor0',
+        io = 'start',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = -386.366028708,
+          y = 305.503367003,
+        ),
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.io.ticksensor0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.std.transistor0',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = 208.737846034,
+          y = 281.46953363,
+        ),
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.time.interval_time0',
+        io = 'reach_end',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.io.ticksensor0',
+        io = 'stop',
+      ),
+      interpoints = Coordinate2DArray (
+        Coordinate2D (
+          x = 89.8540669856,
+          y = 96.7101718944,
+        ),
+        Coordinate2D (
+          x = 81.2735247209,
+          y = 156.773967748,
+        ),
+        Coordinate2D (
+          x = 14.0592769803,
+          y = 176.795233032,
+        ),
+        Coordinate2D (
+          x = -71.7461456672,
+          y = 202.536859826,
+        ),
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.std.transistor0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.scene.bound.setZ0',
+        io = 'setZ',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.io.ticksensor0',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.std.transistor1',
+        io = 'trig',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.std.transistor1',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.scene.bound.translateY0',
+        io = 'translateY',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+    WorkerConnection (
+      start = WorkerConnector (
+        workerid = 'dragonfly.std.variable3',
+        io = 'outp',
+      ),
+      end = WorkerConnector (
+        workerid = 'dragonfly.std.transistor1',
+        io = 'inp',
+      ),
+      interpoints = Coordinate2DArray (
+      ),
+    ),
+  ),
+)

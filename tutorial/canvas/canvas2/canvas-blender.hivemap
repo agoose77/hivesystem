@@ -1,0 +1,28 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'myspydermap',
+      workertype = 'spydermaps#myspydermap.spydermap',
+      position = Coordinate2D (
+        x = -179.0,
+        y = 159.0,
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+  ),
+  drones = DroneArray (
+    Drone (
+      droneid = 'mycanvas',
+      dronetype = 'workers.mycanvas_blender.mycanvas_blender',
+      position = Coordinate2D (
+        x = -137.0,
+        y = 248.0,
+      ),
+    ),
+  ),
+  attributes = HivemapAttributeArray (
+  ),
+  partbees = HivemapPartBeeArray (
+  ),
+)

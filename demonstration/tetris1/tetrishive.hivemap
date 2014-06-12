@@ -1,0 +1,56 @@
+Hivemap (
+  workers = WorkerArray (
+    Worker (
+      workerid = 'area',
+      workertype = 'spydermaps#area.spydermap',
+      position = Coordinate2D (
+        x = -199.0,
+        y = -110.0,
+      ),
+    ),
+    Worker (
+      workerid = 'tetrismain',
+      workertype = 'hivemaps:tetrismain.hivemap',
+      position = Coordinate2D (
+        x = 290.529411765,
+        y = -110.352941176,
+      ),
+      parameters = WorkerParameterArray (
+        WorkerParameter (
+          pname = 'scorearea_id',
+          pvalue = 'score',
+        ),
+      ),
+    ),
+  ),
+  connections = WorkerConnectionArray (
+  ),
+  drones = DroneArray (
+    Drone (
+      droneid = 'canvas',
+      dronetype = 'dragonfly.blenderhive.blendercanvas',
+      position = Coordinate2D (
+        x = -200.823529412,
+        y = -4.4117647059,
+      ),
+    ),
+  ),
+  attributes = HivemapAttributeArray (
+  ),
+  partbees = HivemapPartBeeArray (
+  ),
+  wasps = HivemapWaspArray (
+    HivemapWasp (
+      wasp_id = 'wasp_9',
+      injected = 'canvas',
+      target = 'area',
+      targetparam = 'canvas',
+      sting = False,
+      accumulate = False,
+      position = Coordinate2D (
+        x = -200.0,
+        y = -65.0,
+      ),
+    ),
+  ),
+)
