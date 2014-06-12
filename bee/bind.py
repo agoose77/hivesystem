@@ -1,6 +1,6 @@
 # a worker factory class
 # the worker has input "bind" (taking a tuple containing the bindantenna parameters)
-#  "pause"/"resume" (to control the eventmatcher taking keyboard/mouse events; the eventmatcher also checks that the bound hive has not been stopped)
+# "pause"/"resume" (to control the eventmatcher taking keyboard/mouse events; the eventmatcher also checks that the bound hive has not been stopped)
 #  "stop" (taking a bindname), which ends the event dispatching and tick listening
 #  and "event". 
 # automatically catches the exceptions in the bound hive, similar as a hive would do with its workers and drones
@@ -28,15 +28,18 @@ def get_reg_bindhelper(fr, dicvalues):
     for d in dicvalues:
         try:
             allreg.add(d)
+
         except TypeError:  #cannot weakref everything
             pass
     ret = []
     if fr in reg_bindhelper.reg:
         for a in reg_bindhelper.reg[fr]:
-            if a in allreg: continue
+            if a in allreg:
+                continue
             allreg.add(a)
             ret.append(a)
         del reg_bindhelper.reg[fr]
+
     return ret
 
 

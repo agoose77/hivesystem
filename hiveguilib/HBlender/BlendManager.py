@@ -696,32 +696,30 @@ class BlendManager:
             callback = self._scheduled.pop(0)
             callback()
 
-    def simplify_all(self):
-        for bntm in self.blend_nodetree_managers.values():
-            if bntm.typ != "Hivemap": continue
-            wim = bntm.workerinstancemanager
-            wim.default_profile = "simplified"
-            for workerid in wim.get_workerinstances():
-                wi = wim.get_workerinstance(workerid)
-                if wi.curr_profile != "default": continue
+    def morph_state(self, current_profile, new_profile):
+        for blend_nodetree_manager in self.blend_nodetree_managers.values():
+            if blend_nodetree_manager.typ != "Hivemap": # TODO rename to type
+                continue
+
+            worker_instance_manager = blend_nodetree_manager.workerinstancemanager
+            worker_instance_manager.default_profile = new_profile
+
+            for worker_id in worker_instance_manager.get_workerinstances():
+                worker_instance = worker_instance_manager.get_workerinstance(worker_id)
+                if worker_instance.curr_profile != current_profile:
+                    continue
+
                 try:
-                    wim.morph_worker(workerid, "simplified")
+                    worker_instance_manager.morph_worker(worker_id, new_profile)
+
                 except KeyError:
                     pass
 
+    def simplify_all(self):
+        self.morph_state("default", "simplified")
+
     def unsimplify_all(self):
-        for bntm in self.blend_nodetree_managers.values():
-            if bntm.typ != "Hivemap": continue
-            wim = bntm.workerinstancemanager
-            wim.default_profile = "default"
-            for workerid in wim.get_workerinstances():
-                wi = wim.get_workerinstance(workerid)
-                if wi.curr_profile != "simplified": continue
-                try:
-                    wim.morph_worker(workerid, "default")
-                except KeyError:
-                    pass
-            bntm.controller_general.refresh()
+        self.morph_state("simplified", "default")
 
 
 blendmanager = None
@@ -750,6 +748,7 @@ def get_defaultproject_data():
 
     assert os.path.exists(bpdir), bpdir
     cwd = os.path.abspath(os.getcwd())
+
     try:
         os.chdir(os.path.abspath(bpdir))
 
@@ -766,12 +765,13 @@ def get_defaultproject_data():
 
                 files.append(os.path.join(root, name))
 
-        for f in files:
-            block = f.replace(os.sep, "/")
+        for filename in files:
+            block = filename.replace(os.sep, "/")
+
             if block.startswith("./"):
                 block = block[2:]
 
-            opened_file = open(f)
+            opened_file = open(filename)
             content = opened_file.read()
             opened_file.close()
 
@@ -790,8 +790,8 @@ def enable_hive(scene, import_data):
     data = import_data
     for block, content in data:
         if block in bpy.data.texts:
-            oldcontent = bpy.data.texts[block].as_string()
-            if oldcontent != content and oldcontent != "<DELETED>":
+            old_content = bpy.data.texts[block].as_string()
+            if old_content != content and old_content != "<DELETED>":
                 raise Exception("Cannot enable Hive system: Blender text block '%s' already exists" % block)
 
     main = [block for block, content in data if block.find("/") == -1 and block.endswith(".py")]
@@ -821,9 +821,9 @@ def disable_hive(scene):
     data = get_defaultproject_data()
     for block, content in data:
         if block in bpy.data.texts:
-            oldcontent = bpy.data.texts[block].as_string()
+            old_content = bpy.data.texts[block].as_string()
 
-            if oldcontent == content or oldcontent == "<DELETED>":
+            if old_content == content or old_content == "<DELETED>":
                 try:
                     bpy.data.texts[block].remove()
 
