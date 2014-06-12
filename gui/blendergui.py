@@ -1,5 +1,5 @@
 #
-#Copyright 2006-2013, Sjoerd de Vries
+# Copyright 2006-2013, Sjoerd de Vries
 #
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 #
@@ -23,23 +23,30 @@ bl_info = {
     "category": "Game Engine"
 }
 
+
 def register():
     import logging, sys, os
+
     logging.basicConfig(level=logging.DEBUG)
 
     sys.path.insert(0, os.path.split(__file__)[0])
 
     from hiveguilib import runblender
+
     currdir = os.path.abspath(os.path.dirname(__file__))
     runblender.register(currdir)
+
 
 def unregister():
     import sys, os
     from hiveguilib import runblender
-    d = os.path.split(__file__)[0]    
+
+    d = os.path.split(__file__)[0]
     from hiveguilib import runblender
+
     runblender.unregister()
     sys.path[:] = [p for p in sys.path if p != d]
-    
+
+
 if __name__ == "__main__":
     register()

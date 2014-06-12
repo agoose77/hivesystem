@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 
 from __future__ import print_function, absolute_import
 
@@ -10,10 +10,10 @@ import os, sys, traceback, time
 #readmetxt = open(readme).read()
 
 try:
-  from hiveguilib import runworker
+    from hiveguilib import runworker
 except ImportError:
-  traceback.print_exc()
-  if sys.platform == "win32":
-    time.sleep(30)   
-#runworker.run(readmetxt)
+    traceback.print_exc()
+    if sys.platform == "win32":
+        time.sleep(30)
+    #runworker.run(readmetxt)
 runworker.run()

@@ -1,7 +1,8 @@
 class Application:
-  def __init__(self, argv):
-    pass
-  def mainloop(self): 
-    pass
+    def __init__(self, argv):
+        pass
+
+    def mainloop(self):
+        pass
     
     

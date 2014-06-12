@@ -9,7 +9,7 @@
 # modification, are permitted provided that the following conditions are
 # met:
 # 
-#    * Redistributions of source code must retain the above copyright
+# * Redistributions of source code must retain the above copyright
 #      notice, this list of conditions and the following disclaimer.
 # 
 #    * Redistributions in binary form must reproduce the above copyright
@@ -34,24 +34,26 @@ from __future__ import print_function, absolute_import
 import weakref
 from ..anyQt import QtGui, QtCore
 
+
 class NodeUiScene(QtGui.QGraphicsScene):
     _hqt = None
+
     def __init__(self):
         QtGui.QGraphicsScene.__init__(self)
-        
+
         self._backgroundColor = QtGui.QColor(50, 55, 60)
         self._gridPen = QtGui.QPen(self._backgroundColor.lighter(120))
         self._zoom = 1.0
         self._centerPos = QtCore.QPointF(0.0, 0.0)
         self._firstTimeEntering = True
-                 
+
         self._gridPen.setWidth(1)
-        
-        self.setItemIndexMethod(QtGui.QGraphicsScene.NoIndex) # fixes bug with scene.removeItem()
+
+        self.setItemIndexMethod(QtGui.QGraphicsScene.NoIndex)  # fixes bug with scene.removeItem()
         self.setBackgroundBrush(self._backgroundColor)
         self.setStickyFocus(True)
-        self._focusedHook = None        
-    
+        self._focusedHook = None
+
     def setFocusedHook(self, hook):
         self._focusedHook = hook
 
@@ -61,9 +63,9 @@ class NodeUiScene(QtGui.QGraphicsScene):
             if hasattr(item, "updateToolTip"):
                 item.updateToolTip()
                 break
-    
+
         QtGui.QGraphicsScene.helpEvent(self, event)
-    
+
     def mouseReleaseEvent(self, event):
         QtGui.QGraphicsScene.mouseReleaseEvent(self, event)
         return
@@ -77,37 +79,37 @@ class NodeUiScene(QtGui.QGraphicsScene):
             elif event.button() == QtCore.Qt.RightButton:
                 #self._parentNodeUi().showRightClickMenu() ###
                 pass
-            
+
     def setZoom(self, zoom):
         self._zoom = zoom
-    
+
     def zoom(self):
         return self._zoom
-    
+
     def setCenterPos(self, pos):
         self._centerPos = QtCore.QPointF(pos)
-    
+
     def centerPos(self):
         return QtCore.QPointF(self._centerPos)
-            
+
     def drawBackground(self, painter, rect):
         if not isinstance(painter, QtGui.QPainter): return
         QtGui.QGraphicsScene.drawBackground(self, painter, rect)
-        
+
         painter.setPen(self._gridPen)
-        
+
         gridSize = 50
 
         left = int(rect.left()) - (int(rect.left()) % gridSize)
         top = int(rect.top()) - (int(rect.top()) % gridSize)
 
         lines = []
-        
+
         x = left
         while x < rect.right():
             painter.drawLine(x, rect.top(), x, rect.bottom())
             x += gridSize
-        
+
         y = top
         while y < rect.bottom():
             painter.drawLine(rect.left(), y, rect.right(), y)

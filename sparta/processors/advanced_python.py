@@ -4,6 +4,7 @@ import spyder, Spyder
 from ..models import nodeio
 from bee.types import stringtupleparser
 
+
 class _advanced_python_base(bee.worker):
     @classmethod
     def form(cls, f):
@@ -16,9 +17,11 @@ class _advanced_python_base(bee.worker):
         f.pull_activates.name = "Activates on pull"
         f.pull_activates.tooltip = "Whenever a pull output is requested, the processor activates"
         f.memberorder = "persistent", "push_activates", "pull_activates", "code"
+
     def place(self):
         raise NotImplementedError("sparta.processors.advanced_python has not been implemented yet")
-    
+
+
 class advanced_python(object):
     """A snippet of advanced custom Python code.
 Activated by trigger. Can have any number of inputs and outputs, which can be push, pull or trigger.
@@ -34,10 +37,11 @@ Activate by push: if True, every change on a push input triggers the execution o
 Activate by pull: if True, every value request on a pull output (pre-)triggers the execution of the controller
 """
     metaguiparams = {
-      "inputs" : "AdvancedNodeIOArray",
-      "outputs" : "AdvancedNodeIOArray",
-      "autocreate" : {"inputs": Spyder.AdvancedNodeIOArray(), "outputs" : Spyder.AdvancedNodeIOArray()},
+        "inputs": "AdvancedNodeIOArray",
+        "outputs": "AdvancedNodeIOArray",
+        "autocreate": {"inputs": Spyder.AdvancedNodeIOArray(), "outputs": Spyder.AdvancedNodeIOArray()},
     }
+
     @classmethod
     def form(cls, f):
         f.inputs.name = "Inputs"
@@ -45,20 +49,20 @@ Activate by pull: if True, every value request on a pull output (pre-)triggers t
         f.inputs.count_from_one = True
         f.inputs.form = "soft"
         f.inputs.arraymanager = "dynamic"
-      
+
         f.outputs.name = "Outputs"
         f.outputs.length = 10
         f.outputs.count_from_one = True
         f.outputs.form = "soft"
-        f.outputs.arraymanager = "dynamic"                
-    
+        f.outputs.arraymanager = "dynamic"
+
     def __new__(cls, inputs, outputs):
         ionames = set()
-        reserved = ("trig", "code", "code_parameter_", 
-         "persistent", "persistent_parameter_", 
-         "push_activates", "push_activates_parameter_",
-         "pull_activates", "pull_activates_parameter_", 
-         "form"
+        reserved = ("trig", "code", "code_parameter_",
+                    "persistent", "persistent_parameter_",
+                    "push_activates", "push_activates_parameter_",
+                    "pull_activates", "pull_activates_parameter_",
+                    "form"
         )
         for inp in inputs:
             if inp.ioname in reserved: raise ValueError("Reserved input name: %s" % inp.ioname)
@@ -74,49 +78,49 @@ Activate by pull: if True, every value request on a pull output (pre-)triggers t
             "persistent": variable("bool"),
             "push_activates": variable("bool"),
             "pull_activates": variable("bool"),
-          }
+        }
         dic["code_parameter_"] = parameter(dic["code"], "")
-        dic["persistent_parameter_"] = parameter(dic["persistent"], False)  
+        dic["persistent_parameter_"] = parameter(dic["persistent"], False)
         dic["push_activates_parameter_"] = parameter(dic["push_activates"], False)
-        dic["pull_activates_parameter_"] = parameter(dic["pull_activates"], False)  
+        dic["pull_activates_parameter_"] = parameter(dic["pull_activates"], False)
         guiparams = {}
-        guiparams["trig"] = {"name" : "Trigger"}
+        guiparams["trig"] = {"name": "Trigger"}
         guiparams["_memberorder"] = ["trig"]
         counter = 0
         for inp in inputs:
-            name = inp.ioname 
+            name = inp.ioname
             name2 = name + "_"
-            typ = inp.type_            
+            typ = inp.type_
             if typ == "custom": typ = inp.customtype
             if typ: typ = stringtupleparser(typ)
             dic[name2] = antenna("pull", typ)
-            dic[name] = buffer("pull", typ)            
+            dic[name] = buffer("pull", typ)
             guiparams[name2] = {"name": name}
             while 1:
-                counter += 1            
+                counter += 1
                 conname = "con" + str(counter)
                 if conname not in ionames: break
             dic[conname] = connect(name2, name)
 
         for outp in outputs:
-            name = outp.ioname 
+            name = outp.ioname
             name2 = name + "_"
             typ = outp.type_
             guiparams[name2] = {"name": name}
-            if typ == "custom": typ = outp.customtype   
+            if typ == "custom": typ = outp.customtype
             if typ: typ = stringtupleparser(typ)
-            if outp.mode == "trigger": 
+            if outp.mode == "trigger":
                 dic[name2] = output("push", "trigger")
-                dic[name2+"trig_"] = triggerfunc(dic[name2])
+                dic[name2 + "trig_"] = triggerfunc(dic[name2])
                 dic[name] = variable("bool")
             else:
                 dic[name2] = output(outp.mode, typ)
-                dic[name] = buffer(outp.mode, typ)              
+                dic[name] = buffer(outp.mode, typ)
                 while 1:
-                    counter += 1            
+                    counter += 1
                     conname = "con" + str(counter)
                     if conname not in ionames: break
                 dic[conname] = connect(name, name2)
-        
-        dic["guiparams"] = guiparams        
+
+        dic["guiparams"] = guiparams
         return type("advanced_python", (_advanced_python_base,), dic)

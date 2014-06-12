@@ -4,6 +4,7 @@ import spyder, Spyder
 from ..models import nodeio
 from bee.types import stringtupleparser
 
+
 class _python_base(bee.worker):
     @classmethod
     def form(cls, f):
@@ -12,9 +13,11 @@ class _python_base(bee.worker):
         f.persistent.name = "Persistent"
         f.persistent.tooltip = "Output values persist between invocations"
         f.memberorder = "persistent", "code"
+
     def place(self):
         raise NotImplementedError("sparta.processors.python has not been implemented yet")
-    
+
+
 class python(object):
     """A snippet of custom Python code.
 Activated by trigger. Can have any number of pull inputs and any number of outputs, which can be push, pull or trigger.
@@ -25,10 +28,11 @@ All pull output variables must be set (unless persistent).
 If a push output variable has been set, it is fired towards its targets when the processor has finished.
 If a trigger output variable has been set to True, it is fired towards its targets when the processor has finished"""
     metaguiparams = {
-      "inputs" : "NodeIOArray",
-      "outputs" : "AdvancedNodeIOArray",
-      "autocreate" : {"inputs": Spyder.NodeIOArray(), "outputs" : Spyder.AdvancedNodeIOArray()},
+        "inputs": "NodeIOArray",
+        "outputs": "AdvancedNodeIOArray",
+        "autocreate": {"inputs": Spyder.NodeIOArray(), "outputs": Spyder.AdvancedNodeIOArray()},
     }
+
     @classmethod
     def form(cls, f):
         f.inputs.name = "Inputs"
@@ -36,13 +40,13 @@ If a trigger output variable has been set to True, it is fired towards its targe
         f.inputs.count_from_one = True
         f.inputs.form = "soft"
         f.inputs.arraymanager = "dynamic"
-      
+
         f.outputs.name = "Outputs"
         f.outputs.length = 10
         f.outputs.count_from_one = True
         f.outputs.form = "soft"
-        f.outputs.arraymanager = "dynamic"                
-    
+        f.outputs.arraymanager = "dynamic"
+
     def __new__(cls, inputs, outputs):
         ionames = set()
         reserved = ("trig", "code", "code_parameter_", "persistent", "persistent_parameter_", "form")
@@ -58,47 +62,47 @@ If a trigger output variable has been set to True, it is fired towards its targe
             "trig": antenna("push", "trigger"),
             "code": variable("str"),
             "persistent": variable("bool"),
-          }
+        }
         dic["code_parameter_"] = parameter(dic["code"], "")
-        dic["persistent_parameter_"] = parameter(dic["persistent"], False)  
+        dic["persistent_parameter_"] = parameter(dic["persistent"], False)
         guiparams = {}
-        guiparams["trig"] = {"name" : "Trigger"}
+        guiparams["trig"] = {"name": "Trigger"}
         guiparams["_memberorder"] = ["trig"]
         counter = 0
         for inp in inputs:
-            name = inp.ioname 
+            name = inp.ioname
             name2 = name + "_"
-            typ = inp.type_            
+            typ = inp.type_
             if typ == "custom": typ = inp.customtype
             if typ: typ = stringtupleparser(typ)
             dic[name2] = antenna("pull", typ)
-            dic[name] = buffer("pull", typ)            
+            dic[name] = buffer("pull", typ)
             guiparams[name2] = {"name": name}
             while 1:
-                counter += 1            
+                counter += 1
                 conname = "con" + str(counter)
                 if conname not in ionames: break
             dic[conname] = connect(name2, name)
 
         for outp in outputs:
-            name = outp.ioname 
+            name = outp.ioname
             name2 = name + "_"
             typ = outp.type_
             guiparams[name2] = {"name": name}
-            if typ == "custom": typ = outp.customtype   
+            if typ == "custom": typ = outp.customtype
             if typ: typ = stringtupleparser(typ)
-            if outp.mode == "trigger": 
+            if outp.mode == "trigger":
                 dic[name2] = output("push", "trigger")
-                dic[name2+"trig_"] = triggerfunc(dic[name2])
+                dic[name2 + "trig_"] = triggerfunc(dic[name2])
                 dic[name] = variable("bool")
             else:
                 dic[name2] = output(outp.mode, typ)
-                dic[name] = buffer(outp.mode, typ)              
+                dic[name] = buffer(outp.mode, typ)
                 while 1:
-                    counter += 1            
+                    counter += 1
                     conname = "con" + str(counter)
                     if conname not in ionames: break
                 dic[conname] = connect(name, name2)
-        
-        dic["guiparams"] = guiparams        
+
+        dic["guiparams"] = guiparams
         return type("python", (_python_base,), dic)

@@ -6,9 +6,10 @@ keeper.new()
 
 u = UCIChessEngine("glaurung")
 while not keeper.finished:
-  move = u.get_move()
-  fmove = keeper.format_move(move)
-  print fmove
-  keeper.make_move(fmove)
-  u.make_move(fmove)
+    move = u.get_move()
+    fmove = keeper.format_move(move)
+    print
+    fmove
+    keeper.make_move(fmove)
+    u.make_move(fmove)
   

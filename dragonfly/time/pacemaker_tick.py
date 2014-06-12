@@ -11,20 +11,22 @@ from libcontext.pluginclasses import *
 
 from .pacemaker_simple import pacemaker_simple
 
+
 class pacemaker_tick(pacemaker_simple):
-  def __init__(self, interval):
-    self.interval = interval #interval in seconds
-  def tick(self):
-    t = time.time()
-    if self.first:
-      self.first = False
-      self.ticks = 0
-      self.start_time = t
-      self.time = t    
-      self.eventfunc(bee.event("start"))
-    while t - self.start_time > self.interval * self.ticks:
-      self.eventfunc(bee.event("tick"))
-      self.time = t
-      self.ticks += 1
-      t = time.time()
+    def __init__(self, interval):
+        self.interval = interval  # interval in seconds
+
+    def tick(self):
+        t = time.time()
+        if self.first:
+            self.first = False
+            self.ticks = 0
+            self.start_time = t
+            self.time = t
+            self.eventfunc(bee.event("start"))
+        while t - self.start_time > self.interval * self.ticks:
+            self.eventfunc(bee.event("tick"))
+            self.time = t
+            self.ticks += 1
+            t = time.time()
   

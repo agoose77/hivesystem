@@ -1,4 +1,5 @@
 import spyder
+
 spyder.delete_wisdom()
 spyder.loader.recompile = None
 import spyder.modules.core
@@ -10,4 +11,5 @@ import spyder.modules.canvas
 import spyder.modules.hivemap
 import spyder.modules.http
 import spyder.modules.atom
+
 spyder.write_wisdom()

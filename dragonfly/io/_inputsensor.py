@@ -3,7 +3,7 @@ from bee.segments import *
 from libcontext.socketclasses import *
 from libcontext.pluginclasses import *
 
-#keyboard: trigger, pulse (tick-driven only) and impulse (real-time only)
+# keyboard: trigger, pulse (tick-driven only) and impulse (real-time only)
 #in case of pulse, add a new event at next tick
 #in case of impulse, add a new event at a very small delay, 
 # so that it gets processed at the next frame
@@ -12,21 +12,26 @@ from libcontext.pluginclasses import *
 If the keycode must be changed, simply disable the sensor and build a new one.
 """
 
+
 class keyboardsensor_base(bee.worker):
-  def set_add_listener(self, add_listener):
-    self.add_listener = add_listener
-  def set_remove_listener(self, remove_listener):
-    self.remove_listener = remove_listener    
-  def place(self):
-    libcontext.socket(("evin", ("input", "keyboard")), socket_flag())
-    libcontext.socket(("evin", "add_listener"), socket_single_required(self.set_add_listener))
-    libcontext.socket(("evin", "remove_listener"), socket_single_required(self.set_remove_listener))
-    libcontext.plugin(("bee", "init"), plugin_single_required(self.enable))
-  def enable(self):
-     pass
-  def disable(self):
-     pass
-     
+    def set_add_listener(self, add_listener):
+        self.add_listener = add_listener
+
+    def set_remove_listener(self, remove_listener):
+        self.remove_listener = remove_listener
+
+    def place(self):
+        libcontext.socket(("evin", ("input", "keyboard")), socket_flag())
+        libcontext.socket(("evin", "add_listener"), socket_single_required(self.set_add_listener))
+        libcontext.socket(("evin", "remove_listener"), socket_single_required(self.set_remove_listener))
+        libcontext.plugin(("bee", "init"), plugin_single_required(self.enable))
+
+    def enable(self):
+        pass
+
+    def disable(self):
+        pass
+
 
 """    
 class keyboardsensor_pulse(keyboardsensor_base):
@@ -61,23 +66,30 @@ class keyboardsensor_pulse(keyboardsensor_base):
     self.eventhandler.remove_processor(("keyboard", "keypressed", self.keycode), self._pulse)
     self.eventhandler.remove_processor(("keyboard", "keyreleased", self.keycode), self._pulse)
 """
- 
+
+
 class mousesensor_base(bee.worker):
-  def set_add_listener(self, add_listener):
-    self.add_listener = add_listener
-  def set_remove_listener(self, remove_listener):
-    self.remove_listener = remove_listener      
-  def place(self):
-    libcontext.socket(("evin", ("input", "mouse")), socket_flag())
-    libcontext.socket(("evin", "add_listener"), socket_single_required(self.set_add_listener))
-    libcontext.socket(("evin", "remove_listener"), socket_single_required(self.set_remove_listener))    
-    libcontext.plugin(("bee", "init"), plugin_single_required(self.enable))
-  def enable(self):
-     pass
-  def disable(self):
-     pass
-  def __del__(self):
-    self.disable()
+    def set_add_listener(self, add_listener):
+        self.add_listener = add_listener
+
+    def set_remove_listener(self, remove_listener):
+        self.remove_listener = remove_listener
+
+    def place(self):
+        libcontext.socket(("evin", ("input", "mouse")), socket_flag())
+        libcontext.socket(("evin", "add_listener"), socket_single_required(self.set_add_listener))
+        libcontext.socket(("evin", "remove_listener"), socket_single_required(self.set_remove_listener))
+        libcontext.plugin(("bee", "init"), plugin_single_required(self.enable))
+
+    def enable(self):
+        pass
+
+    def disable(self):
+        pass
+
+    def __del__(self):
+        self.disable()
+
 
 """
 class mousebuttonsensor_pulse(mousebuttonsensor_base):

@@ -1,2 +1,2 @@
 class decoratorsegment(object):
-  pass
+    pass

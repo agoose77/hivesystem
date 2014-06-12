@@ -4,166 +4,168 @@ from .. import HivemapManager, WorkermapManager, SpydermapManager, Clipboard
 from ..worker import WorkerManager, WorkerBuilder, WorkerInstanceManager
 from . import BlenderTextWidget
 
+
 class BlendNodeTreeManager:
-  def __init__(self, parent, name, typ):
-    self.parent = parent
-    self.name = name
-    assert typ in ("Hivemap", "Workermap", "Spydermap"), typ
-    self.typ = typ
-  def start(self):
-    if self.typ == "Hivemap": return self.start_hivemap()
-    if self.typ == "Workermap": return self.start_workermap()
-    if self.typ == "Spydermap": return self.start_spydermap()
-  
-  def start_hivemap(self):  
-    self.mainWin = HGui.MainWindow()    
-    self.statusbar = HGui.StatusBar(self.mainWin)      
-    self.clipboard = Clipboard()
-    self.canvas = HGui.NodeCanvas(self.mainWin, self.clipboard, self.statusbar)
-    self.canvas.observers_selection.append(BlenderTextWidget.manager.select)
-    self.canvas.h().set_blendnodetreemanager(self)
-    self.controller_general = PGui.PControllerGeneral()
-    self.controller_block = PGui.PControllerBlock()        
-    self.workerbuilder = WorkerBuilder()
-    self.workerinstancemanager = WorkerInstanceManager(self.canvas)
-    try:
-      currlevel = int(bpy.context.screen.hive_level)
-      if currlevel == 1: self.workerinstancemanager.default_profile = "simplified"
-    except:
-      pass
-    self.controller_general.set_workerinstancemanager(self.workerinstancemanager)
-    self.controller_block.set_workerinstancemanager(self.workerinstancemanager)
-    self.pwins = {}
-    self.pwins["general"] = PGui.PWindow(self.mainWin, "props-general", self.controller_general)
-    self.pwins["params"] = PGui.PWidgetWindow(self.mainWin, "props-params")
-    self.pwins["metaparams"] = PGui.PWidgetWindow(self.mainWin, "props-metaparams")
-    self.pwins["block"] = PGui.PWindow(self.mainWin, "props-block", self.controller_block)
-    self.pmanager = PGui.PManager(self.pwins)
-    self.pwc = PGui.PWorkerCreator(self.mainWin, self.clipboard)
-    self.pdc = PGui.PDroneCreator(self.mainWin, self.clipboard)    
-    
-    #In Qt, dragged widgets generate their own events; 
-    #In Blender, 
-    # 1. we have only a single shared panel
-    # 2. drag/drop events don't exist, we have to define a new operator for every added NodeItem
-    #Hence, the NodeItem manager    
-    self.pwc._tree.set_nodeitemmanager(self.parent.nodeitemmanager)
-    self.pwc._tree.set_nodetreename(self.name)
-    self.pdc._tree.set_nodeitemmanager(self.parent.nodeitemmanager)
-    self.pdc._tree.set_nodetreename(self.name)
-    
-    self.workermanager = WorkerManager(
-      self.workerbuilder, self.workerinstancemanager, self.pmanager, self.pwc, self.pdc
-    )
-    self.controller_general.set_workermanager(self.workermanager)
-    self.controller_block.set_workermanager(self.workermanager)
-    self.clipboard.set_workermanager(self.workermanager)
-    self.canvas.set_workermanager(self.workermanager)
+    def __init__(self, parent, name, typ):
+        self.parent = parent
+        self.name = name
+        assert typ in ("Hivemap", "Workermap", "Spydermap"), typ
+        self.typ = typ
 
-    self.antennafoldstate = PGui.AntennaFoldState(self.canvas, self.workermanager)
-    self.workermanager.set_antennafoldstate(self.antennafoldstate)
-      
-    self.workermanager._workerfinder_global = self.parent._workerfinder_global_hivemap
-    #TODO: update typelist??
-    self.workermanager.build_workers(local=False)
+    def start(self):
+        if self.typ == "Hivemap": return self.start_hivemap()
+        if self.typ == "Workermap": return self.start_workermap()
+        if self.typ == "Spydermap": return self.start_spydermap()
 
-    self.workermanager._workerfinder_local = self.parent._workerfinder_local_hivemap
-    if self.workermanager._workerfinder_local:
-      #TODO: update typelist??
-      self.workermanager.build_workers(local=True)
-                
-    self.hivemapmanager  = HivemapManager(
-      self.mainWin, self.workermanager, self.workerinstancemanager, HGui.FileDialog
-    )
-    
-  def start_workermap(self):      
-    self.mainWin = HGui.MainWindow()    
-    self.statusbar = HGui.StatusBar(self.mainWin)      
-    self.clipboard = Clipboard()
-    self.canvas = HGui.NodeCanvas(self.mainWin, self.clipboard, self.statusbar)
-    self.canvas.observers_selection.append(BlenderTextWidget.manager.select)
-    self.canvas.h().set_blendnodetreemanager(self)
-    self.controller_general = PGui.PControllerGeneral()
-    self.workerbuilder = WorkerBuilder()
-    self.workerinstancemanager = WorkerInstanceManager(self.canvas)
-    self.controller_general.set_workerinstancemanager(self.workerinstancemanager)
-    self.pwins = {}
-    self.pwins["general"] = PGui.PWindow(self.mainWin, "props-general", self.controller_general)
-    self.pwins["params"] = PGui.PWidgetWindow(self.mainWin, "props-params")
-    self.pwins["metaparams"] = PGui.PWidgetWindow(self.mainWin, "props-metaparams")
-    self.pmanager = PGui.PManager(self.pwins)
-    self.pwc = PGui.PWorkerCreator(self.mainWin, self.clipboard)
-    
-    #In Qt, dragged widgets generate their own events; 
-    #In Blender, 
-    # 1. we have only a single shared panel
-    # 2. drag/drop events don't exist, we have to define a new operator for every added NodeItem
-    #Hence, the NodeItem manager    
-    self.pwc._tree.set_nodeitemmanager(self.parent.nodeitemmanager)
-    self.pwc._tree.set_nodetreename(self.name)
-    
-    self.workermanager = WorkerManager(
-      self.workerbuilder, self.workerinstancemanager, self.pmanager, self.pwc, 
-      with_blocks = False
-    )
-    self.controller_general.set_workermanager(self.workermanager)
-    self.clipboard.set_workermanager(self.workermanager)
-      
-    self.workermanager._workerfinder_global = self.parent._workerfinder_global_workermap
-    #TODO: update typelist??
-    self.workermanager.build_workers(local=False)
+    def start_hivemap(self):
+        self.mainWin = HGui.MainWindow()
+        self.statusbar = HGui.StatusBar(self.mainWin)
+        self.clipboard = Clipboard()
+        self.canvas = HGui.NodeCanvas(self.mainWin, self.clipboard, self.statusbar)
+        self.canvas.observers_selection.append(BlenderTextWidget.manager.select)
+        self.canvas.h().set_blendnodetreemanager(self)
+        self.controller_general = PGui.PControllerGeneral()
+        self.controller_block = PGui.PControllerBlock()
+        self.workerbuilder = WorkerBuilder()
+        self.workerinstancemanager = WorkerInstanceManager(self.canvas)
+        try:
+            currlevel = int(bpy.context.screen.hive_level)
+            if currlevel == 1: self.workerinstancemanager.default_profile = "simplified"
+        except:
+            pass
+        self.controller_general.set_workerinstancemanager(self.workerinstancemanager)
+        self.controller_block.set_workerinstancemanager(self.workerinstancemanager)
+        self.pwins = {}
+        self.pwins["general"] = PGui.PWindow(self.mainWin, "props-general", self.controller_general)
+        self.pwins["params"] = PGui.PWidgetWindow(self.mainWin, "props-params")
+        self.pwins["metaparams"] = PGui.PWidgetWindow(self.mainWin, "props-metaparams")
+        self.pwins["block"] = PGui.PWindow(self.mainWin, "props-block", self.controller_block)
+        self.pmanager = PGui.PManager(self.pwins)
+        self.pwc = PGui.PWorkerCreator(self.mainWin, self.clipboard)
+        self.pdc = PGui.PDroneCreator(self.mainWin, self.clipboard)
 
-    self.workermapmanager = WorkermapManager(
-      self.mainWin, self.workermanager, self.workerinstancemanager, HGui.FileDialog
-    )
-    
-  def start_spydermap(self):    
-  
-    self.mainWin = HGui.MainWindow()   
-    self.mainWin.h().nodetreemanager = self
-    self.statusbar = HGui.StatusBar(self.mainWin)      
-    self.clipboard = Clipboard()
-    self.canvas = HGui.NodeCanvas(self.mainWin, self.clipboard, self.statusbar)
-    self.canvas.observers_selection.append(BlenderTextWidget.manager.select)
-    self.canvas.h().set_blendnodetreemanager(self)
-    self.controller_general = PGui.PControllerGeneral()
-    self.workerbuilder = WorkerBuilder()
-    self.workerinstancemanager = WorkerInstanceManager(self.canvas)
-    self.controller_general.set_workerinstancemanager(self.workerinstancemanager)
-    self.pwins = {}
-    self.pwins["general"] = PGui.PWindow(self.mainWin, "props-general", self.controller_general)
-    self.pwins["params"] = PGui.PWidgetWindow(self.mainWin, "props-params")
-    self.pwins["metaparams"] = PGui.PWidgetWindow(self.mainWin, "props-metaparams")
-    self.pmanager = PGui.PManager(self.pwins)
-    self.pwc = PGui.PWorkerCreator(self.mainWin, self.clipboard)
-    self.psh = PGui.PSpyderhive(self.mainWin, "spyderhive")
-    
-    #In Qt, dragged widgets generate their own events; 
-    #In Blender, 
-    # 1. we have only a single shared panel
-    # 2. drag/drop events don't exist, we have to define a new operator for every added NodeItem
-    #Hence, the NodeItem manager    
-    self.pwc._tree.set_nodeitemmanager(self.parent.nodeitemmanager)
-    self.pwc._tree.set_nodetreename(self.name)
-    
-    self.workermanager = WorkerManager(
-      self.workerbuilder, self.workerinstancemanager, self.pmanager, self.pwc, 
-      with_blocks = False
-    )
-    self.controller_general.set_workermanager(self.workermanager)
-    self.clipboard.set_workermanager(self.workermanager)
-    
-    self.workermanager._workerfinder_global = self.parent._workerfinder_global_spydermap
-    self.workermanager._workerfinder_local = self.parent._workerfinder_local_hivemap
-    self.spydermapmanager = SpydermapManager(
-      self.mainWin, 
-      self.workermanager, self.workerinstancemanager, self.psh,
-      HGui.FileDialog
-    )
-    self.spydermapmanager._spyderhive_global_candidates = list(self.parent._workerfinder_global_spyderhives)
-    self.spydermapmanager.find_spyderhive_candidates()
-    self.workermanager.build_workers(local=False)
-    
-  def get_nodetree(self):
-    return bpy.data.node_groups[self.name]
+        # In Qt, dragged widgets generate their own events;
+        #In Blender,
+        # 1. we have only a single shared panel
+        # 2. drag/drop events don't exist, we have to define a new operator for every added NodeItem
+        #Hence, the NodeItem manager
+        self.pwc._tree.set_nodeitemmanager(self.parent.nodeitemmanager)
+        self.pwc._tree.set_nodetreename(self.name)
+        self.pdc._tree.set_nodeitemmanager(self.parent.nodeitemmanager)
+        self.pdc._tree.set_nodetreename(self.name)
+
+        self.workermanager = WorkerManager(
+            self.workerbuilder, self.workerinstancemanager, self.pmanager, self.pwc, self.pdc
+        )
+        self.controller_general.set_workermanager(self.workermanager)
+        self.controller_block.set_workermanager(self.workermanager)
+        self.clipboard.set_workermanager(self.workermanager)
+        self.canvas.set_workermanager(self.workermanager)
+
+        self.antennafoldstate = PGui.AntennaFoldState(self.canvas, self.workermanager)
+        self.workermanager.set_antennafoldstate(self.antennafoldstate)
+
+        self.workermanager._workerfinder_global = self.parent._workerfinder_global_hivemap
+        #TODO: update typelist??
+        self.workermanager.build_workers(local=False)
+
+        self.workermanager._workerfinder_local = self.parent._workerfinder_local_hivemap
+        if self.workermanager._workerfinder_local:
+            #TODO: update typelist??
+            self.workermanager.build_workers(local=True)
+
+        self.hivemapmanager = HivemapManager(
+            self.mainWin, self.workermanager, self.workerinstancemanager, HGui.FileDialog
+        )
+
+    def start_workermap(self):
+        self.mainWin = HGui.MainWindow()
+        self.statusbar = HGui.StatusBar(self.mainWin)
+        self.clipboard = Clipboard()
+        self.canvas = HGui.NodeCanvas(self.mainWin, self.clipboard, self.statusbar)
+        self.canvas.observers_selection.append(BlenderTextWidget.manager.select)
+        self.canvas.h().set_blendnodetreemanager(self)
+        self.controller_general = PGui.PControllerGeneral()
+        self.workerbuilder = WorkerBuilder()
+        self.workerinstancemanager = WorkerInstanceManager(self.canvas)
+        self.controller_general.set_workerinstancemanager(self.workerinstancemanager)
+        self.pwins = {}
+        self.pwins["general"] = PGui.PWindow(self.mainWin, "props-general", self.controller_general)
+        self.pwins["params"] = PGui.PWidgetWindow(self.mainWin, "props-params")
+        self.pwins["metaparams"] = PGui.PWidgetWindow(self.mainWin, "props-metaparams")
+        self.pmanager = PGui.PManager(self.pwins)
+        self.pwc = PGui.PWorkerCreator(self.mainWin, self.clipboard)
+
+        # In Qt, dragged widgets generate their own events;
+        #In Blender,
+        # 1. we have only a single shared panel
+        # 2. drag/drop events don't exist, we have to define a new operator for every added NodeItem
+        #Hence, the NodeItem manager
+        self.pwc._tree.set_nodeitemmanager(self.parent.nodeitemmanager)
+        self.pwc._tree.set_nodetreename(self.name)
+
+        self.workermanager = WorkerManager(
+            self.workerbuilder, self.workerinstancemanager, self.pmanager, self.pwc,
+            with_blocks=False
+        )
+        self.controller_general.set_workermanager(self.workermanager)
+        self.clipboard.set_workermanager(self.workermanager)
+
+        self.workermanager._workerfinder_global = self.parent._workerfinder_global_workermap
+        #TODO: update typelist??
+        self.workermanager.build_workers(local=False)
+
+        self.workermapmanager = WorkermapManager(
+            self.mainWin, self.workermanager, self.workerinstancemanager, HGui.FileDialog
+        )
+
+    def start_spydermap(self):
+
+        self.mainWin = HGui.MainWindow()
+        self.mainWin.h().nodetreemanager = self
+        self.statusbar = HGui.StatusBar(self.mainWin)
+        self.clipboard = Clipboard()
+        self.canvas = HGui.NodeCanvas(self.mainWin, self.clipboard, self.statusbar)
+        self.canvas.observers_selection.append(BlenderTextWidget.manager.select)
+        self.canvas.h().set_blendnodetreemanager(self)
+        self.controller_general = PGui.PControllerGeneral()
+        self.workerbuilder = WorkerBuilder()
+        self.workerinstancemanager = WorkerInstanceManager(self.canvas)
+        self.controller_general.set_workerinstancemanager(self.workerinstancemanager)
+        self.pwins = {}
+        self.pwins["general"] = PGui.PWindow(self.mainWin, "props-general", self.controller_general)
+        self.pwins["params"] = PGui.PWidgetWindow(self.mainWin, "props-params")
+        self.pwins["metaparams"] = PGui.PWidgetWindow(self.mainWin, "props-metaparams")
+        self.pmanager = PGui.PManager(self.pwins)
+        self.pwc = PGui.PWorkerCreator(self.mainWin, self.clipboard)
+        self.psh = PGui.PSpyderhive(self.mainWin, "spyderhive")
+
+        # In Qt, dragged widgets generate their own events;
+        #In Blender,
+        # 1. we have only a single shared panel
+        # 2. drag/drop events don't exist, we have to define a new operator for every added NodeItem
+        #Hence, the NodeItem manager
+        self.pwc._tree.set_nodeitemmanager(self.parent.nodeitemmanager)
+        self.pwc._tree.set_nodetreename(self.name)
+
+        self.workermanager = WorkerManager(
+            self.workerbuilder, self.workerinstancemanager, self.pmanager, self.pwc,
+            with_blocks=False
+        )
+        self.controller_general.set_workermanager(self.workermanager)
+        self.clipboard.set_workermanager(self.workermanager)
+
+        self.workermanager._workerfinder_global = self.parent._workerfinder_global_spydermap
+        self.workermanager._workerfinder_local = self.parent._workerfinder_local_hivemap
+        self.spydermapmanager = SpydermapManager(
+            self.mainWin,
+            self.workermanager, self.workerinstancemanager, self.psh,
+            HGui.FileDialog
+        )
+        self.spydermapmanager._spyderhive_global_candidates = list(self.parent._workerfinder_global_spyderhives)
+        self.spydermapmanager.find_spyderhive_candidates()
+        self.workermanager.build_workers(local=False)
+
+    def get_nodetree(self):
+        return bpy.data.node_groups[self.name]
     

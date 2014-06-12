@@ -11,58 +11,62 @@ from .blender_mstr import blender_mstr
 from . import blenderimage
 from .build_canvasdrone import build_canvasdrone
 
-blendercanvas_bgrid = build_canvasdrone (
-  blenderbgrid,
-  "blendercanvas_bgrid", 
-  "draw", 
-  ("object","bgrid"),
-  object,
+blendercanvas_bgrid = build_canvasdrone(
+    blenderbgrid,
+    "blendercanvas_bgrid",
+    "draw",
+    ("object", "bgrid"),
+    object,
 )
 
-blendercanvas_image = build_canvasdrone (
-  blenderimage.blenderimage,
-  "blendercanvas_image", 
-  "draw", 
-  ("object","image"),
-  blenderimage.canvasdrone_baseclass,
+blendercanvas_image = build_canvasdrone(
+    blenderimage.blenderimage,
+    "blendercanvas_image",
+    "draw",
+    ("object", "image"),
+    blenderimage.canvasdrone_baseclass,
 )
 
-blendercanvas_str = build_canvasdrone (
-  blender_str,
-  "blendercanvas_str", 
-  "draw", 
-  "str",
-  object,
+blendercanvas_str = build_canvasdrone(
+    blender_str,
+    "blendercanvas_str",
+    "draw",
+    "str",
+    object,
 )
 
-blendercanvas_mstr = build_canvasdrone (
-  blender_mstr,
-  "blendercanvas_mstr", 
-  "draw", 
-  "mstr",
-  object,
+blendercanvas_mstr = build_canvasdrone(
+    blender_mstr,
+    "blendercanvas_mstr",
+    "draw",
+    "mstr",
+    object,
 )
+
 
 class blendercanvas(canvasdrone):
-  def __init__(self):
-    canvasdrone._wrapped_hive.__init__(self)  
-    self.d_bgrid = blendercanvas_bgrid()
-    self.d_str = blendercanvas_str()
-    self.d_mstr = blendercanvas_mstr()
-    self.d_image = blendercanvas_image()
-  @staticmethod
-  def canvas_size():
-    import bge 
-    x = bge.render.getWindowWidth()
-    y = bge.render.getWindowHeight()
-    return x,y    
-  def place(self):   
-    libcontext.plugin(("canvas","size"), plugin_supplier(self.canvas_size))  
-    self.d_bgrid.place()
-    self.d_str.place()
-    self.d_mstr.place()
-    self.d_image.place()
-    canvasdrone._wrapped_hive.place(self)
+    def __init__(self):
+        canvasdrone._wrapped_hive.__init__(self)
+        self.d_bgrid = blendercanvas_bgrid()
+        self.d_str = blendercanvas_str()
+        self.d_mstr = blendercanvas_mstr()
+        self.d_image = blendercanvas_image()
+
+    @staticmethod
+    def canvas_size():
+        import bge
+
+        x = bge.render.getWindowWidth()
+        y = bge.render.getWindowHeight()
+        return x, y
+
+    def place(self):
+        libcontext.plugin(("canvas", "size"), plugin_supplier(self.canvas_size))
+        self.d_bgrid.place()
+        self.d_str.place()
+        self.d_mstr.place()
+        self.d_image.place()
+        canvasdrone._wrapped_hive.place(self)
 
 
 """
