@@ -1,11 +1,12 @@
-import bpy, bpy.types
+import bpy
 import logging
-from . import level
+import copy
 
-from functools import wraps
+from . import level
 
 
 class ChangeHiveLevel(bpy.types.Operator):
+    """Handles keyboard events to change HIVE level"""
 
     _running = []
 
@@ -96,6 +97,7 @@ class ChangeHiveLevel(bpy.types.Operator):
 
 
 class FakeLink:
+
     def __init__(self, from_node, from_socket, to_node, to_socket):
         self.from_node = from_node
         self.from_socket = from_socket
@@ -131,137 +133,145 @@ class HiveNodeTree:
         bntm = BlendManager.blendmanager.get_nodetree_manager(self.name)
         print(self.name, bntm, bntm.canvas.h())
         hcanvas = bntm.canvas.h()
-        changed = False
-        new_connections = []
-        removed_connections = []
-        blinks = {(l.from_node, l.from_socket, l.to_node, l.to_socket) for l in hcanvas._links}
-        for l in list(self.links):
-            pair = l.from_node, l.from_socket, l.to_node, l.to_socket
-            if pair in blinks:
-                continue
-                # print("NEW-CONNECTION", pair)
-            new_connections.append(l)
 
-        clinks = {(l.from_node, l.from_socket, l.to_node, l.to_socket) for l in self.links}
-        for l in hcanvas._links:
-            pair = l.from_node, l.from_socket, l.to_node, l.to_socket
-            if pair not in clinks:
-                # print("REMOVED-CONNECTION", pair)
-                removed_connections.append(l)
+        attempted_new_connections = []
+        removed_connections = []
+
+        # Links in editor that don't exist in the HIVE internal model
+        hive_links = {(l.from_node, l.from_socket, l.to_node, l.to_socket) for l in hcanvas._links}
+        for link in list(self.links):
+            pair = link.from_node, link.from_socket, link.to_node, link.to_socket
+            if pair in hive_links:
+                continue
+
+            attempted_new_connections.append(link)
+
+        # Links in internal model which no longer exist in the editor
+        blender_links = {(l.from_node, l.from_socket, l.to_node, l.to_socket) for l in self.links}
+        for link in hcanvas._links:
+            pair = link.from_node, link.from_socket, link.to_node, link.to_socket
+            if pair in blender_links:
+                continue
+
+            removed_connections.append(link)
 
         changed_nodes = []
-        for l in new_connections:
-            ok = hcanvas.gui_adds_connection(l, False)
-            if not ok:
-                self.links.remove(l)
-            else:
-                changed_nodes.append(l.from_node)
-                changed_nodes.append(l.to_node)
+        for link in attempted_new_connections:
+            attempt_success = hcanvas.gui_adds_connection(link, False)
 
-        for l in removed_connections:
-            if l.from_node.identifier in deletions: continue
-            if l.to_node.identifier in deletions: continue
-            ok = hcanvas.gui_removes_connection(l)
-            if not ok:
+            if attempt_success:
+                changed_nodes.append(link.from_node)
+                changed_nodes.append(link.to_node)
+
+            else:
+                self.links.remove(link)
+
+        for link in removed_connections:
+            #TODO determine why it checked node.identifier here
+            if link.from_node in deletions or link.to_node in deletions:
+                continue
+
+            attempt_success = hcanvas.gui_removes_connection(link)
+
+            if attempt_success:
+                changed_nodes.append(link.from_node)
+                changed_nodes.append(link.to_node)
+
+            else:
                 logging.debug("removal of connection was disapproved, what to do?")
 
-            else:
-                changed_nodes.append(l.from_node)
-                changed_nodes.append(l.to_node)
-
+        # Handle node connection updates
         for node in changed_nodes:
             node.check_update()
 
         hcanvas._links = {FakeLink.from_link(l) for l in self.links}
 
     def _check_positions(self):
-        import copy
-
-        bntm = BlendManager.blendmanager.get_nodetree_manager(self.name)
-        canvas = bntm.canvas
+        blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(self.name)
+        canvas = blend_nodetree_manager.canvas
         hcanvas = canvas.h()
-        if hcanvas._positions is None:
-            pos = {}
-            for node in self.nodes:
-                pos[node.label] = copy.copy(node.location)
-            hcanvas._positions = pos
-        else:
-            pos = hcanvas._positions
-            for node in self.nodes:
-                l = node.label
-                if l not in pos or pos[l] != node.location:
-                    pos[l] = copy.copy(node.location)
-                    hcanvas.gui_moves_node(l, pos[l])
+        positions = hcanvas._positions
+
+        for node in self.nodes:
+            label = node.label
+
+            if positions.get(label) != node.location:
+                positions[label] = position = copy.copy(node.location)
+                hcanvas.gui_moves_node(label, position)
 
     def _check_selection(self):
         bntm = BlendManager.blendmanager.get_nodetree_manager(self.name)
         canvas = bntm.canvas
         hcanvas = canvas.h()
         selected = []
-        if hcanvas._selection is None:
-            sel = {}
-            for node in self.nodes:
-                sel[node.label] = bool(node.select)
-                if node.select: selected.append(node.label)
-            hcanvas._selection = sel
-            if selected: canvas.gui_selects(selected)
-        else:
-            changed = False
-            sel = hcanvas._selection
-            for node in self.nodes:
-                l = node.label
-                if l not in sel:
-                    sel[l] = bool(node.select)
-                    if sel[l]:
-                        selected.append(l)
-                        changed = True
-                elif sel[l] != node.select:
-                    if node.select:
-                        selected.append(l)
+        changed = False
+        selections = hcanvas._selection
+        for node in self.nodes:
+            label = node.label
+            if label not in selections:
+                selections[label] = bool(node.select)
+                if selections[label]:
+                    selected.append(label)
                     changed = True
-                    sel[l] = bool(node.select)
-            if changed:
-                if selected:
-                    ok = canvas.gui_selects(selected)
-                    assert ok
-                else:
-                    ok = canvas.gui_deselects()
-                    assert ok
-                if bpy.context.screen is not None:
-                    for area in bpy.context.screen.areas:
-                        space = area.spaces[0]
-                        if space.type != 'NODE_EDITOR': continue
-                        if space.edit_tree.name != self.name: continue
-                        area.tag_redraw()
 
+            elif selections[label] != node.select:
+                if node.select:
+                    selected.append(label)
+                changed = True
+                selections[label] = bool(node.select)
+
+        if not changed:
+            return
+
+        if selected:
+            operation_success = canvas.gui_selects(selected)
+
+        else:
+            operation_success = canvas.gui_deselects()
+
+        assert operation_success
+
+        if bpy.context.screen is not None:
+            for area in bpy.context.screen.areas:
+                space = area.spaces[0]
+                if space.type != 'NODE_EDITOR':
+                    continue
+
+                if space.edit_tree.name != self.name:
+                    continue
+
+                area.tag_redraw()
 
     def find_node(self, name):
         for node in self.nodes:
-            if node.label == name: return node
+            if node.label == name:
+                return node
+
         raise AttributeError(name)
 
     def update(self):
-        if BlendManager.blendmanager._loading: return
+        if BlendManager.blendmanager._loading:
+            return
 
         bntm = BlendManager.blendmanager.get_nodetree_manager(self.name)
         canvas = bntm.canvas
         hcanvas = canvas.h()
-        if hcanvas._busy: return
+
+        if hcanvas._busy:
+            return
 
         deletions = self._check_deletions()
         self._check_links(deletions)
 
     def full_update(self):
-        """
-        #We have been triggered from Node.draw_buttons, so we are in an unprivileged "draw" context
-        #Therefore, don't do this stuff right away, but schedule it for the next scene update
+        """We have been triggered from Node.draw_buttons, so we are in an unprivileged "draw" context.
+        Therefore, don't do this stuff right away, but schedule it for the next scene update
         
         self._check_positions()
         self._check_selection()
         """
         BlendManager.blendmanager.schedule(self._check_positions)
         BlendManager.blendmanager.schedule(self._check_selection)
-
 
 from . import BlendManager
 
@@ -319,10 +329,9 @@ def draw_hive_level(self, context):
 
 
 def draw_spyderhive(self, context):
-    from .BlendManager import blendmanager
-
+    blend_manager = BlendManager.blendmanager
     if context.space_data.tree_type == "Spydermap" and context.space_data.edit_tree is not None:
-        blendmanager.spyderhive_widget.draw(context, self.layout)
+        blend_manager.spyderhive_widget.draw(context, self.layout)
 
 
 def check_tab_control(self, context):

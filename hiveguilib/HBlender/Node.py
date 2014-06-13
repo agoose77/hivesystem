@@ -14,111 +14,126 @@ class HiveNode:
         raise NotImplementedError
 
     def set_attributes(self, attributes):
-        for anr, a in enumerate(attributes):
-            name = a.name
+        for index, attribute in enumerate(attributes):
+            name = attribute.name
             label = name
-            if a.label is not None:
-                label = a.label
+            if attribute.label is not None:
+                label = attribute.label
 
-            assert a.inhook or a.outhook  # TODO?
-            if a.outhook:
-                h = a.outhook
-                if a.inhook:
-                    socktype = NodeSocket.socketclasses[h.shape, h.color, True]  # complementary socket
+            assert attribute.inhook or attribute.outhook  # TODO?
+            if attribute.outhook:
+                hook = attribute.outhook
+                if attribute.inhook:
+                    socktype = NodeSocket.socketclasses[hook.shape, hook.color, True]  # complementary socket
+
                 else:
-                    socktype = NodeSocket.socketclasses[h.shape, h.color]
-                sock = self.outputs.new(socktype.bl_idname, name)
-                sock.name = label
-                sock.link_limit = 99
-                sock.row = anr + 1
+                    socktype = NodeSocket.socketclasses[hook.shape, hook.color]
 
-            if a.inhook:
-                h = a.inhook
-                socktype = NodeSocket.socketclasses[h.shape, h.color]
-                sock = self.inputs.new(socktype.bl_idname, name)
-                sock.name = label
-                sock.link_limit = 99
-                sock.row = anr + 1
+                socket = self.outputs.new(socktype.bl_idname, name)
+                socket.name = label
+                socket.link_limit = 99
+                socket.row = index + 1
+
+            if attribute.inhook:
+                hook = attribute.inhook
+                socktype = NodeSocket.socketclasses[hook.shape, hook.color]
+                socket = self.inputs.new(socktype.bl_idname, name)
+                socket.name = label
+                socket.link_limit = 99
+                socket.row = index + 1
 
     def check_update(self):
-        for s in self.inputs: s.check_update()
-        for s in self.outputs: s.check_update()
+        for socket in self.inputs:
+            socket.check_update()
+
+        for socket in self.outputs:
+            socket.check_update()
 
     def find_input_socket(self, name):
-        for s in self.inputs:
-            if s.identifier == name: return s
+        for socket in self.inputs:
+            if socket.identifier == name:
+                return socket
+
         raise AttributeError(name)
 
     def find_output_socket(self, name):
-        for s in self.outputs:
-            if s.identifier == name: return s
+        for socket in self.outputs:
+            if socket.identifier == name:
+                return socket
+
         raise AttributeError(name)
 
     def draw_buttons(self, context, layout):
         from . import BlendManager
 
         nodetree = self.id_data
-        bntm = BlendManager.blendmanager.get_nodetree_manager(nodetree.name)
+        blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(nodetree.name)
         if nodetree.nodes[0].label == self.label:
             nodetree.full_update()
-        node = bntm.canvas.get_node(self.label)
+
+        node = blend_nodetree_manager.canvas.get_node(self.label)
         attributes = node.attributes
 
         try:
             layout.node_socket
+
         except AttributeError:
             return
 
-        incounter, outcounter = 0, 0
-        for anr, a in enumerate(attributes):
+        input_index = output_index = 0
+        for index, attribute in enumerate(attributes):
             row = layout.row(align=True)
-            row.label("NODE_NAME" + a.name)
-            if a.inhook:
-                row.node_socket(self.inputs[incounter])
-                incounter += 1
-            if a.outhook:
-                row.node_socket(self.outputs[outcounter])
-                outcounter += 1
+            row.label("NODE_NAME" + attribute.name)
+
+            if attribute.inhook:
+                row.node_socket(self.inputs[input_index])
+                input_index += 1
+
+            if attribute.outhook:
+                row.node_socket(self.outputs[output_index])
+                output_index += 1
 
     def draw_buttons_ext(self, context, layout):
         from . import BlendManager
 
         nodetree = self.id_data
-        bntm = BlendManager.blendmanager.get_nodetree_manager(nodetree.name)
-        bntm.mainWin.h().draw_panel(context, layout)
+        blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(nodetree.name)
+        blend_nodetree_manager.mainWin.h().draw_panel(context, layout)
 
     def __del__(self):
-        p = self.as_pointer()
-        if p in _all_attributes: del _all_attributes[p]
+        pointer = self.as_pointer()
+        if pointer in _all_attributes:
+            del _all_attributes[pointer]
 
 
-class HivemapNode(bpy.types.Node, HiveNode):
+class BaseNode(bpy.types.Node, HiveNode):
+    """Base class for nodes in HIVE"""
+
+    @classmethod
+    def poll(cls, node_tree):
+        """Determine if node can be added to a node tree"""
+        nodetree_name = cls.bl_idname.rstrip("Node")
+        return node_tree.bl_idname == nodetree_name
+
+
+class HivemapNode(BaseNode):
+
     bl_idname = "HivemapNode"
     bl_label = bl_idname
     bl_generic_sockets = True
     bl_width_default = 50
 
-    @classmethod
-    def poll(cls, ntree):
-        return ntree.bl_idname == 'Hivemap'
 
+class WorkermapNode(BaseNode):
 
-class WorkermapNode(bpy.types.Node, HiveNode):
     bl_idname = "WorkermapNode"
     bl_label = bl_idname
 
-    @classmethod
-    def poll(cls, ntree):
-        return ntree.bl_idname == 'Workermap'
 
+class SpydermapNode(BaseNode):
 
-class SpydermapNode(bpy.types.Node, HiveNode):
     bl_idname = "SpydermapNode"
     bl_label = bl_idname
-
-    @classmethod
-    def poll(cls, ntree):
-        return ntree.bl_idname == 'Spydermap'
 
 
 def register():
@@ -131,4 +146,3 @@ def unregister():
     bpy.utils.unregister_class(HivemapNode)
     bpy.utils.unregister_class(WorkermapNode)
     bpy.utils.unregister_class(SpydermapNode)
-    

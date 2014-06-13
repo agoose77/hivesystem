@@ -45,38 +45,46 @@ def game_post(dummy):
     blendmanager.game_post()
 
 
-def stop_editing():
-    ret = {}
+def get_nodetree_spaces():
+    nodetree_editors = {}
+
     for screen in bpy.data.screens:
         for area in screen.areas:
             for space in area.spaces:
-                if space.type != 'NODE_EDITOR': continue
-                t = space.edit_tree
-                if isinstance(t, HiveNodeTree):
-                    tname = t.name
-                    BlendManager._clear_nodetree(t)
-                    if tname not in ret: ret[tname] = []
-                    ret[tname].append(space)
-    return ret
+                if space.type != 'NODE_EDITOR':
+                    continue
+
+                node_tree = space.edit_tree
+                if not isinstance(node_tree, HiveNodeTree):
+                    continue
+
+                name = node_tree.name
+                BlendManager._clear_nodetree(node_tree)
+
+                if name not in nodetree_editors:
+                    nodetree_editors[name] = []
+
+                nodetree_editors[name].append(space)
+    return nodetree_editors
 
 
 def read_conf(block):
     if block in bpy.data.texts:
-        s = bpy.data.texts[block].as_string()
-        return s.splitlines()
+        return bpy.data.texts[block].as_string().splitlines()
+
     else:
-        f = bpy.path.abspath("//" + block)
-        if os.path.exists(f):
-            return open(f).splitlines()
+        filepath = bpy.path.abspath("//" + block)
+        if os.path.exists(filepath):
+            opened_file = open(filepath)
+            contents = opened_file.splitlines()
+            opened_file.close()
+
+            return contents
+
         else:
             if block == "hivegui.conf":
-                return (
-                    "spydermodels.*",
-                    "workers.*",
-                    "spyderhives.*",
-                    "spydermaps.*",
-                    "hivemaps.*",
-                )
+                return "spydermodels.*", "workers.*", "spyderhives.*", "spydermaps.*", "hivemaps.*"
+
             else:
                 raise ValueError(block)  # #TODO: add "workergui.conf", "spydergui.conf"
 
@@ -84,7 +92,8 @@ def read_conf(block):
 def bpy_opener(block):
     import io
 
-    if not block.startswith("//"): return open(block, "r")
+    if not block.startswith("//"):
+        return open(block, "r")
     block = block[len("//"):]
     block2 = block.replace(os.sep, "/")
     if block2 in bpy.data.texts:
@@ -509,7 +518,7 @@ class BlendManager:
         #Does not detect if custom workers and Spyder models have changed
         #TODO: error detection => uneditable state?
         """
-        self._restore_editors = stop_editing()
+        self._restore_editors = get_nodetree_spaces()
         self._load_hivemaps()
         self._load_workermaps()
         self._load_spydermaps()

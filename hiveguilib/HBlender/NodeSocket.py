@@ -6,35 +6,50 @@ socketclasses = {}
 
 
 class HiveNodeSocket:
+    """Custom HIVE node socket"""
+
     def draw_shape(self, context, node):
+        """Return shape type to draw socket with
+
+        :param context: blender context struct
+        :param node: current node
+        """
         return self._shape
 
     def draw_color(self, context, node):
+        """Return color to draw socket with
+
+        :param context: blender context struct
+        :param node: current node
+        """
         ret = self._color
         if len(self._color) == 1:
             ret = ret[0]  # #huh? oh well...
 
         return ret
 
+    # TODO implement this?
     def draw(self, context, layout, node, text):
-        # ##TODO
         pass
 
     def check_update(self):
-        tangentLength = 60  # TODO: get this from NodeSocket-location or NodeLink vector (when added to API)
-        spread = float(tangentLength) / 180.0 * pi
-        nr_con = len(self.links)
+        """Update custom link type between sockets"""
+        tangent_length = 60  # TODO: get this from NodeSocket-location or NodeLink vector (when added to API)
+        spread = radians(tangent_length)
+        connection_count = len(self.links)
+        step_angle = min(spread, pi / (connection_count + 2))
 
-        for ind, link in enumerate(self.links):
-            dev = (ind - nr_con / 2.0 + 0.5) * min(spread, pi / (nr_con + 2))
-            tx = tangentLength * cos(dev)
-            ty = tangentLength * sin(dev)
+        for index, link in enumerate(self.links):
+            slope = (index - (connection_count / 2.0) + 0.5) * step_angle
+            tangent_x = tangent_length * cos(slope)
+            tangent_y = tangent_length * sin(slope)
+
             try:
                 if self.in_out == "OUT":
-                    link.set_initial_tangent(tx, -ty)
+                    link.set_initial_tangent(tangent_x, -tangent_y)
 
                 elif self.in_out == "IN":
-                    link.set_final_tangent(tx, -ty)
+                    link.set_final_tangent(tangent_x, -tangent_y)
 
             except AttributeError:
                 pass

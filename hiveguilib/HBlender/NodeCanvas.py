@@ -23,8 +23,8 @@ class NodeCanvas:
         self._statusbar = statusbar
         self._nodes = {}
         self._connections = {}
-        self._selection = None  # dict of node names (RNA Node labels), set by NodeTree
-        self._positions = None  # dict, set by NodeTree
+        self._selection = {}  # dict of node names (RNA Node labels), set by NodeTree
+        self._positions = {}  # dict, set by NodeTree
         self._labels = []
         self._links = set()
         self._busy = False
@@ -169,8 +169,8 @@ class NodeCanvas:
 
     def remove_node(self, id_):
         self._busy = True
-        if self._positions is not None:
-            if id_ in self._positions: self._positions.pop(id_)
+        if id_ in self._positions:
+            self._positions.pop(id_)
         node = self._nodes.pop(id_)
         nodetree = self.bntm.get_nodetree()
         for nr, n in list(enumerate(nodetree.nodes)):
