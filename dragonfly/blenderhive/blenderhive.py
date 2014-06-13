@@ -28,9 +28,11 @@ class blenderapp(bee.drone):
         self._init = False
 
     def init(self):
-        if self._init: return
-        self.startupfunctions.sort(key=lambda v: -v[1])
-        for f, priority in self.startupfunctions: f()
+        if self._init:
+            return
+        self.startupfunctions.sort(key=lambda func_and_priority: -func_and_priority[1])
+        for function, priority in self.startupfunctions:
+            function()
         self._init = True
 
     def on_tick(self):
@@ -43,7 +45,7 @@ class blenderapp(bee.drone):
         try:
             self.finished = False
             self.init()
-            tickrate = 60.0  # TODO: tick rate locked at 60 now, later: read it from Blender
+            tickrate = bge.logic.getLogicTicRate()  # TODO: tick rate locked at 60 now, later: read it from Blender
             t_last_frame = time.time()
             ticks_todo = 0.0
             while not self.doexit:  # TODO: read if Blender one-tick-per-frame option is on, adapt main loop accordingly
@@ -369,7 +371,8 @@ class blender_actorwrapper(object):
         assert animation_name in self._animationdict, animation_name
         animation = self._animationdict[animation_name]
 
-        if mode is None: mode = animation.play_mode
+        if mode is None:
+            mode = animation.play_mode
         import bge
 
         if mode == "play":

@@ -7,21 +7,40 @@ from functools import wraps
 
 class ChangeHiveLevel(bpy.types.Operator):
 
-    RUNNING = False
+    _running = []
 
     bl_idname = "node.change_hive_level"
     bl_label = "Change the HIVE system level"
 
+    @classmethod
+    def can_invoke(cls):
+        return not cls._running
+
+    @classmethod
+    def disable(cls):
+        for registered in cls._running:
+            registered.invalid = True
+        cls._running.clear()
+
     def invoke(self, context, event):
+        if not ChangeHiveLevel.can_invoke():
+            return {"CANCELLED"}
+
+        ChangeHiveLevel._running.append(self)
+
+        self.held = False
+        self.invalid = False
+
         return self.execute(context)
 
     def execute(self, context):
-        self.held = False
-
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 
     def modal(self, context, event):
+        if self.invalid:
+            return {"CANCELLED"}
+
         if event.value == "RELEASE":
             self.held = False
             return {"PASS_THROUGH"}
@@ -29,10 +48,10 @@ class ChangeHiveLevel(bpy.types.Operator):
         elif event.value != 'PRESS' or self.held:
             return {"PASS_THROUGH"}
 
-        direction = (-2 * event.shift) + 1
-
         if not event.type == "TAB":
             return {"PASS_THROUGH"}
+
+        direction = (-2 * event.shift) + 1
 
         hive_levels = [int(x[0]) for x in bpy.types.Screen.hive_level[1]["items"]]
         hive_level = int(context.screen.hive_level) + direction
@@ -47,6 +66,7 @@ class ChangeHiveLevel(bpy.types.Operator):
         context.screen.hive_level = str(hive_level)
 
         self.held = True
+
         return {"PASS_THROUGH"}
 
 
@@ -278,21 +298,14 @@ def draw_spyderhive(self, context):
         blendmanager.spyderhive_widget.draw(context, self.layout)
 
 
-def call_toggle_decorator(wrapped):
-    """Enabled the TAB key modification of HIVE level.
-
-    :param wrapped: wrapped function
-    :returns: wrapper function
-    """
-    @wraps(wrapped)
-    def wrapper(context, value):
-        if not ChangeHiveLevel.RUNNING:
+def check_tab_control(self, context):
+    if context.screen.use_hive:
+        if ChangeHiveLevel.can_invoke():
             bpy.ops.node.change_hive_level("INVOKE_DEFAULT")
-            ChangeHiveLevel.RUNNING = True
 
-        wrapped(context, value)
-
-    return wrapper
+    else:
+        if not ChangeHiveLevel.can_invoke():
+            ChangeHiveLevel.disable()
 
 
 def register():
@@ -304,7 +317,7 @@ def register():
         name="Use Hive Logic",
         description="Enables the Hive system in the Game Engine for this scene",
         get=BlendManager.use_hive_get,
-        set=call_toggle_decorator(BlendManager.use_hive_set),
+        set=BlendManager.use_hive_set,
     )
     bpy.types.Screen.hive_level = bpy.props.EnumProperty(
         name="Hive level",
@@ -322,6 +335,7 @@ def register():
     bpy.types.NODE_HT_header.append(draw_hive_level)
     bpy.types.NODE_HT_header.append(draw_use_hive)
     bpy.types.NODE_HT_header.append(draw_spyderhive)
+    bpy.types.NODE_HT_header.append(check_tab_control)
 
 
 def unregister():
