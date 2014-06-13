@@ -13,11 +13,25 @@ class ChangeHiveLevel(bpy.types.Operator):
     bl_label = "Change the HIVE system level"
 
     @classmethod
+    def check_valid(cls):
+        invalid = []
+        for registered in cls._running:
+            try:
+                registered.as_pointer
+            except ReferenceError:
+                invalid.append(registered)
+
+        for registered in invalid:
+            cls._running.remove(registered)
+
+    @classmethod
     def can_invoke(cls):
+        cls.check_valid()
         return not cls._running
 
     @classmethod
     def disable(cls):
+        cls.check_valid()
         for registered in cls._running:
             registered.invalid = True
         cls._running.clear()
@@ -37,6 +51,17 @@ class ChangeHiveLevel(bpy.types.Operator):
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 
+    @staticmethod
+    def is_node_editor(context, event):
+        """Determine if the event occurred within the node editor
+
+        :param context: event context
+        :param event: event instance
+        """
+        node_editor = next((x for x in context.window.screen.areas.values() if x.type == "NODE_EDITOR"))
+        return node_editor.x <= event.mouse_x <= (node_editor.x + node_editor.width) and \
+               node_editor.y <= event.mouse_y <= (node_editor.y + node_editor.height)
+
     def modal(self, context, event):
         if self.invalid:
             return {"CANCELLED"}
@@ -45,7 +70,7 @@ class ChangeHiveLevel(bpy.types.Operator):
             self.held = False
             return {"PASS_THROUGH"}
 
-        elif event.value != 'PRESS' or self.held:
+        elif event.value != 'PRESS' or self.held or not self.is_node_editor(context, event):
             return {"PASS_THROUGH"}
 
         if not event.type == "TAB":
@@ -88,6 +113,7 @@ class FakeLink:
 
 
 class HiveNodeTree:
+
     def _check_deletions(self):
         ret = []
         bntm = BlendManager.blendmanager.get_nodetree_manager(self.name)
@@ -138,6 +164,7 @@ class HiveNodeTree:
             ok = hcanvas.gui_removes_connection(l)
             if not ok:
                 logging.debug("removal of connection was disapproved, what to do?")
+
             else:
                 changed_nodes.append(l.from_node)
                 changed_nodes.append(l.to_node)
