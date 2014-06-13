@@ -4,6 +4,7 @@ import sys
 import os
 import imp
 import functools
+import traceback
 
 import spyder
 import Spyder
@@ -33,44 +34,40 @@ class FindWorkerState(object):
 
 
 def add_worker(worker, worker_name, find_worker_state, found_workers):
-    try:
-        if hasattr(worker, "guiparams") and ("antennas" in worker.guiparams or "outputs" in worker.guiparams):
-            # worker, worker-like hive, or shim object (e.g. WorkerGUI segments)
+    if hasattr(worker, "guiparams") and ("antennas" in worker.guiparams or "outputs" in worker.guiparams):
+        # worker, worker-like hive, or shim object (e.g. WorkerGUI segments)
+        find_worker_state.workers[worker_name] = worker
+        found_workers.add(id(worker))
+        return True
+
+    elif hasattr(worker, "metaguiparams"):
+        find_worker_state.metaworkers[worker_name] = worker
+        found_workers.add(id(worker))
+        return True
+
+    elif hasattr(worker, "__hivebases__"):
+        if bee.frame in worker.__hivebases__ or bee.frame in worker.__allhivebases__:  # drone-like hive, treated as worker
             find_worker_state.workers[worker_name] = worker
             found_workers.add(id(worker))
             return True
 
-        elif hasattr(worker, "metaguiparams"):
-            find_worker_state.metaworkers[worker_name] = worker
+        elif bee.spyderhive.spyderframe in worker.__hivebases__ \
+                or bee.spyderhive.spyderdicthive in worker.__hivebases__ \
+                or bee.spyderhive.spyderhivecontext in worker.__allhivebases__ \
+                or bee.spyderhive.spyderdicthivecontext in worker.__allhivebases__ \
+                or bee.combohive in worker.__hivebases__:  # spyderhive
+            find_worker_state.spyderhives[worker_name] = worker
             found_workers.add(id(worker))
             return True
 
-        elif hasattr(worker, "__hivebases__"):
-            if bee.frame in worker.__hivebases__ or bee.frame in worker.__allhivebases__:  # drone-like hive, treated as worker
-                find_worker_state.workers[worker_name] = worker
-                found_workers.add(id(worker))
-                return True
-
-            elif bee.spyderhive.spyderframe in worker.__hivebases__ \
-                    or bee.spyderhive.spyderdicthive in worker.__hivebases__ \
-                    or bee.spyderhive.spyderhivecontext in worker.__allhivebases__ \
-                    or bee.spyderhive.spyderdicthivecontext in worker.__allhivebases__ \
-                    or bee.combohive in worker.__hivebases__:  # spyderhive
-                find_worker_state.spyderhives[worker_name] = worker
-                found_workers.add(id(worker))
-                return True
-
-        elif hasattr(worker, "_wrapped_hive"):  # true drones
-            if issubclass(worker._wrapped_hive, bee.drone):
-                find_worker_state.drones[worker_name] = worker
-                found_workers.add(id(worker))
-
-        elif hasattr(worker, "__drone__"):  # drone-like shim object
+    elif hasattr(worker, "_wrapped_hive"):  # true drones
+        if issubclass(worker._wrapped_hive, bee.drone):
             find_worker_state.drones[worker_name] = worker
             found_workers.add(id(worker))
 
-    except TypeError:
-        pass
+    elif hasattr(worker, "__drone__"):  # drone-like shim object
+        find_worker_state.drones[worker_name] = worker
+        found_workers.add(id(worker))
 
     return False
 
@@ -115,71 +112,76 @@ def find_workers(mod, modname, done_mods, found_workers, star=False, search_path
     if p.startswith("//"):
         p = p[2:]
         motif = "//"
+
     path = motif + os.path.split(p)[0]
     newmodules = []
     newstarmodules = []
+
     if search_path:
         for f in lister(path):
             ff = path + os.sep + f
             if (ff.endswith(".web") or ff.endswith(".hivemap") or ff.endswith(".spydermap")):
                 try:
                     spydertype, spyderdata = spyder.core.parse(opener(ff).read())
-                except:
-                    import traceback
 
+                except:
                     traceback.print_exc()
                     continue
-                if ff.endswith(".web") or ff.endswith(".hivemap"):
+
+                if ff.endswith(".web") or ff.endswith(".hivemap") or ff.endswith(".spydermap"):
                     if spydertype == "Hivemap":
                         try:
                             hivemap = Spyder.Hivemap(spyderdata)
+
                         except:
                             print("Error in importing '%s':" % ff)
-                            import traceback
-
                             traceback.print_exc()
                             continue
+
                         newhivemapname = modname + ":" + f
                         find_worker_state.hivemap_workers[newhivemapname] = hivemap
-                if ff.endswith(".web") or ff.endswith(".spydermap"):
-                    if spydertype == "Spydermap":
+
+                    elif spydertype == "Spydermap":
                         try:
                             # spydermap = Spyder.Spydermap(spyderdata)
                             spydermap = Spyder.Spydermap.fromfile(ff)
+
                         except:
                             print("Error in importing '%s':" % ff)
-                            import traceback
-
                             traceback.print_exc()
                             continue
+
                         newspydermapname = modname + "#" + f
                         find_worker_state.spydermap_workers[newspydermapname] = spydermap
 
             elif star:
                 if ff.endswith(".py"):
-                    n = f[:-len(".py")]
-                    newstarmodules.append((n, ff))
+                    name = f[:-len(".py")]
+                    newstarmodules.append((name, ff))
                 elif ff.endswith(".spy"):
                     # n = f[:-len(".spy")]
                     # newstarmodules.append((n,ff))
                     pass  #importing like this is not a good idea...
             else:
-                if os.path.isdir(ff) and os.path.exists(ff + os.sep + "__init__.py"): newmodules.append(f)
-    for n in newmodules:
-        new_module_name = modname + "." + n
-        if new_module_name in find_worker_state.workers or \
-                        new_module_name in find_worker_state.metaworkers: continue
+                if os.path.isdir(ff) and os.path.exists(ff + os.sep + "__init__.py"):
+                    newmodules.append(f)
+
+    for name in newmodules:
+        new_module_name = modname + "." + name
+        if new_module_name in find_worker_state.workers or new_module_name in find_worker_state.metaworkers:
+            continue
 
         try:
             if new_module_name not in sys.modules:
                 __import__(new_module_name)
-        except ImportError:
+
+        except Exception:
             print("Error in importing", new_module_name)
-            import traceback
 
             traceback.print_exc()
             continue
         newmod = sys.modules[new_module_name]
+
         search_path = newmod.__file__.endswith("__init__.pyc") or mod.__file__.endswith("__init__.py")
         new_find_worker_state = \
             find_workers(newmod, new_module_name, done_mods, found_workers,
@@ -187,11 +189,12 @@ def find_workers(mod, modname, done_mods, found_workers, star=False, search_path
                          lister=lister, opener=opener
             )
         find_worker_state.update(new_find_worker_state)
-    for n, ff in newstarmodules:
-        if n == "__init__": continue
-        new_module_name = modname + "." + n
-        if new_module_name in find_worker_state.workers or \
-                        new_module_name in find_worker_state.metaworkers: continue
+    for name, ff in newstarmodules:
+        if name == "__init__":
+            continue
+        new_module_name = modname + "." + name
+        if new_module_name in find_worker_state.workers or new_module_name in find_worker_state.metaworkers:
+            continue
         try:
             if new_module_name not in sys.modules:
                 if ff.endswith(".spy"):
@@ -203,12 +206,11 @@ def find_workers(mod, modname, done_mods, found_workers, star=False, search_path
                 else:
                     fil = open(ff, "r")
                     imp.load_module(new_module_name, fil, ff, ("py", "r", imp.PY_SOURCE ))
-        except ImportError:
+        except Exception:
             print("Error in importing", new_module_name)
-            import traceback
-
             traceback.print_exc()
             continue
+
         newmod = sys.modules[new_module_name]
         search_path = newmod.__file__.endswith("__init__.pyc") or mod.__file__.endswith("__init__.py")
         new_find_worker_state = \
@@ -286,10 +288,9 @@ class WorkerFinder(object):
                         opener=self.opener,
                     )
                 find_worker_state.update(newfindworkerstate)
+
             except:
                 print("Error in importing", m)
-                import traceback
-
                 traceback.print_exc()
 
         sys.path = syspath_backup

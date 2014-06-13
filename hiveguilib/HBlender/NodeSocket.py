@@ -22,7 +22,7 @@ class HiveNodeSocket:
 
     def check_update(self):
         tangentLength = 60  # TODO: get this from NodeSocket-location or NodeLink vector (when added to API)
-        spread = 60.0 / 180.0 * pi
+        spread = float(tangentLength) / 180.0 * pi
         nr_con = len(self.links)
 
         for ind, link in enumerate(self.links):
