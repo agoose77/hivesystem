@@ -116,26 +116,33 @@ class WorkerInstanceManager(object):
         self._canvas.morph_node(workerid, newnode, maps[0], maps[1])
 
     def morph_worker(self, workerid, morph):
-        wi = self._workerinstances[workerid]
+        worker_instance = self._workerinstances[workerid]
 
-        m0 = wi.profile()
-        m1 = wi.profiles[morph]
-        map0, map1 = m0[1], m1[1]
+        from_attributes, from_worker_mapping = worker_instance.profile()
+        to_attributes, to_worker_mapping = worker_instance.profiles[morph]
         maps = []
+
         for at in "in", "out":
             cmap = {}
-            mapr = getattr(map0, "_" + at + "mapr")
-            mapnew = getattr(map1, "_" + at + "map")
-            for v, k in mapr.items():
-                if k is None: continue
-                if mapnew[k] is None: continue
-                vv = mapnew[k]
+            #TODO fix the string mapr and map name convention
+            from_map = getattr(from_worker_mapping, "_" + at + "mapr")
+            to_map = getattr(to_worker_mapping, "_" + at + "map")
+
+            # TODO explain this
+            for v, k in from_map.items():
+                if k is None:
+                    continue
+
+                if to_map[k] is None:
+                    continue
+                vv = to_map[k]
                 cmap[v] = vv
+
             maps.append(cmap)
 
-        self._morph_worker(workerid, m1[0], maps)
+        self._morph_worker(workerid, to_attributes, maps)
 
-        wi.curr_profile = morph
+        worker_instance.curr_profile = morph
         if workerid in self._workerparams:
             self.set_parameters(workerid, self._workerparams[workerid])
 
@@ -265,7 +272,7 @@ class WorkerInstanceManager(object):
         self._workerparams[workerid] = params
         wi = self._workerinstances[workerid]
         pmapping = wi.profile()[1].pmap
-        print("PARAMS", params, pmapping, wi.guiparams)
+        #print("PARAMS", params, pmapping, wi.guiparams)
         mparams = {}
         for p in params:
             mp = pmapping[p]

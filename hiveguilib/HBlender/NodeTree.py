@@ -2,6 +2,53 @@ import bpy, bpy.types
 import logging
 from . import level
 
+from functools import wraps
+
+
+class ChangeHiveLevel(bpy.types.Operator):
+
+    RUNNING = False
+
+    bl_idname = "node.change_hive_level"
+    bl_label = "Change the HIVE system level"
+
+    def invoke(self, context, event):
+        return self.execute(context)
+
+    def execute(self, context):
+        self.held = False
+
+        context.window_manager.modal_handler_add(self)
+        return {'RUNNING_MODAL'}
+
+    def modal(self, context, event):
+        if event.value == "RELEASE":
+            self.held = False
+            return {"PASS_THROUGH"}
+
+        elif event.value != 'PRESS' or self.held:
+            return {"PASS_THROUGH"}
+
+        direction = (-2 * event.shift) + 1
+
+        if not event.type == "TAB":
+            return {"PASS_THROUGH"}
+
+        hive_levels = [int(x[0]) for x in bpy.types.Screen.hive_level[1]["items"]]
+        hive_level = int(context.screen.hive_level) + direction
+
+        # Clamp level
+        if hive_level < hive_levels[0]:
+            hive_level = hive_levels[-1]
+
+        elif hive_level > hive_levels[-1]:
+            hive_level = hive_levels[0]
+
+        context.screen.hive_level = str(hive_level)
+
+        self.held = True
+        return {"PASS_THROUGH"}
+
 
 class FakeLink:
     def __init__(self, from_node, from_socket, to_node, to_socket):
@@ -231,15 +278,33 @@ def draw_spyderhive(self, context):
         blendmanager.spyderhive_widget.draw(context, self.layout)
 
 
+def call_toggle_decorator(wrapped):
+    """Enabled the TAB key modification of HIVE level.
+
+    :param wrapped: wrapped function
+    :returns: wrapper function
+    """
+    @wraps(wrapped)
+    def wrapper(context, value):
+        if not ChangeHiveLevel.RUNNING:
+            bpy.ops.node.change_hive_level("INVOKE_DEFAULT")
+            ChangeHiveLevel.RUNNING = True
+
+        wrapped(context, value)
+
+    return wrapper
+
+
 def register():
     bpy.utils.register_class(HivemapNodeTree)
     bpy.utils.register_class(WorkermapNodeTree)
     bpy.utils.register_class(SpydermapNodeTree)
+    bpy.utils.register_class(ChangeHiveLevel)
     bpy.types.Screen.use_hive = bpy.props.BoolProperty(
         name="Use Hive Logic",
         description="Enables the Hive system in the Game Engine for this scene",
         get=BlendManager.use_hive_get,
-        set=BlendManager.use_hive_set,
+        set=call_toggle_decorator(BlendManager.use_hive_set),
     )
     bpy.types.Screen.hive_level = bpy.props.EnumProperty(
         name="Hive level",
@@ -263,6 +328,7 @@ def unregister():
     bpy.utils.unregister_class(HivemapNodeTree)
     bpy.utils.unregister_class(WorkermapNodeTree)
     bpy.utils.unregister_class(SpydermapNodeTree)
+    bpy.utils.unregister_class(ChangeHiveLevel)
     bpy.types.NODE_HT_header.remove(draw_hive_level)
     bpy.types.NODE_HT_header.remove(draw_use_hive)
     bpy.types.NODE_HT_header.remove(draw_spyderhive)

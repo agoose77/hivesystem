@@ -92,7 +92,7 @@ def minlevel(context, level):
     try:
         current_level = int(context.screen.hive_level)
 
-    except TypeError:
+    except (TypeError, AttributeError):
         return False
 
     return current_level >= level
