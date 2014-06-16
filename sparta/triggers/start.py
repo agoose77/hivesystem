@@ -16,5 +16,5 @@ class start(bee.worker):
     }
 
     def place(self):
-        raise NotImplementedError("sparta.triggers.start has not been implemented yet")
-    
+        listener = plugin_single_required(("trigger", self.trigfunc, "start"))
+        libcontext.plugin(("evin", "listener"), listener)

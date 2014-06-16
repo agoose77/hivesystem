@@ -436,6 +436,7 @@ class triggering_class(object):
             self.test(arg)
 
     def test(self, arg):
+        print(arg)
         if hasattr(arg, "triggering_" + self.mode):
             self.value = arg
             self.bound = True

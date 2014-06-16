@@ -47,7 +47,7 @@ class BlenderTextWidget(BlenderWidget):
     def draw2(self, context, layout):
         if self.name is not None:
             layout = layout.row()
-            layout.label("TEXT_WIDGET" + str(self.name))
+            layout.label(str(self.name))
         layout.operator(self.widget_id, "Edit in Text Editor")
 
     def show(self):

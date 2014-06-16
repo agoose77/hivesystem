@@ -59,7 +59,10 @@ class ChangeHiveLevel(bpy.types.Operator):
         :param context: event context
         :param event: event instance
         """
-        node_editor = next((x for x in context.window.screen.areas.values() if x.type == "NODE_EDITOR"))
+        node_editor = next((x for x in context.window.screen.areas.values() if x.type == "NODE_EDITOR"), None)
+        if node_editor is None:
+            return False
+
         return node_editor.x <= event.mouse_x <= (node_editor.x + node_editor.width) and \
                node_editor.y <= event.mouse_y <= (node_editor.y + node_editor.height)
 

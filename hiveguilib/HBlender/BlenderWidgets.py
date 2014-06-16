@@ -139,7 +139,7 @@ class BlenderPlaceholderWidget(BlenderWidget):
 
     def draw2(self, context, layout):
         txt = "Placeholder: name '%s', type '%s', value '%s'" % (self.name, self.typ, self.value)
-        layout.label("PLACEHOLDER" + txt)
+        layout.label(txt)
 
 
 class BlenderLabelWidget(BlenderWidget):

@@ -4,7 +4,7 @@ import bee
 from bee.segments import *
 
 
-class trigger_false(object):
+class trigger_false(bee.worker):
     inp = antenna("push", "trigger")
     outp = output("push", "bool")
     b_outp = buffer("push", "bool")

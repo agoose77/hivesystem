@@ -65,7 +65,7 @@ class HiveNode:
 
     def draw_buttons(self, context, layout):
         from . import BlendManager
-
+        # TODO allow relabelling of nodes (or use the ID function? - unless we can catch "on rename")
         nodetree = self.id_data
         blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(nodetree.name)
         if nodetree.nodes[0].label == self.label:

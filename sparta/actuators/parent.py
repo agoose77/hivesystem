@@ -34,6 +34,7 @@ class parent(object):
                 identifier_buffer = buffer("pull", ("str", "identifier"))
                 connect(identifier, identifier_buffer)
 
+
             trig = antenna("push", "trigger")
             parent = antenna("pull", ("str", "identifier"))
             parent_buffer = buffer("pull", ("str", "identifier"))
@@ -62,16 +63,16 @@ class parent(object):
 
                 trigger(trig, identifier_buffer)
 
-            trigger(parent, m_parent)
+            trigger(trig, m_parent)
 
-            def set_entity_parent_func(self, parent_func):
+            def set_entity_parent_to(self, parent_func):
                 self.parent_func = parent_func
 
             def place(self):
                 if idmode == "bound":
                     libcontext.socket("actor", socket_single_required(self.set_actor))
 
-                s = libcontext.socketclasses.socket_single_required(self.set_entity_parent_to)
-                libcontext.socket(("entity", "parent_to"), s)
+                socket_info = libcontext.socketclasses.socket_single_required(self.set_entity_parent_to)
+                libcontext.socket(("entity", "parent_to"), socket_info)
 
         return parent

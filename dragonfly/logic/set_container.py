@@ -2,17 +2,17 @@ import bee
 from bee.segments import *
 
 
-class wset(object):
+class set_container(object):
     metaguiparams = {"type": "type"}
 
     def __new__(cls, type):
-        class wset(bee.worker):
+        class set_container(bee.worker):
             def place(self):
                 self.value = set()
 
-            wset = output("pull", ("object", "set"))
+            set_out = output("pull", ("object", "set"))
             value = variable(("object", "set"))
-            connect(value, wset)
+            connect(value, set_out)
 
             add = antenna("push", type)
             v_add = variable(type)
@@ -34,6 +34,6 @@ class wset(object):
 
             trigger(v_remove, do_remove)
 
-        return wset
+        return set_container
 
     

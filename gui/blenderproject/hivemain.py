@@ -7,7 +7,7 @@ import spydermodels, spyderhives
 #Load the hivemap (visual hive, edited with HiveGUI)
 import bee  #defines the Hivemap datamodel
 
-hivemap = Spyder.Hivemap.fromfile("main.hivemap")
+hivemap = Spyder.Hivemap.fromfile("hivemaps/NodeTree.hivemap")
 
 #Put the hivemap inside a hivemaphive, which interprets the hivemap
 # We are using a frame hive, sharing the environment with its parent

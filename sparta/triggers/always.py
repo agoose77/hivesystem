@@ -26,7 +26,7 @@ class always(bee.worker):
         f.skip.name = "Skip"
 
     def update_value(self):
-        if not self.pacemaker.ticks % self.skip:
+        if not self.pacemaker.ticks % (self.skip + 1):
             self.trigfunc()
 
     def enable(self):
