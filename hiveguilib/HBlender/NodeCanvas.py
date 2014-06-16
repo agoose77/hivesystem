@@ -37,10 +37,13 @@ class NodeCanvas:
         tree = self.bntm.get_nodetree()
         if isinstance(tree, NodeTree.HivemapNodeTree):
             return Node.HivemapNode
+
         if isinstance(tree, NodeTree.SpydermapNodeTree):
             return Node.SpydermapNode
+
         if isinstance(tree, NodeTree.WorkermapNodeTree):
             return Node.WorkermapNode
+
         raise ValueError(tree.bl_idname)
 
     def _add_node(self, id_, name, attributes, position, tooltip):
@@ -54,14 +57,15 @@ class NodeCanvas:
             self._labels.append(name)
             node.set_attributes(attributes)
             nodetree.nodes.active = node
+
         finally:
             self._busy = False
 
     def h_add_node(self, id_, hnode):
-        node = h_map_node(hnode)
-        pos = scalepos(node.position)
-        self._add_node(id_, node.name, node.attributes, pos, node.tooltip)
-        self._nodes[id_] = node
+        mapnode = h_map_node(hnode)
+        pos = scalepos(mapnode.position)
+        self._add_node(id_, mapnode.name, mapnode.attributes, pos, mapnode.tooltip)
+        self._nodes[id_] = mapnode
 
     def h_morph_node(self, id_, hnode, mapcon):
         mapnode = h_map_node(hnode)
@@ -73,24 +77,25 @@ class NodeCanvas:
         node = [n for n in nodetree.nodes if n.label == node.name][0]
 
         self._busy = True
-        inout = [a.name for a in mapnode.attributes if a.inhook is not None and a.outhook is not None]
+        in_out_attributes = [a.name for a in mapnode.attributes if a.inhook is not None and a.outhook is not None]
         matched_inputs = set()
         matched_outputs = set()
         accounted_inputs = set()
         accounted_outputs = set()
 
-        for atname0, atname1, mode in mapcon:
+        for attribute_name_a, attribute_name_b, mode in mapcon:
             assert mode in ("in", "out"), mode
             if mode == "in":
-                at0 = node.find_input_socket(atname0)
-                matched_inputs.add(atname0)
-                accounted_inputs.add(atname1)
+                at0 = node.find_input_socket(attribute_name_a)
+                matched_inputs.add(attribute_name_a)
+                accounted_inputs.add(attribute_name_b)
+
             else:
-                at0 = node.find_output_socket(atname0)
-                matched_outputs.add(atname0)
-                accounted_outputs.add(atname1)
-            print(at0, atname1)
-            # at0.name = atname1
+                at0 = node.find_output_socket(attribute_name_a)
+                matched_outputs.add(attribute_name_a)
+                accounted_outputs.add(attribute_name_b)
+            print(mapnode.attributes)
+            at0.name = [n for n in mapnode.attributes if n.name == attribute_name_b][0].label
 
         # Remove unmatched sockets
         # This should be safe: attributes with connections won't be allowed to be deleted
@@ -101,6 +106,7 @@ class NodeCanvas:
                 if a.name not in matched_inputs:
                     node.inputs.remove(a)
                     change = True
+
         change = True
         while change:
             change = False
@@ -120,11 +126,14 @@ class NodeCanvas:
                     socktype = NodeSocket.socketclasses[h.shape, h.color, True]  #complementary socket
                 else:
                     socktype = NodeSocket.socketclasses[h.shape, h.color]
+
                 sock = node.outputs.new(socktype.bl_idname, a.name)
                 sock.name = label
                 sock.link_limit = 99
+
             if a.inhook:
-                if a.name in accounted_inputs: continue
+                if a.name in accounted_inputs:
+                    continue
                 h = a.inhook
                 socktype = NodeSocket.socketclasses[h.shape, h.color]
                 sock = node.inputs.new(socktype.bl_idname, a.name)
@@ -160,6 +169,7 @@ class NodeCanvas:
                 node.select = True
             else:
                 node.select = False
+
         if len(nodenames) == 1:
             nodename = nodenames[0]
             for node in nodetree.nodes:
@@ -171,18 +181,22 @@ class NodeCanvas:
         self._busy = True
         if id_ in self._positions:
             self._positions.pop(id_)
+
         node = self._nodes.pop(id_)
         nodetree = self.bntm.get_nodetree()
+
         for nr, n in list(enumerate(nodetree.nodes)):
-            if n.label != node.name: continue
+            if n.label != node.name:
+                continue
+
             nodetree.nodes.remove(n)
             self._labels.pop(nr)
             break
+
         self._links = {FakeLink.from_link(l) for l in nodetree.links}
         self._busy = False
 
     def rename_node(self, old_id, new_id, new_name):
-        print("NREname", new_name)
         self._busy = True
         node = self._nodes.pop(old_id)
         self._nodes[new_id] = node
@@ -198,6 +212,7 @@ class NodeCanvas:
             self._labels[nr] = new_name
 
             break
+
         if self._selection is not None and old_name in self._selection:
             pos = self._selection.pop(old_name)
             self._selection[new_name] = pos
@@ -205,6 +220,7 @@ class NodeCanvas:
                 sel = [n for n in self._selection if self._selection[n]]
                 selected_ids = [id_ for id_, n in self._nodes.items() if n.name in sel]
                 self._hgui().gui_selects(selected_ids)
+
         self._busy = False
 
     def h_add_connection(self, id_, connection, valid):
@@ -219,6 +235,7 @@ class NodeCanvas:
             (connection.start_node, connection.start_attribute),
             (connection.end_node, connection.end_attribute),
         )
+
         try:
             link.use_socket_color = True
             link.dashed = (link.from_socket._shape == "DIAMOND")
@@ -298,7 +315,9 @@ class NodeCanvas:
         nodetree = self.bntm.get_nodetree()
         node = None
         for nr, n in enumerate(nodetree.nodes):
-            if n.label != id_: continue
+            if n.label != id_:
+                continue
+
             node = n
             break
         assert node is not None, id_

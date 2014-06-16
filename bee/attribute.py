@@ -20,24 +20,27 @@ class attribute(myobject):
         if prebuild == True:
             if self.parent is None: return self
             if parent is not None and parent is not self.parent: return self
-        if self.parent is None: raise ValueError(
-            "bee.attribute('%s') doesn't know its parent hive, please place it as a named bee inside a hive" % str(
-                self.args))
-        if len(self.args) == 0: return self.parent
+        if self.parent is None:
+            raise ValueError("bee.attribute('%s') doesn't know its parent hive, please place it as a named bee inside a"
+                             " hive" % str(self.args))
+        if not self.args:
+            return self.parent
+
         if self.args[0] == "__call__":
             ret = self.parent()
+
         else:
-            a = self.args[0]
-            if isinstance(a, int):
-                ret = self.parent[a]
+            arg = self.args[0]
+            if isinstance(arg, int):
+                ret = self.parent[arg]
             else:
-                ret = getattr(self.parent, a)
-        for a in self.args[1:]:
-            if a == "__call__":
+                ret = getattr(self.parent, arg)
+        for arg in self.args[1:]:
+            if arg == "__call__":
                 ret = ret()
             else:
-                if isinstance(a, int):
-                    ret = ret[a]
+                if isinstance(arg, int):
+                    ret = ret[arg]
                 else:
-                    ret = getattr(ret, a)
+                    ret = getattr(ret, arg)
         return ret

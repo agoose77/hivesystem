@@ -17,8 +17,10 @@ class mousearea(bee.drone):
             a = area.to_std(canvasx, canvasy)
             px = 2 * (x - a.x) / a.sizex - 1
             py = 2 * (y - a.y) / a.sizey - 1
-            if px < -1 or px > 1: continue
-            if py < -1 or py > 1: continue
+            if px < -1 or px > 1:
+                continue
+            if py < -1 or py > 1:
+                continue
             e = bee.event("mousearea", areaname, event[0], (px, py))
             self.send_event(e)
             break

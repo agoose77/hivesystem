@@ -4,10 +4,12 @@ from .resolve import resolve
 from .beewrapper import beewrapper
 
 
-class ConfigureBeeException(Exception): pass
+class ConfigureBeeException(Exception):
+    pass
 
 
 class delayedcall(object):
+
     def __init__(self, parent, appendfunc, attrs, stack):
         self.parent = parent
         self.appendfunc = appendfunc
@@ -30,9 +32,11 @@ class delayedcall(object):
 
 
 class configure_base(beehelper):
+
     __reg_enabled__ = False
 
-    def getinstance(self, __parent__=None): return self
+    def getinstance(self, __parent__=None):
+        return self
 
     def configure(self, beedict):
         pass
@@ -51,6 +55,7 @@ class configure_base(beehelper):
 
 
 class configure(configure_base):
+
     def __init__(self, target):
         self.target_original = target
         self.configuration = []
@@ -60,15 +65,19 @@ class configure(configure_base):
 
         if isinstance(target, str):
             self.target = target
+
         elif hasattr(target, "__get_beename__"):
             self.target = target
             self.bound_target = False
+
         else:
             raise TypeError(target)
 
     def bind(self):
         if not self.bound_target:
-            if isinstance(self.target.__get_beename__, tuple): raise TypeError(self.target)
+            if isinstance(self.target.__get_beename__, tuple):
+                raise TypeError(self.target)
+
             self.target = self.target.__get_beename__(self.target)
             self.bound_target = True
 
@@ -76,22 +85,28 @@ class configure(configure_base):
         if not self.bound_target:
             from .drone import drone
 
-            if isinstance(self.target.instance, drone) \
-                    and self.target.instance in beedict.values():
+            if isinstance(self.target.instance, drone) and self.target.instance in beedict.values():
                 self.target = [v for v in beedict if beedict[v] is self.target.instance][0]
+
             else:
                 self.bind()
+
         n = beedict[self.target]
         n = resolve(n, parameters=self.parameters)
-        if n is self: raise Exception("bee.configure target '%s' is self" % self.target)
+
+        if n is self:
+            raise Exception("bee.configure target '%s' is self" % self.target)
+
         from .worker import workerframe
 
         if isinstance(n, beewrapper):
             assert n.instance is not None
             n = n.instance
+
         if isinstance(n, workerframe):
             assert n.built
             n = n.bee
+
         for attrs, stack, args, kargs in self.configuration:
             args = tuple([resolve(a, parameters=self.parameters) for a in args])
             kargs = dict((a, resolve(kargs[a], parameters=self.parameters)) for a in kargs)
@@ -118,7 +133,9 @@ class configure(configure_base):
                 s3 = traceback.format_exception_only(type(e), e)
                 s = "\n" + "".join(s1 + s2 + s3)
                 raise ConfigureBeeException(s)
-        if isinstance(n, configure_base): n.configure()
+
+        if isinstance(n, configure_base):
+            n.configure()
 
     def set_parameters(self, name, parameters):
         self.parameters = parameters
@@ -128,7 +145,9 @@ class configure(configure_base):
         return self
 
     def __getattr__(self, attr):
-        if attr == "typename": raise AttributeError
+        if attr == "typename":
+            raise AttributeError
+
         stack = traceback.extract_stack()
         return delayedcall(self, self.__configure_append__, [("getattr", attr)], stack)
 
@@ -165,4 +184,4 @@ class multiconfigure(configure_base):
 
     def hive_init(self, beedict):
         for t in self.targets: t.hive_init(beedict)
-  
+

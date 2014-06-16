@@ -25,12 +25,12 @@ Parameters
 (Advanced) Advanced input mode: If enabled, inputs must be explicitly pulled using v(), where v is the name of the input."""
     metaguiparams = {
         "inputs": "NodeIOArray",
-        "outputtype": "str",
+        "output_type": "str",
         "syntaxmode": "str",
         "advanced": "bool",
-        "autocreate": {"inputs": Spyder.NodeIOArray(), "outputtype": "bool", "syntaxmode": "expression",
+        "autocreate": {"inputs": Spyder.NodeIOArray(), "output_type": "bool", "syntaxmode": "expression",
                        "advanced": False},
-        "_memberorder": ["syntaxmode", "outputtype", "advanced", "inputs"]
+        "_memberorder": ["syntaxmode", "output_type", "advanced", "inputs"]
     }
 
     @classmethod
@@ -41,12 +41,12 @@ Parameters
         f.syntaxmode.optiontitles = "Expression", "Function", "Generator"
         f.syntaxmode.advanced = True
 
-        f.outputtype.name = "Output Type"
-        f.outputtype.type = "option"
-        f.outputtype.options = "bool", "int", "float", "(str,identifier)", "(str,action)", "(str,keycode)", "(str,message)", "(str,property)", "(str,process)", "str", "(object,matrix)", "(object,bge)", "object", "custom"
-        f.outputtype.optiontitles = "Bool", "Integer", "Float", "ID String", "Action String", "Key String", "Message String", "Property String", "Process ID String", "Generic String", "Matrix Object", "BGE Object", "Generic Object", "Custom"
-        f.outputtype.default = "bool"
-        f.outputtype.advanced = True
+        f.output_type.name = "Output Type"
+        f.output_type.type = "option"
+        f.output_type.options = "bool", "int", "float", "(str,identifier)", "(str,action)", "(str,keycode)", "(str,message)", "(str,property)", "(str,process)", "str", "(object,matrix)", "(object,bge)", "object", "custom"
+        f.output_type.optiontitles = "Bool", "Integer", "Float", "ID String", "Action String", "Key String", "Message String", "Property String", "Process ID String", "Generic String", "Matrix Object", "BGE Object", "Generic Object", "Custom"
+        f.output_type.default = "bool"
+        f.output_type.advanced = True
 
         f.advanced.name = "Advanced Mode"
         f.advanced.advanced = True
@@ -57,38 +57,49 @@ Parameters
         f.inputs.form = "soft"
         f.inputs.arraymanager = "dynamic"
 
-    def __new__(cls, syntaxmode, outputtype, advanced, inputs):
-        ionames = set()
+    def __new__(cls, syntaxmode, output_type, advanced, inputs):
+        io_names = set()
         reserved = ("code", "code_parameter_", "outp", "v_outp", "con_outp", "form")
-        outputtype = stringtupleparser(outputtype)
-        for inp in inputs:
-            if inp.ioname in reserved: raise ValueError("Reserved input name: %s" % inp.ioname)
-            if inp.ioname in ionames: raise ValueError("Duplicate input name: %s" % inp.ioname)
-            ionames.add(inp.ioname)
-        dic = {
+        output_type = stringtupleparser(output_type)
+
+        for input_ in inputs:
+            if input_.ioname in reserved:
+                raise ValueError("Reserved input name: %s" % input_.ioname)
+
+            if input_.ioname in io_names:
+                raise ValueError("Duplicate input name: %s" % input_.ioname)
+
+            io_names.add(input_.ioname)
+
+        cls_dict = {
             "code": variable("str"),
-            "outp": output("pull", outputtype),
-            "v_outp": variable(outputtype),
+            "outp": output("pull", output_type),
+            "v_outp": variable(output_type),
             "con_outp": connect("v_outp", "outp")
         }
-        dic["code_parameter_"] = parameter(dic["code"], "")
+        cls_dict["code_parameter_"] = parameter(cls_dict["code"], "")
         guiparams = {}
         guiparams["outp"] = {"name": "Output"}
         counter = 0
-        for inp in inputs:
-            name = inp.ioname
+
+        for input_ in inputs:
+            name = input_.ioname
             name2 = name + "_"
-            typ = inp.type_
-            if typ == "custom": typ = inp.customtype
-            if typ: typ = stringtupleparser(typ)
-            dic[name2] = antenna("pull", typ)
-            dic[name] = buffer("pull", typ)
+            type_ = input_.type_
+            if type_ == "custom":
+                type_ = input_.customtype
+            if type_:
+                type_ = stringtupleparser(type_)
+
+            cls_dict[name2] = antenna("pull", type_)
+            cls_dict[name] = buffer("pull", type_)
             guiparams[name2] = {"name": name}
             while 1:
                 counter += 1
                 conname = "con" + str(counter)
-                if conname not in ionames: break
-            dic[conname] = connect(name2, name)
+                if conname not in io_names:
+                    break
+            cls_dict[conname] = connect(name2, name)
 
-        dic["guiparams"] = guiparams
-        return type("python", (_python_base,), dic)
+        cls_dict["guiparams"] = guiparams
+        return type("python", (_python_base,), cls_dict)

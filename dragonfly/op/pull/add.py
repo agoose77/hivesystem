@@ -15,14 +15,23 @@ class add(object):
             inp2 = antenna("pull", type)
             outp = output("pull", type)
 
+            # Join together inputs
             w = weaver((type, type), inp1, inp2)
             t = transistor((type, type))
             connect(w, t)
+
+            # Allow operator to trigger
             op = operator(fadd, (type, type), type)
             connect(t, op)
+
+            # Set output variable
             v_outp = variable(type)
-            connect(op, v_outp)
             connect(v_outp, outp)
+
+            # Connect the operator to the variable
+            connect(op, v_outp)
+
+            # Trigger transistor before output
             pretrigger(v_outp, t)
 
         return add

@@ -31,9 +31,14 @@ class parent(object):
 
             if idmode == "unbound":
                 identifier = antenna("pull", ("str", "identifier"))
+                identifier_buffer = buffer("pull", ("str", "identifier"))
+                connect(identifier, identifier_buffer)
 
             trig = antenna("push", "trigger")
             parent = antenna("pull", ("str", "identifier"))
+            parent_buffer = buffer("pull", ("str", "identifier"))
+            connect(parent, parent_buffer)
+            trigger(trig, parent_buffer)
 
             guiparams = {
                 "trig": {"name": "Trigger"},
@@ -42,8 +47,31 @@ class parent(object):
                 "_memberorder": ["trig", "identifier", "parent"],
             }
 
+            if idmode == "bound":
+                @modifier
+                def m_parent(self):
+                    self.parent_func(self.actor.entityname, self.parent_buffer)
+
+                def set_actor(self, actor):
+                    self.actor = actor
+
+            elif idmode == "unbound":
+                @modifier
+                def m_parent(self):
+                    self.parent_func(self.identifier_buffer, self.parent_buffer)
+
+                trigger(trig, identifier_buffer)
+
+            trigger(parent, m_parent)
+
+            def set_entity_parent_func(self, parent_func):
+                self.parent_func = parent_func
+
             def place(self):
-                raise NotImplementedError("sparta.actuators.parent has not been implemented yet")
+                if idmode == "bound":
+                    libcontext.socket("actor", socket_single_required(self.set_actor))
+
+                s = libcontext.socketclasses.socket_single_required(self.set_entity_parent_to)
+                libcontext.socket(("entity", "parent_to"), s)
 
         return parent
-    

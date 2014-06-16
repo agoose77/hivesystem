@@ -115,9 +115,14 @@ class inputhandler(bee.drone):
         self.targets = []
         self.just_pressed = set()
         self.just_released = set()
+        self._last_x, self._last_y = 0.0, 0.0
 
     def add_target(self, target):
         self.targets.append(target)
+
+    def broadcast_event(self, event):
+        for target in self.targets:
+            target.add_event(event)
 
     def send_input(self):
         import bge
@@ -130,15 +135,16 @@ class inputhandler(bee.drone):
             self.just_pressed.add(key)
             if key in self.just_released: self.just_released.remove(key)
             e = event("keyboard", "keypressed", trans[key])
-            for t in self.targets: t.add_event(e)
+            self.broadcast_event(e)
         released = [k for k in keys if keys[k] == bge.logic.KX_INPUT_JUST_RELEASED]
         for key in released:
-            if key not in trans: continue
+            if key not in trans:
+                continue
             if key in self.just_released: continue
             self.just_released.add(key)
             if key in self.just_pressed: self.just_pressed.remove(key)
             e = event("keyboard", "keyreleased", trans[key])
-            for t in self.targets: t.add_event(e)
+            self.broadcast_event(e)
 
         buttons = bge.logic.mouse.events
         but = {
@@ -153,13 +159,22 @@ class inputhandler(bee.drone):
                 self.just_pressed.add(button)
                 if button in self.just_released: self.just_released.remove(button)
                 e = event("mouse", "buttonpressed", button, self.get_mouse())
-                for t in self.targets: t.add_event(e)
+                self.broadcast_event(e)
             elif v == bge.logic.KX_INPUT_JUST_RELEASED:
                 if button in self.just_released: continue
                 self.just_released.add(button)
                 if button in self.just_pressed: self.just_pressed.remove(button)
                 e = event("mouse", "buttonreleased", button, self.get_mouse())
-                for t in self.targets: t.add_event(e)
+                self.broadcast_event(e)
+
+        # Mouse movement
+        x, y = self.get_mouse()
+        if x != self._last_x or y != self._last_y:
+            e = event("mouse", "move", (x, y))
+            self.broadcast_event(e)
+
+        self._last_x, self._last_y = x, y
+
 
     def get_mouse(self):
         import bge

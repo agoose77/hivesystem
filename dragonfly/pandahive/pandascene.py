@@ -526,6 +526,7 @@ class pandascene(bee.drone):
             manualmodel.load()
             entityclass = pandaentityclass(manualmodel.node)
             self.entityclasses.append((modelclassname, entityclass, nodepath))
+            #TODO fix variable
             manualmodel.material = mat
         else:
             model = eggmodelclass(meshname)

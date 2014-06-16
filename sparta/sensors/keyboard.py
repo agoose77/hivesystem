@@ -98,6 +98,7 @@ class keyboard(bee.worker):
         # If there is no keyboard support, an error will now be raised when the hive is closed        
         libcontext.socket(("evin", ("input", "keyboard")), socket_flag())
         # If we are listening for non-ASCII keys, we need support for those keys too
+        # TODO might we also need non ASCII here?
         if self.keycode != "Any" and self.keycode not in asciilist:
             libcontext.socket(("evin", ("input", "keyboard", "extended")), socket_flag())
 

@@ -206,6 +206,9 @@ class blenderapp(bee.drone):
         ent = self.get_entity(entityname, entitydict, camera)
         return ent.get_proxy("NodePath")
 
+    def entity_collision_register(self, entity_name):
+        pass
+
     def entity_parent_to(self, entityname, entityparentname,
                          entitydict=None, camera=None):
         ent = self.get_entity_blender(entityname, entitydict, camera)
@@ -313,6 +316,8 @@ class blenderapp(bee.drone):
         libcontext.plugin(("entity", "unparent"), plugin_supplier(self.entity_unparent))
         libcontext.plugin(("entity", "show"), plugin_supplier(self.entity_show))
         libcontext.plugin(("entity", "hide"), plugin_supplier(self.entity_hide))
+        libcontext.plugin(("entity", "collision-register"), plugin_supplier(self.entity_collision_register))
+        libcontext.plugin(("entity", "collision-unregister"), plugin_supplier(self.entity_collision_unregister))
 
         libcontext.plugin("exit", plugin_supplier(self.exit))
         libcontext.plugin("stop", plugin_supplier(self.exit))
@@ -433,3 +438,4 @@ class blenderhive(bee.inithive):
     exitactuator = exitactuator()
     keyboardsensor_exit = keyboardsensor_trigger("ESCAPE")
     connect("keyboardsensor_exit", "exitactuator")
+    # TODO read key from API

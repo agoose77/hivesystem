@@ -23,7 +23,8 @@ class keyboardsensor_trigger(keyboardsensor_base):
         if self.keycode not in asciilist:
             libcontext.socket(("evin", ("input", "keyboard", "extended")), socket_flag())
         place = keyboardsensor_base.place
-        if python2: place = place.im_func
+        if python2:
+            place = place.im_func
         place(self)
 
     def enable(self):
