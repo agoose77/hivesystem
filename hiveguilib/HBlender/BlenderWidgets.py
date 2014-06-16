@@ -98,7 +98,7 @@ class BlenderLayoutWidget(BlenderWidget):
     def draw2(self, context, layout):
         if self.name is not None:
             layout = layout.row()
-            layout.label("LAYOUT_WIDGET" + str(self.name))
+            layout.label(str(self.name))
 
         if not (self.children or self.pre_buttons or self.post_buttons):
             return

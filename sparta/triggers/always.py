@@ -1,5 +1,7 @@
 import libcontext, bee
 from bee.segments import *
+from libcontext.socketclasses import *
+from libcontext.pluginclasses import *
 
 
 class always(bee.worker):
@@ -23,5 +25,23 @@ class always(bee.worker):
     def form(f):
         f.skip.name = "Skip"
 
+    def update_value(self):
+        if not self.pacemaker.ticks % self.skip:
+            self.trigfunc()
+
+    def enable(self):
+        # Add a high-priority deactivate() listener on every tick
+        self.add_listener("trigger", self.update_value, "tick", priority=9)
+
+    def set_pacemaker(self, pacemaker):
+        self.pacemaker = pacemaker
+
+    def set_add_listener(self, add_listener):
+        self.add_listener = add_listener
+
     def place(self):
-        raise NotImplementedError("sparta.triggers.always has not been implemented yet")
+        libcontext.socket("pacemaker", socket_single_required(self.set_pacemaker))
+        libcontext.socket(("evin", "add_listener"), socket_single_required(self.set_add_listener))
+        #Make sure we are enabled at startup
+        libcontext.plugin(("bee", "init"), plugin_single_required(self.enable))
+

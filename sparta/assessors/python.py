@@ -63,13 +63,13 @@ Parameters
         output_type = stringtupleparser(output_type)
 
         for input_ in inputs:
-            if input_.ioname in reserved:
-                raise ValueError("Reserved input name: %s" % input_.ioname)
+            if input_.io_name in reserved:
+                raise ValueError("Reserved input name: %s" % input_.io_name)
 
-            if input_.ioname in io_names:
-                raise ValueError("Duplicate input name: %s" % input_.ioname)
+            if input_.io_name in io_names:
+                raise ValueError("Duplicate input name: %s" % input_.io_name)
 
-            io_names.add(input_.ioname)
+            io_names.add(input_.io_name)
 
         cls_dict = {
             "code": variable("str"),
@@ -83,7 +83,7 @@ Parameters
         counter = 0
 
         for input_ in inputs:
-            name = input_.ioname
+            name = input_.io_name
             name2 = name + "_"
             type_ = input_.type_
             if type_ == "custom":

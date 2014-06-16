@@ -316,8 +316,8 @@ class blenderapp(bee.drone):
         libcontext.plugin(("entity", "unparent"), plugin_supplier(self.entity_unparent))
         libcontext.plugin(("entity", "show"), plugin_supplier(self.entity_show))
         libcontext.plugin(("entity", "hide"), plugin_supplier(self.entity_hide))
-        libcontext.plugin(("entity", "collision-register"), plugin_supplier(self.entity_collision_register))
-        libcontext.plugin(("entity", "collision-unregister"), plugin_supplier(self.entity_collision_unregister))
+   #     libcontext.plugin(("entity", "collision-register"), plugin_supplier(self.entity_collision_register))
+   #     libcontext.plugin(("entity", "collision-unregister"), plugin_supplier(self.entity_collision_unregister))
 
         libcontext.plugin("exit", plugin_supplier(self.exit))
         libcontext.plugin("stop", plugin_supplier(self.exit))

@@ -57,7 +57,7 @@ Activate by pull: if True, every value request on a pull output (pre-)triggers t
         f.outputs.arraymanager = "dynamic"
 
     def __new__(cls, inputs, outputs):
-        ionames = set()
+        io_names = set()
         reserved = ("trig", "code", "code_parameter_",
                     "persistent", "persistent_parameter_",
                     "push_activates", "push_activates_parameter_",
@@ -65,13 +65,13 @@ Activate by pull: if True, every value request on a pull output (pre-)triggers t
                     "form"
         )
         for inp in inputs:
-            if inp.ioname in reserved: raise ValueError("Reserved input name: %s" % inp.ioname)
-            if inp.ioname in ionames: raise ValueError("Duplicate input name: %s" % inp.ioname)
-            ionames.add(inp.ioname)
+            if inp.io_name in reserved: raise ValueError("Reserved input name: %s" % inp.io_name)
+            if inp.io_name in io_names: raise ValueError("Duplicate input name: %s" % inp.io_name)
+            io_names.add(inp.io_name)
         for outp in outputs:
-            if outp.ioname in reserved: raise ValueError("Reserved output name: %s" % outp.ioname)
-            if outp.ioname in ionames: raise ValueError("Duplicate input/output name: %s" % outp.ioname)
-            ionames.add(outp.ioname)
+            if outp.io_name in reserved: raise ValueError("Reserved output name: %s" % outp.io_name)
+            if outp.io_name in io_names: raise ValueError("Duplicate input/output name: %s" % outp.io_name)
+            io_names.add(outp.io_name)
         dic = {
             "trig": antenna("push", "trigger"),
             "code": variable("str"),
@@ -88,7 +88,7 @@ Activate by pull: if True, every value request on a pull output (pre-)triggers t
         guiparams["_memberorder"] = ["trig"]
         counter = 0
         for inp in inputs:
-            name = inp.ioname
+            name = inp.io_name
             name2 = name + "_"
             typ = inp.type_
             if typ == "custom": typ = inp.customtype
@@ -99,11 +99,11 @@ Activate by pull: if True, every value request on a pull output (pre-)triggers t
             while 1:
                 counter += 1
                 conname = "con" + str(counter)
-                if conname not in ionames: break
+                if conname not in io_names: break
             dic[conname] = connect(name2, name)
 
         for outp in outputs:
-            name = outp.ioname
+            name = outp.io_name
             name2 = name + "_"
             typ = outp.type_
             guiparams[name2] = {"name": name}
@@ -119,7 +119,7 @@ Activate by pull: if True, every value request on a pull output (pre-)triggers t
                 while 1:
                     counter += 1
                     conname = "con" + str(counter)
-                    if conname not in ionames: break
+                    if conname not in io_names: break
                 dic[conname] = connect(name, name2)
 
         dic["guiparams"] = guiparams
