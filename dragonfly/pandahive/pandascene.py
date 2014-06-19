@@ -698,7 +698,9 @@ class pandascene(bee.drone):
         self.entityclasses.append((entityclassname, pandaentityclass(node), nodepath))
 
     def place(self):
-        if panda3d is None: raise ImportError("Cannot locate Panda3D")
+        if panda3d is None:
+            raise ImportError("Cannot locate Panda3D")
+
         libcontext.plugin("startupfunction", plugin_single_required(self.init))
         libcontext.socket(("panda", "noderoot", "render"), socket_single_required(self._set_render))
         libcontext.socket(("panda", "noderoot", "loader"), socket_single_required(self._set_loader))
@@ -706,4 +708,4 @@ class pandascene(bee.drone):
         libcontext.socket(("panda", "entity-register"), socket_single_required(self._set_entity_register))
         libcontext.socket(("panda", "actorclass-register"), socket_single_required(self._set_actorclass_register))
         libcontext.socket(("panda", "entityclass-register"), socket_single_required(self._set_entityclass_register))
-    
+

@@ -31,13 +31,19 @@ class collision(object):
 
             if idmode == "unbound":
                 identifier = antenna("pull", ("str", "identifier"))
+                identifier_buffer = buffer("pull", ("str", "identifier"))
+                connect(identifier, identifier_buffer)
+
+                trigger_identifier_buffer = triggerfunc(identifier_buffer)
 
             # How are the collisions filtered?
-            filtermode = variable("str")
-            parameter(filtermode)
+            filter_mode = variable("str")
+            parameter(filter_mode)
 
             #What is the value of the filter?
-            filtervalue = antenna("pull", "str")
+            filter_value = antenna("pull", "str")
+            filter_buffer = buffer("pull", "str")
+            connect(filter_value, filter_buffer)
 
             #Has a collision event happened during the last tick?
             is_active = variable("bool")
@@ -46,28 +52,131 @@ class collision(object):
             connect(is_active, active)
 
             #What was the ID of the colliding object?
-            v_collision_id = variable(("str", "identifier"))
+            collision_id_variable = variable(("str", "identifier"))
             collision_id = output("pull", ("str", "identifier"))
-            connect(v_collision_id, collision_id)
+            connect(collision_id_variable, collision_id)
+
+            trigger_filter_value = triggerfunc(filter_buffer)
 
             @staticmethod
             def form(f):
-                f.filtermode.name = "Filter mode"
-                f.filtermode.type = "option"
-                f.filtermode.default = "id"
-                f.filtermode.options = "material", "property", "id"
-                f.filtermode.optiontitles = "By material", "By property", "By ID"
+                f.filter_mode.name = "Filter mode"
+                f.filter_mode.type = "option"
+                f.filter_mode.default = "id"
+                f.filter_mode.options = "material", "property", "id"
+                f.filter_mode.optiontitles = "By material", "By property", "By ID"
 
             guiparams = {
                 "identifier": {"name": "Identifier", "fold": True},
-                "filtervalue": {"name": "Filter value", "fold": True},
+                "filter_value": {"name": "Filter value", "fold": True},
                 "active": {"name": "Active"},
                 "collision_id": {"name": "Collision ID", "advanced": True},
-                "_memberorder": ["filtervalue", "identifier", "collision_id", "active"],
-            }
+                "_memberorder": ["filter_value", "identifier", "collision_id", "active"],
+                }
+
+            if idmode == "bound":
+                def get_entity_name(self):
+                    """Get name of bound entity"""
+                    return self.get_entity().entityname
+
+            elif idmode == "unbound":
+                def get_entity_name(self):
+                    """Get name from input entity identifier"""
+                    self.trigger_identifier_buffer()
+                    return self.identifier_buffer
+
+            def update_value(self):
+                filter_func = self.get_filter_func()
+
+                # Request filter value
+                self.trigger_filter_value()
+                filter_value = self.filter_buffer
+
+                # Get the invoking entity name
+                entity_name = self.get_entity_name()
+
+                # Find a valid collision
+                for collision_identifier in self.get_collisions(entity_name):
+                    if filter_func(collision_identifier, filter_value):
+                        break
+                else:
+                    collision_identifier = None
+
+                # Set outputs
+                self.collision_id_variable = collision_identifier
+                self.is_active = collision_identifier is not None
+
+            def get_filter_func(self):
+                """Find an appropriate filter function"""
+                filter_mode = self.filter_mode
+                if filter_mode == "material":
+                    return self.match_material
+
+                if filter_mode == "property":
+                    return self.match_property
+
+                if filter_mode == "id":
+                    return self.match_identifier
+
+            def match_material(self, entity_name, filter_value):
+                """Determine if the entity has a matching material
+
+                :param entity_name: name of filtered entity
+                :param filter_value: required material name
+                """
+
+                try:
+                    self.get_material(entity_name, filter_value)
+
+                except KeyError:
+                    return False
+
+                return True
+
+            @staticmethod
+            def match_identifier(entity_name, filter_value):
+                """Determine if the entity identifier matches the filter identifier
+
+                :param entity_name: name of filtered entity
+                :param filter_value: required entity identifier
+                """
+                return entity_name == filter_value
+
+            def match_property(self, entity_name, filter_value):
+                """Determine if the entity has a matching property
+
+                :param entity_name: name of filtered entity
+                :param filter_value: required property name
+                """
+                try:
+                    self.get_property(entity_name, filter_value)
+
+                except KeyError:
+                    return False
+
+                return True
+
+            def enable(self):
+                self.add_listener("trigger", self.update_value, "tick", priority=9)
+
+            def set_get_collisions(self, get_collisions):
+                self.get_collisions = get_collisions
+
+            def set_get_property(self, get_property):
+                self.get_property = get_property
+
+            def set_get_entity(self, get_entity):
+                self.get_entity = get_entity
+
+            def set_get_material(self, get_material):
+                self.get_material = get_material
 
             def place(self):
-                raise NotImplementedError("sparta.sensors.collision has not been implemented yet")
+                if idmode == "bound":
+                    libcontext.socket("entity", socket_single_required(self.set_get_entity))
+
+                libcontext.socket(("entity", "get_collisions"), socket_single_required(self.set_get_collisions))
+                libcontext.socket(("entity", "get_property"), socket_single_required(self.set_get_property))
+                libcontext.socket(("entity", "get_material"), socket_single_required(self.set_get_property))
 
         return collision
-    

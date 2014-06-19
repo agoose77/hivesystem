@@ -15,15 +15,22 @@ class inputhandlerhive(bee.frame):
     inputhandler()
 
 
+# noinspection PyCompatibility
 class blenderapp(bee.drone):
+
     def __init__(self):
         self.startupfunctions = []
-        self.cleanupfunctions = []
+        self.cleanup_functions = []
         self._actors = {}
         self._entities = {}
+        self._entity_names = {}
         self._actorclasses = {}
-        self._entityclasses = {}
+        self._entity_classes = {}
         self._animationdict = {}
+
+        self._collision_dict = {}
+        self._collision_callback_dict = {}
+
         self.doexit = False
         self._init = False
 
@@ -36,7 +43,7 @@ class blenderapp(bee.drone):
         self._init = True
 
     def on_tick(self):
-        pass
+        self.update_entity_collisions()
 
     def run(self):
         import bge
@@ -45,31 +52,34 @@ class blenderapp(bee.drone):
         try:
             self.finished = False
             self.init()
-            tickrate = bge.logic.getLogicTicRate()  # TODO: tick rate locked at 60 now, later: read it from Blender
-            t_last_frame = time.time()
-            ticks_todo = 0.0
-            while not self.doexit:  # TODO: read if Blender one-tick-per-frame option is on, adapt main loop accordingly
-                tim = time.time()
-                if tim > t_last_frame + 1.0:  #emergency situation; frame rate dropped below 1
-                    bge.logic.NextFrame()
-                    t_last_frame = time.time()
-                    ticks_todo += tickrate * (t_last_frame - tim)
+            tick_rate = bge.logic.getLogicTicRate()
+            last_time = time.time()
+            accumulator = 0.0
 
-                if ticks_todo > 1:
-                    ticks_todo -= 1
+            while not self.doexit:  # TODO: read if Blender one-tick-per-frame option is on, adapt main loop accordingly
+                current_time = time.time()
+                if current_time > last_time + 1.0:  #emergency situation; frame rate dropped below 1
+                    bge.logic.NextFrame()
+                    last_time = time.time()
+                    accumulator += tick_rate * (last_time - current_time)
+
+                if accumulator > 1:
+                    accumulator -= 1
                     self.pacemaker.send_input()
                     self.on_tick()
                     self.pacemaker.tick()
                     t = time.time()
-                    new_ticks_todo = tickrate * (t - tim)
+                    new_ticks_todo = tick_rate * (t - current_time)
 
-                    if new_ticks_todo > 0.999: new_ticks_todo = 0.999
-                    ticks_todo += new_ticks_todo
+                    if new_ticks_todo > 0.999:
+                        new_ticks_todo = 0.999
+                    accumulator += new_ticks_todo
+
                 else:
                     bge.logic.NextFrame()
                     self.pacemaker.send_input()
-                    t_last_frame = time.time()
-                    ticks_todo += tickrate * (t_last_frame - tim)
+                    last_time = time.time()
+                    accumulator += tick_rate * (last_time - current_time)
 
         finally:
             self.cleanup()
@@ -78,8 +88,8 @@ class blenderapp(bee.drone):
     def _register_actor(self, a):
         return self._register_entity(a)
 
-    def _register_actorclass(self, a):
-        return self._register_entityclass(a)
+    def _register_actor_class(self, a):
+        return self._register_entity_class(a)
 
     def get_actor_blender(self, actorname, actordict=None):
         return self.get_entity_blender(actorname, actordict)
@@ -87,138 +97,164 @@ class blenderapp(bee.drone):
     def get_actor(self, actorname, actordict=None):
         return self.get_entity(actorname, actordict)
 
-    def get_actorclass(self, actorclassname, actorclassdict=None):
-        return self.get_entityclass(actorname, actordict)
+    def get_actor_class(self, actorclassname, actor_class_dict=None):
+        return self.get_entityclass(actorclassname, actor_class_dict)
 
-    def spawn_actor(self, actorclassname, actorname, actordict=None, entitydict=None, actorclassdict=None):
-        return self.spawn_entity(actorclassname, actorname, entitydict, actorclassdict)
+    def spawn_actor(self, actor_class_name, actor_name, actor_dict=None, entity_dict=None, actor_class_dict=None):
+        return self.spawn_entity(actor_class_name, actor_name, entity_dict, actor_class_dict)
 
-    def remove_actor(self, actorname, actordict=None, entitydict=None):
-        return self.remove_entity(actorname, entitydict)
+    def remove_actor(self, actor_name, actor_dict=None, entity_dict=None):
+        return self.remove_entity(actor_name, entity_dict)
 
-    # ##
-    """
-    def _register_actor(self,a):
-      actorname,actor = a
-      if actorname in self._actors:
-        raise KeyError("Actor '%s' has already been registered" % actorname)
-      self._actors[actorname] = actor
-    def _register_actorclass(self, a):
-      actorclassname, actorclass, nodepath = a
-      if actorclassname in self._actorclasses:
-        raise KeyError("Actor class '%s' has already been registered" % actorclassname)
-      self._actorclasses[actorclassname] = actorclass, nodepath
+    def _register_entity(self, entity_data):
+        """Register entity to the scene
 
-    def get_actor(self,actorname,actordict=None):
-      if actordict is None: actordict=self._actors
-      return actordict[actorname]
-    def get_actorclass(self,actorclassname,actorclassdict=None):
-      #returns actorclass, nodepath
-      if actorclassdict is None: actorclassdict = self._actorclasses
-      return actorclassdict[actorclassname]
+        :param entity_data: tuple of entity name, entity object
+        """
+        entity_name, entity = entity_data
+        if entity_name in self._entities:
+            raise KeyError("Entity '%s' has already been registered" % entity_name)
 
-    def spawn_actor(self,actorclassname, actorname,actordict=None,entitydict=None,actorclassdict=None):
-      if actordict is None: actordict = self._actors
-      if entitydict is None: entitydict = self._entities
-      if actorclassdict is None: actorclassdict = self._actorclasses
-      #TODO
-      \"""
-      actorclass, nodepath = actorclassdict[actorclassname]
-      actorclass.load()
-      if nodepath is not None:
-        import copy
-        newnodepath = copy.copy(nodepath)
-        actorclass.node.reparentTo(newnodepath)
-      else:
-        newnodepath = actorclass.node
-      ent = self.window.render.attachNewNode("")
-      newnodepath.reparentTo(ent)
-      \"""
-      entitydict[actorname] = ent
-      actordict[actorname] = actorclass.actor
+        self._entities[entity_name] = entity
+        self._entity_names[entity] = entity_name
+        self._register_entity_collisions(entity_name)
 
-    def remove_actor(self, actorname,actordict=None,entitydict=None):
-      if actordict is None: actordict = self._actors
-      if actorname not in actordict:
-        raise KeyError("No such actor '%s'" % actorname)
-      del actordict[actorname]
-      self.remove_entity(actorname,entitydict)
-    """
+    # TODO determine nodepath
+    def _register_entity_class(self, entity_class_data):
+        """Register entity class to the scene
 
-    def _register_entity(self, e):
-        entityname, entity = e
-        if entityname in self._entities:
-            raise KeyError("Entity '%s' has already been registered" % entityname)
-        self._entities[entityname] = entity
+        :param entity_class_data: tuple of entity class name, entity class object
+        """
+        entity_class_name, entity_class, nodepath = entity_class_data
+        if entity_class_name in self._entity_classes:
+            raise KeyError("Entity class '%s' has already been registered" % entity_class_name)
 
-    def _register_entityclass(self, a):
-        entityclassname, entityclass, nodepath = a
-        if entityclassname in self._entityclasses:
-            raise KeyError("Entity class '%s' has already been registered" % entityclassname)
-        self._entityclasses[entityclassname] = (entityclass, nodepath)
+        self._entity_classes[entity_class_name] = (entity_class, nodepath)
 
-    def get_entityclass(self, entityclassname, entityclassdict):
+    def _register_entity_collisions(self, entity_name):
+        """Register collision callbacks for entity
+
+        :param entity_name: name of entity
+        """
+        entity = self.get_entity_blender(entity_name)
+
+        collisions_list = []
+        collision_callback = functools.partial(self.handle_entity_collision, entity, collisions_list)
+        #TODO temporary check
+        import bge
+        if hasattr(bge.types.KX_GameObject, "collisionCallbacks"):
+            entity.collisionCallbacks.append(collision_callback)
+
+        self._collision_callback_dict[entity_name] = collision_callback
+        self._collision_dict[entity_name] = collisions_list
+
+    def get_entity_class(self, entityclassname, entityclassdict):
         #returns (entityclass, nodepath)
-        if entityclassdict is None: entityclassdict = self._entityclasses
+        if entityclassdict is None:
+            entityclassdict = self._entity_classes
+
         return entityclassdict[entityclassname]
 
-
-    def spawn_entity(self, entityclassname, entityname, entitydict=None, entityclassdict=None):
-        if entitydict is None: entitydict = self._entities
-        if entityclassdict is None: entityclassdict = self._entityclasses
+    def spawn_entity(self, entityclassname, entityname, entity_dict=None, entityclassdict=None):
+        if entity_dict is None: entity_dict = self._entities
+        if entityclassdict is None: entityclassdict = self._entity_classes
         entityclass, nodepath = entityclassdict[entityclassname]
         scene = self.get_scene()
         ent = scene.addObject(entityclass, entityclass, 0)
         ### TODO: get nodepath correctly; will probably disappear after entity management redesign
-        #entitydict[entityname] = ent
+        #entity_dict[entityname] = ent
 
+        # TODO handle necessary spawn object
         obj = [o for o in scene.objectsInactive if o.name == "Empty_default"][0]
         node0 = scene.addObject(obj, obj, 0)
         ent.setParent(node0)
 
-        entitydict[entityname] = node0
+        entity_dict[entityname] = node0
 
+    def remove_entity(self, entity_name, entity_dict=None, name_dict=None):
+        if entity_dict is None:
+            entity_dict = self._entities
 
-    def remove_entity(self, entityname, entitydict=None):
-        if entitydict is None: entitydict = self._entities
-        if entityname not in entitydict:
-            raise KeyError("No such entity '%s'" % entityname)
-        ent = entitydict.pop(entityname)
-        ent.endObject()
+        if name_dict is None:
+            name_dict = self._entity_names
 
-    def get_entity_blender(self, entityname, entitydict=None, camera=None):
-        if camera is None: camera = self.get_camera()
-        if entityname is camera: return camera
-        if entitydict is None: entitydict = self._entities
-        return entitydict[entityname]
+        if entity_name not in entity_dict:
+            raise KeyError("No such entity '%s'" % entity_name)
 
-    def get_entity(self, entityname, entitydict=None, camera=None):
+        entity = entity_dict.pop(entity_name)
+        name_dict.pop(entity)
+        entity.endObject()
+
+    def get_entity_blender(self, entityname, entity_dict=None, camera=None):
+        #TODO question this logic
+        if camera is None:
+            camera = self.get_camera()
+
+        if entityname is camera:
+            return camera
+
+        if entity_dict is None:
+            entity_dict = self._entities
+
+        return entity_dict[entityname]
+
+    def get_entity(self, entityname, entity_dict=None, camera=None):
         from ..scene.matrix import matrix
 
-        ent = self.get_entity_blender(entityname, entitydict, camera)
+        ent = self.get_entity_blender(entityname, entity_dict, camera)
         return matrix(ent, "Blender")
 
-    def get_entity_axissystem(self, entityname, entitydict=None, camera=None):
-        ent = self.get_entity(entityname, entitydict, camera)
+    def get_entity_axissystem(self, entityname, entity_dict=None, camera=None):
+        ent = self.get_entity(entityname, entity_dict, camera)
         return ent.get_proxy("AxisSystem")
 
-    def get_entity_nodepath(self, entityname, entitydict=None, camera=None):
-        ent = self.get_entity(entityname, entitydict, camera)
+    def get_entity_nodepath(self, entityname, entity_dict=None, camera=None):
+        ent = self.get_entity(entityname, entity_dict, camera)
         return ent.get_proxy("NodePath")
 
-    def entity_collision_register(self, entity_name):
-        pass
+    def entity_get_collisions(self, entity_name, entity_dict=None, camera=None):
+        return [collision_info[1] for collision_info in self._collision_dict[entity_name]]
 
-    def entity_parent_to(self, entityname, entityparentname,
-                         entitydict=None, camera=None):
-        ent = self.get_entity_blender(entityname, entitydict, camera)
+    def entity_get_property(self, entity_name, property_name):
+        """Get property from entity
 
-        if entityparentname is not None:
-            parent = self.get_entity_blender(entityparentname, entitydict, camera)
+        :param entity_name: name of entity
+        :param property_name: name of property
+        """
+        entity = self.get_entity(entity_name)
+        return entity[property_name]
+
+    def entity_set_property(self, entity_name, property_name, property_value):
+        """Set property on entity
+
+        :param entity_name: name of entity
+        :param property_name: name of property
+        :param property_value: value of property
+        """
+        entity = self.get_entity(entity_name)
+        entity[property_name] = property_value
+
+    def entity_get_material(self, entity_name, material_name):
+        """Get material from entity
+
+        :param entity_name: name of entity
+        :param material_name: name of material
+        """
+        #TODO add material proxy
+        entity = self.get_entity(entity_name)
+        name_to_material = {mesh.getMaterialName(material.material_index) for mesh in entity.meshes
+                            for material in mesh.materials}
+        return name_to_material[material_name]
+
+    def entity_parent_to(self, entity_name, entity_parent_name, entity_dict=None, camera=None):
+        ent = self.get_entity_blender(entity_name, entity_dict, camera)
+
+        if entity_parent_name is not None:
+            parent = self.get_entity_blender(entity_parent_name, entity_dict, camera)
 
         loc = ent.localPosition.copy()
         rot = ent.localOrientation.copy()
-        if entityparentname is None:
+        if entity_parent_name is None:
             ent.removeParent()
         else:
             ent.setParent(parent)
@@ -228,12 +264,12 @@ class blenderapp(bee.drone):
     def entity_unparent(self, entityname):
         self.entity_parent_to(entityname, None)
 
-    def entity_hide(self, entityname, entitydict=None, camera=None):
-        ent = self.get_entity_blender(entityname, entitydict, camera)
+    def entity_hide(self, entityname, entity_dict=None, camera=None):
+        ent = self.get_entity_blender(entityname, entity_dict, camera)
         ent.setVisible(False, True)
 
-    def entity_show(self, entityname, entitydict=None, camera=None):
-        ent = self.get_entity_blender(entityname, entitydict, camera)
+    def entity_show(self, entityname, entity_dict=None, camera=None):
+        ent = self.get_entity_blender(entityname, entity_dict, camera)
         ent.setVisible(True, True)
 
     def exit(self):
@@ -249,22 +285,25 @@ class blenderapp(bee.drone):
 
     def addcleanupfunction(self, cleanupfunction):
         assert hasattr(cleanupfunction, "__call__")
-        self.cleanupfunctions.append(cleanupfunction)
+        self.cleanup_functions.append(cleanupfunction)
 
     def cleanup(self):
-        if self.finished == False:
-            for f in self.cleanupfunctions: f()
+        if not self.finished:
+            for func in self.cleanup_functions:
+                func()
+
         self.finished = True
 
     def display(self, arg):
         print(arg)
 
     def watch(self, *args):
-        for a in args: print(a, end="")
+        for a in args:
+            print(a, end="")
         print()
 
     def set_eventfunc(self, eventfunc):
-        self.eventfunc = eventfunc
+        self.event_func = eventfunc
 
     def set_pacemaker(self, pacemaker):
         self.pacemaker = pacemaker
@@ -277,6 +316,35 @@ class blenderapp(bee.drone):
 
     def _register_animation(self, animation_name, anim):
         self._animationdict[animation_name] = anim
+
+    def handle_entity_collision(self, entity, collisions_list, other_entity):
+        """Callback when BGE collision is processed
+
+        :param entity: entity callback belongs to
+        :param collisions_list: list of current collisions
+        :param other_entity: other entity we collided with
+        """
+        collision_tagged = True
+        other_entity_name = self._entity_names[other_entity]
+        collision_info = [collision_tagged, other_entity_name]
+        collisions_list.append(collision_info)
+
+    def update_entity_collisions(self):
+        """Remove untagged collisions from the currently managed collisions"""
+        for entity, collision_list in self._collision_dict.items():
+            ended_collisions = []
+
+            for collision_info in collision_list:
+                collision_set, collision = collision_info
+
+                if not collision_set:
+                    ended_collisions.append(collision_info)
+
+                else:
+                    collision_info[0] = False
+
+            for collision_info in ended_collisions:
+                collision_list.remove(collision_info)
 
     def place(self):
         libcontext.socket("startupfunction", socket_container(self.addstartupfunction))
@@ -293,9 +361,9 @@ class blenderapp(bee.drone):
 
         get_actorfunc = actorwrapper_cache(self.get_actor_blender, self._animationdict)
         libcontext.plugin(("get_actor"), plugin_supplier(get_actorfunc))
-        libcontext.socket(("blender", "register_actorclass"), socket_container(self._register_actorclass))
-        libcontext.plugin(("blender", "actorclass-register"), plugin_supplier(self._register_actorclass))
-        libcontext.plugin(("blender", "get_actorclass"), plugin_supplier(self.get_actorclass))
+        libcontext.socket(("blender", "register_actorclass"), socket_container(self._register_actor_class))
+        libcontext.plugin(("blender", "actorclass-register"), plugin_supplier(self._register_actor_class))
+        libcontext.plugin(("blender", "get_actorclass"), plugin_supplier(self.get_actor_class))
         libcontext.plugin(("spawn", "actor"), plugin_supplier(self.spawn_actor))
 
         libcontext.plugin(("blender", "entity-register"), plugin_supplier(self._register_entity))
@@ -307,24 +375,26 @@ class blenderapp(bee.drone):
         libcontext.plugin(("get_entity", "AxisSystem"), plugin_supplier(self.get_entity_axissystem))
         libcontext.plugin(("get_entity", "NodePath"), plugin_supplier(self.get_entity_nodepath))
 
-        libcontext.socket(("blender", "register_entityclass"), socket_container(self._register_entityclass))
-        libcontext.plugin(("blender", "entityclass-register"), plugin_supplier(self._register_entityclass))
-        libcontext.plugin(("blender", "get_entityclass"), plugin_supplier(self.get_entityclass))
+        libcontext.socket(("blender", "register_entityclass"), socket_container(self._register_entity_class))
+        libcontext.plugin(("blender", "entityclass-register"), plugin_supplier(self._register_entity_class))
+        libcontext.plugin(("blender", "get_entityclass"), plugin_supplier(self.get_entity_class))
         libcontext.plugin(("spawn", "entity"), plugin_supplier(self.spawn_entity))
 
         libcontext.plugin(("entity", "parent_to"), plugin_supplier(self.entity_parent_to))
         libcontext.plugin(("entity", "unparent"), plugin_supplier(self.entity_unparent))
         libcontext.plugin(("entity", "show"), plugin_supplier(self.entity_show))
         libcontext.plugin(("entity", "hide"), plugin_supplier(self.entity_hide))
-   #     libcontext.plugin(("entity", "collision-register"), plugin_supplier(self.entity_collision_register))
-   #     libcontext.plugin(("entity", "collision-unregister"), plugin_supplier(self.entity_collision_unregister))
+        libcontext.plugin(("entity", "get_property"), plugin_supplier(self.entity_get_property))
+        libcontext.plugin(("entity", "set_property"), plugin_supplier(self.entity_set_property))
+        libcontext.plugin(("entity", "get_collisions"), plugin_supplier(self.entity_get_collisions))
+        libcontext.plugin(("entity", "get_material"), plugin_supplier(self.entity_get_material))
 
         libcontext.plugin("exit", plugin_supplier(self.exit))
         libcontext.plugin("stop", plugin_supplier(self.exit))
         libcontext.plugin("display", plugin_supplier(self.display))
         libcontext.plugin("watch", plugin_supplier(self.watch))
         libcontext.socket("pacemaker", socket_single_required(self.set_pacemaker))
-        libcontext.plugin("doexit", plugin_supplier(lambda: getattr(self, "doexit")))
+        libcontext.plugin("doexit", plugin_supplier(lambda: self.doexit))
 
         libcontext.socket("get_camera", socket_single_required(self.set_get_camera))
         libcontext.socket(("blender", "scene"), socket_single_required(self.set_get_scene))
@@ -368,24 +438,30 @@ class blender_actorwrapper(object):
         assert loop is None or mode is None
         if loop == False:
             mode = "play"
+
         elif loop == True:
             mode = "loop"
-        if mode == "ping_pong": mode = "pingpong"
-        assert mode in ("play", "loop", "pingpong", None), mode
 
+        if mode == "ping_pong":
+            mode = "pingpong"
+
+        assert mode in ("play", "loop", "pingpong", None), mode
         assert animation_name in self._animationdict, animation_name
         animation = self._animationdict[animation_name]
 
         if mode is None:
             mode = animation.play_mode
+
         import bge
 
         if mode == "play":
-            m = bge.logic.KX_ACTION_MODE_PLAY
+            bge_mode = bge.logic.KX_ACTION_MODE_PLAY
+
         elif mode == "loop":
-            m = bge.logic.KX_ACTION_MODE_LOOP
+            bge_mode = bge.logic.KX_ACTION_MODE_LOOP
+
         elif mode == "pingpong":
-            m = bge.logic.KX_ACTION_MODE_PING_PONG
+            bge_mode = bge.logic.KX_ACTION_MODE_PING_PONG
 
         self._blender_actor.playAction(
             animation.name,
@@ -394,7 +470,7 @@ class blender_actorwrapper(object):
             animation.layer,
             animation.priority,
             animation.blendin,
-            m,
+            bge_mode,
             animation.layer_weight,
             animation.ipo_flags,
             animation.speed
@@ -402,12 +478,15 @@ class blender_actorwrapper(object):
         self._layer = animation.layer
 
     def stop(self):
-        if self._layer is None: return
+        if self._layer is None:
+            return
+
         self._blender_actor.stopAction(self._layer)
         self._layer = None
 
 
-class currscene(bee.drone):
+class current_scene(bee.drone):
+
     def get_scene(self):
         import bge
 
@@ -428,7 +507,7 @@ class blenderhive(bee.inithive):
     scheduler = simplescheduler()
     pacemaker = blenderpacemaker()
 
-    currscene = currscene()
+    currscene = current_scene()
     scene = blenderscene()
     entityloader()
     entityclassloader()

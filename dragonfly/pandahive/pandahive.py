@@ -71,11 +71,11 @@ class pandaapp(bee.drone):
         if actorclassdict is None: actorclassdict = self._actorclasses
         return actorclassdict[actorclassname]
 
-    def spawn_actor(self, actorclassname, actorname, actordict=None, entitydict=None, actorclassdict=None):
+    def spawn_actor(self, actorclassname, actorname, actordict=None, entity_dict=None, actorclassdict=None):
         from panda3d.core import NodePath
 
         if actordict is None: actordict = self._actors
-        if entitydict is None: entitydict = self._entities
+        if entity_dict is None: entity_dict = self._entities
         if actorclassdict is None: actorclassdict = self._actorclasses
         actorclass, nodepath = actorclassdict[actorclassname]
         actorclass.load()
@@ -88,15 +88,15 @@ class pandaapp(bee.drone):
             newnodepath = actorclass.node
         ent = self.window.render.attachNewNode("")
         newnodepath.reparentTo(ent)
-        entitydict[actorname] = ent
+        entity_dict[actorname] = ent
         actordict[actorname] = actorclass.actor
 
-    def remove_actor(self, actorname, actordict=None, entitydict=None):
+    def remove_actor(self, actorname, actordict=None, entity_dict=None):
         if actordict is None: actordict = self._actors
         if actorname not in actordict:
             raise KeyError("No such actor '%s'" % actorname)
         del actordict[actorname]
-        self.remove_entity(actorname, entitydict)
+        self.remove_entity(actorname, entity_dict)
 
     def _register_entity(self, e):
         entityname, entity = e
@@ -116,10 +116,10 @@ class pandaapp(bee.drone):
         return entityclassdict[entityclassname]
 
 
-    def spawn_entity(self, entityclassname, entityname, entitydict=None, entityclassdict=None):
+    def spawn_entity(self, entityclassname, entityname, entity_dict=None, entityclassdict=None):
         from panda3d.core import NodePath
 
-        if entitydict is None: entitydict = self._entities
+        if entity_dict is None: entity_dict = self._entities
         if entityclassdict is None: entityclassdict = self._entityclasses
         entityclass, nodepath = entityclassdict[entityclassname]
         entityclass.load()
@@ -132,35 +132,35 @@ class pandaapp(bee.drone):
             newnodepath = entityclass.node
         ent = self.window.render.attachNewNode("")
         newnodepath.reparentTo(ent)
-        entitydict[entityname] = ent
+        entity_dict[entityname] = ent
 
-    def remove_entity(self, entityname, entitydict=None):
-        if entitydict is None: entitydict = self._entities
-        if entityname not in entitydict:
+    def remove_entity(self, entityname, entity_dict=None):
+        if entity_dict is None: entity_dict = self._entities
+        if entityname not in entity_dict:
             raise KeyError("No such entity '%s'" % entityname)
-        ent = entitydict.pop(entityname)
+        ent = entity_dict.pop(entityname)
         ent.detachNode()
         if entityname in self._ref_entities: del self._ref_entities[entityname]
         if entityname in self._relmatrices: del self._relmatrices[entityname]
 
-    def get_entity_panda(self, entityname, entitydict=None, camera=None):
+    def get_entity_panda(self, entityname, entity_dict=None, camera=None):
         if camera is None: camera = self.camera
         if entityname is camera: return camera
-        if entitydict is None: entitydict = self._entities
-        return entitydict[entityname]
+        if entity_dict is None: entity_dict = self._entities
+        return entity_dict[entityname]
 
-    def get_entity(self, entityname, entitydict=None, camera=None):
+    def get_entity(self, entityname, entity_dict=None, camera=None):
         from ..scene.matrix import matrix
 
-        ent = self.get_entity_panda(entityname, entitydict, camera)
+        ent = self.get_entity_panda(entityname, entity_dict, camera)
         return matrix(ent, "NodePath")
 
-    def get_entity_view(self, view, entityname, entitydict=None, camera=None, format="NodePath"):
+    def get_entity_view(self, view, entityname, entity_dict=None, camera=None, format="NodePath"):
         import copy
         from panda3d.core import NodePath
         from ..scene.matrix import matrix
 
-        ent = self.get_entity_panda(entityname, entitydict, camera)
+        ent = self.get_entity_panda(entityname, entity_dict, camera)
         entmat = matrix(ent, format)
         secondmatrix = None
         if view == "relative":
@@ -170,30 +170,30 @@ class pandaapp(bee.drone):
         elif view == "reference":
             try:
                 ref_entname = self._ref_entities[entityname]
-                ref_ent = self.get_entity_panda(ref_entname, entitydict)
+                ref_ent = self.get_entity_panda(ref_entname, entity_dict)
                 secondmatrix = matrix(ref_ent, format)
             except KeyError:
                 self._ref_entities[entityname] = entityname
                 secondmatrix = entmat
         return entmat.get_view(view, secondmatrix)
 
-    def get_entity_axissystem(self, entityname, entitydict=None, camera=None):
-        ent = self.get_entity(entityname, entitydict, camera)
+    def get_entity_axissystem(self, entityname, entity_dict=None, camera=None):
+        ent = self.get_entity(entityname, entity_dict, camera)
         return ent.get_proxy("AxisSystem")
 
     def entity_parent_to(self, entityname, entityparentname,
-                         entitydict=None, camera=None):
-        ent = self.get_entity_panda(entityname, entitydict, camera)
-        parent = self.get_entity_panda(entityparentname, entitydict, camera)
+                         entity_dict=None, camera=None):
+        ent = self.get_entity_panda(entityname, entity_dict, camera)
+        parent = self.get_entity_panda(entityparentname, entity_dict, camera)
 
         ent.reparentTo(parent)
 
-    def entity_hide(self, entityname, entitydict=None, camera=None):
-        ent = self.get_entity_panda(entityname, entitydict, camera)
+    def entity_hide(self, entityname, entity_dict=None, camera=None):
+        ent = self.get_entity_panda(entityname, entity_dict, camera)
         ent.hide()
 
-    def entity_show(self, entityname, entitydict=None, camera=None):
-        ent = self.get_entity_panda(entityname, entitydict, camera)
+    def entity_show(self, entityname, entity_dict=None, camera=None):
+        ent = self.get_entity_panda(entityname, entity_dict, camera)
         ent.show()
 
     def exit(self):
@@ -278,7 +278,7 @@ class pandaapp(bee.drone):
         libcontext.plugin("display", plugin_supplier(self.display))
         libcontext.plugin("watch", plugin_supplier(self.watch))
         libcontext.socket("pacemaker", socket_single_required(self.set_pacemaker))
-        libcontext.plugin("doexit", plugin_supplier(lambda: getattr(self, "doexit")))
+        libcontext.plugin("doexit", plugin_supplier(lambda: self.doexit))
 
         libcontext.socket("get_camera", socket_single_required(self.set_get_camera))
 

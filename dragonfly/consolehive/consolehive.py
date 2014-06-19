@@ -69,7 +69,7 @@ class consoleapp(bee.drone):
         libcontext.plugin("display", plugin_supplier(self.display))
         libcontext.plugin("watch", plugin_supplier(self.watch))
         libcontext.socket("pacemaker", socket_single_required(self.set_pacemaker))
-        libcontext.plugin("doexit", plugin_supplier(lambda: getattr(self, "doexit")))
+        libcontext.plugin("doexit", plugin_supplier(lambda: self.doexit))
 
 
 from bee import connect

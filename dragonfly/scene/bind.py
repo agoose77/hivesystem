@@ -6,6 +6,7 @@ from bee.bind import *
 
 
 class entitybinder(binderdrone):
+
     def set_entityfunc(self, entityfunc):
         self._get_entity = entityfunc
 
@@ -29,6 +30,7 @@ class entitybinder(binderdrone):
 
 
 class entitybinder_view(binderdrone):
+
     def set_entityfunc(self, entityfunc):
         self._get_entity = entityfunc
 
@@ -143,6 +145,6 @@ class bind(bind_baseclass):
     binder("entitydata", None, None)
     binder("entitydata", "transmit", entitybridge())  # also bridges spawning and classes
     binder("entitydata", "class-only",
-           entityclassonlybridge())  # clears entitydict and actordict, but maintains the classes
+           entityclassonlybridge())  # clears entity_dict and actordict, but maintains the classes
     binder("entitydata", "clear",
-           entityclear())  #clears entitydict and actordict and removes entityclasses and actorclasses
+           entityclear())  #clears entity_dict and actordict and removes entityclasses and actorclasses

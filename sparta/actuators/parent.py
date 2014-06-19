@@ -51,10 +51,10 @@ class parent(object):
             if idmode == "bound":
                 @modifier
                 def m_parent(self):
-                    self.parent_func(self.actor.entityname, self.parent_buffer)
+                    self.parent_func(self.entity.entityname, self.parent_buffer)
 
-                def set_actor(self, actor):
-                    self.actor = actor
+                def set_entity(self, entity):
+                    self.entity = entity
 
             elif idmode == "unbound":
                 @modifier
@@ -70,7 +70,7 @@ class parent(object):
 
             def place(self):
                 if idmode == "bound":
-                    libcontext.socket("actor", socket_single_required(self.set_actor))
+                    libcontext.socket("entity", socket_single_required(self.set_entity))
 
                 socket_info = libcontext.socketclasses.socket_single_required(self.set_entity_parent_to)
                 libcontext.socket(("entity", "parent_to"), socket_info)

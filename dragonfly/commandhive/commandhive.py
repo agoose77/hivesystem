@@ -90,7 +90,7 @@ class commandapp(bee.drone):
         libcontext.plugin("watch", plugin_supplier(self.watch))
         libcontext.socket("pacemaker", socket_single_required(self.set_pacemaker))
         libcontext.socket(("evin", "event"), socket_container(self.add_eventreader))
-        libcontext.plugin("doexit", plugin_supplier(lambda: getattr(self, "doexit")))
+        libcontext.plugin("doexit", plugin_supplier(lambda: self.doexit))
 
 
 from bee import connect
