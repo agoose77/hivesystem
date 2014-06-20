@@ -52,7 +52,6 @@ class random_(object):
                 def set_active_random(self):
                     self.is_active = rand_float() > self.probability_buffer
 
-                # TODO is trigger(buffer, ...) the same as pretrigger(variable) in this context?
                 pretrigger(is_active, probability_buffer)
                 trigger(probability_buffer, set_active_random)
 
@@ -80,7 +79,6 @@ class random_(object):
                 pretrigger(v_random, seed_buffer)
                 trigger(seed_buffer, set_seed_value)
 
-                # TODO is trigger(buffer, ...) the same as pretrigger(variable) in this context?
                 pretrigger(v_random, range_buffer)
                 trigger(range_buffer, set_output_random)
 

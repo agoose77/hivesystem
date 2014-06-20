@@ -130,21 +130,33 @@ class inputhandler(bee.drone):
         keys = bge.logic.keyboard.events
         pressed = [k for k in keys if keys[k] == bge.logic.KX_INPUT_JUST_ACTIVATED]
         for key in pressed:
-            if key not in trans: continue
-            if key in self.just_pressed: continue
+            if key not in trans:
+                continue
+            if key in self.just_pressed:
+                continue
+
             self.just_pressed.add(key)
-            if key in self.just_released: self.just_released.remove(key)
-            e = event("keyboard", "keypressed", trans[key])
-            self.broadcast_event(e)
+
+            if key in self.just_released:
+                self.just_released.remove(key)
+
+            keyboard_event = event("keyboard", "keypressed", trans[key])
+            self.broadcast_event(keyboard_event)
+
         released = [k for k in keys if keys[k] == bge.logic.KX_INPUT_JUST_RELEASED]
         for key in released:
             if key not in trans:
                 continue
-            if key in self.just_released: continue
+
+            if key in self.just_released:
+                continue
+
             self.just_released.add(key)
-            if key in self.just_pressed: self.just_pressed.remove(key)
-            e = event("keyboard", "keyreleased", trans[key])
-            self.broadcast_event(e)
+            if key in self.just_pressed:
+                self.just_pressed.remove(key)
+            keyboard_event = event("keyboard", "keyreleased", trans[key])
+
+            self.broadcast_event(keyboard_event)
 
         buttons = bge.logic.mouse.events
         but = {
@@ -155,23 +167,32 @@ class inputhandler(bee.drone):
         for button in but:
             v = but[button]
             if v == bge.logic.KX_INPUT_JUST_ACTIVATED:
-                if button in self.just_pressed: continue
+                if button in self.just_pressed:
+                    continue
+
                 self.just_pressed.add(button)
-                if button in self.just_released: self.just_released.remove(button)
-                e = event("mouse", "buttonpressed", button, self.get_mouse())
-                self.broadcast_event(e)
+                if button in self.just_released:
+                    self.just_released.remove(button)
+
+                keyboard_event = event("mouse", "buttonpressed", button, self.get_mouse())
+                self.broadcast_event(keyboard_event)
+
             elif v == bge.logic.KX_INPUT_JUST_RELEASED:
-                if button in self.just_released: continue
+                if button in self.just_released:
+                    continue
+
                 self.just_released.add(button)
-                if button in self.just_pressed: self.just_pressed.remove(button)
-                e = event("mouse", "buttonreleased", button, self.get_mouse())
-                self.broadcast_event(e)
+                if button in self.just_pressed:
+                    self.just_pressed.remove(button)
+
+                keyboard_event = event("mouse", "buttonreleased", button, self.get_mouse())
+                self.broadcast_event(keyboard_event)
 
         # Mouse movement
         x, y = self.get_mouse()
         if x != self._last_x or y != self._last_y:
-            e = event("mouse", "move", (x, y))
-            self.broadcast_event(e)
+            keyboard_event = event("mouse", "move", (x, y))
+            self.broadcast_event(keyboard_event)
 
         self._last_x, self._last_y = x, y
 

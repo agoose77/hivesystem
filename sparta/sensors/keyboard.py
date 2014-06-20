@@ -70,9 +70,11 @@ class keyboard(bee.worker):
         #Add an activate() listener for key events
         if self.keycode == "Any":
             activate = self.activate1
+            event_head = ("keyboard", self.mode)
         else:
             activate = self.activate2
-        self.add_listener("match_leader", activate, ("keyboard", self.mode, self.keycode))
+            event_head = ("keyboard", self.mode, self.keycode)
+        self.add_listener("match_leader", activate, event_head)
 
     # Method to manipulate the parameter form as it appears in the GUI
     @classmethod
