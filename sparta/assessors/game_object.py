@@ -27,11 +27,26 @@ The Game Object assessor returns a Blender Game Engine game object (KX_GameObjec
         class game_object(bee.worker):
             __doc__ = cls.__doc__
             obj = output("pull", ("object", "bge"))
-            b_obj = buffer("pull", ("object", "bge"))
-            connect(b_obj, obj)
+            obj_variable = variable(("object", "bge"))
+            connect(obj_variable, obj)
 
             if idmode == "unbound":
                 identifier = antenna("pull", ("str", "identifier"))
+                identifier_buffer = buffer("pull", ("str", "identifier"))
+                connect(identifier, identifier_buffer)
+                pretrigger(obj_variable, identifier_buffer)
+
+            else:
+                @property
+                def identifier_buffer(self):
+                    return self.get_entity().entityname
+
+            @modifier
+            def get_bge_obj(self):
+                identifier = self.identifier_buffer
+                self.obj_variable = self.lookup_entity(identifier)
+
+            pretrigger(obj_variable, get_bge_obj)
 
             # Name the inputs and outputs
             guiparams = {
@@ -39,7 +54,17 @@ The Game Object assessor returns a Blender Game Engine game object (KX_GameObjec
                 "obj": {"name": "Object"},
             }
 
+            def set_get_entity(self, get_entity):
+                self.get_entity = get_entity
+
+            def set_lookup_entity(self, get_entity):
+                self.lookup_entity = get_entity
+
             def place(self):
-                raise NotImplementedError("sparta.assessors.game_object has not been implemented yet")
+                if idmode == "bound":
+                    libcontext.socket("entity", socket_single_required(self.set_get_entity))
+
+                libcontext.socket(("get_entity", "Blender"), socket_single_required(self.set_lookup_entity))
+
 
         return game_object
