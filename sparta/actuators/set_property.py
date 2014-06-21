@@ -36,22 +36,54 @@ The set_property actuator modifies a named property
         class set_property(bee.worker):
             __doc__ = cls.__doc__
             trig = antenna("push", "trigger")
-            prop = antenna("pull", ("str", "property"))
-            propval = antenna("pull", type_)
+            property_name = antenna("pull", ("str", "property"))
+            property_name_buffer = buffer("pull", ("str", "property"))
+            connect(property_name, property_name_buffer)
 
+            property_value = antenna("pull", type_)
+            property_value_buffer = buffer("pull", type_)
+            connect(property_value, property_value_buffer)
+
+            trigger(trig, property_name_buffer)
+            trigger(trig, property_value_buffer)
+
+            # Entity Identifier
             if idmode == "unbound":
                 identifier = antenna("pull", ("str", "identifier"))
+                identifier_buffer = buffer("pull", ("str", "identifier"))
+                connect(identifier, identifier_buffer)
+                trigger(trig, identifier_buffer)
+
+            else:
+                @property
+                def identifier_buffer(self):
+                    return self.get_entity().entityname
 
             # Name the inputs and outputs
             guiparams = {
                 "trig": {"name": "Trigger"},
                 "identifier": {"name": "Identifier", "fold": True},
-                "prop": {"name": "Property Name", "fold": True},
-                "propval": {"name": "Property Value"},
-                "_memberorder": ["trig", "identifier", "prop", "propval"],
+                "property_name": {"name": "Property Name", "fold": True},
+                "property_value": {"name": "Property Value"},
+                "_memberorder": ["trig", "identifier", "property_name", "property_value"],
             }
 
+            @modifier
+            def set_value(self):
+                self.set_property(self.identifier_buffer, self.property_name_buffer, self.property_value_buffer)
+
+            trigger(trig, set_value)
+
+            def set_set_property(self, set_property):
+                self.set_property = set_property
+
+            def set_get_entity(self, get_entity):
+                self.get_entity = get_entity
+
             def place(self):
-                raise NotImplementedError("sparta.assessors.set_property has not been implemented yet")
+                if idmode == "bound":
+                    libcontext.socket("entity", socket_single_required(self.set_get_entity))
+
+                libcontext.socket(("entity", "set_property"), socket_single_required(self.set_set_property))
 
         return set_property
