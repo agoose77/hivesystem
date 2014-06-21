@@ -77,10 +77,10 @@ class random_(object):
                 connect(v_random, random_)
 
                 pretrigger(v_random, seed_buffer)
-                trigger(seed_buffer, set_seed_value)
+                pretrigger(v_random, set_seed_value)
 
                 pretrigger(v_random, range_buffer)
-                trigger(range_buffer, set_output_random)
+                pretrigger(v_random, set_output_random)
 
             # Name the inputs and outputs
             guiparams = {
