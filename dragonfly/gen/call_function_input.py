@@ -13,7 +13,6 @@ class call_function_input(bee.worker):
     arg_buffer = buffer("pull", "object")
     connect(arg, arg_buffer)
 
-
     func = antenna("pull", ("object", "callable"))
     func_buffer = buffer("pull", ("object", "callable"))
     connect(func, func_buffer)
@@ -29,7 +28,7 @@ class call_function_input(bee.worker):
     trig = antenna("push", "trigger")
 
     def parse_args(self):
-        return [bee.resolve(a, self.parent) for a in self.args_buffer]
+        return [self.arg_buffer] + [bee.resolve(a, self.parent) for a in self.args_buffer]
 
     @modifier
     def call(self):
@@ -40,6 +39,6 @@ class call_function_input(bee.worker):
         self.parent = parent
 
     trigger(trig, arg_buffer)
-    trigger(arg_buffer, func_buffer)
-    trigger(func_buffer, args_buffer)
-    trigger(args_buffer, call)
+    trigger(trig, func_buffer)
+    trigger(trig, args_buffer)
+    trigger(trig, call)
