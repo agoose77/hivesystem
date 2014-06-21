@@ -1,4 +1,5 @@
 import libcontext, bee
+from libcontext.pluginclasses import *
 from bee.segments import *
 
 
