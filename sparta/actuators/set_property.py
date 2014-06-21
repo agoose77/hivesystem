@@ -69,10 +69,10 @@ The set_property actuator modifies a named property
             }
 
             @modifier
-            def set_value(self):
+            def set_property_value(self):
                 self.set_property(self.identifier_buffer, self.property_name_buffer, self.property_value_buffer)
 
-            trigger(trig, set_value)
+            trigger(trig, set_property_value)
 
             def set_set_property(self, set_property):
                 self.set_property = set_property
