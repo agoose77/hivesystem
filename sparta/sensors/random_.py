@@ -50,7 +50,7 @@ class random_(object):
 
                 @modifier
                 def set_active_random(self):
-                    self.is_active = rand_float() > self.probability_buffer
+                    self.is_active = rand_float() < self.probability_buffer
 
                 pretrigger(is_active, probability_buffer)
                 trigger(probability_buffer, set_active_random)
