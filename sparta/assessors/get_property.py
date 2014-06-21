@@ -6,9 +6,8 @@ from bee.types import stringtupleparser
 
 
 class get_property(object):
-    """
-The get_property returns a named property
-    """
+    """The get_property returns a named property"""
+
     metaguiparams = {
         "type_": "str",
         "idmode": "str",
@@ -35,23 +34,48 @@ The get_property returns a named property
 
         class get_property(bee.worker):
             __doc__ = cls.__doc__
-            prop = antenna("pull", ("str", "property"))
-            propval = output("pull", type_)
-            b_propval = buffer("pull", type_)
-            connect(b_propval, propval)
+
+            property_name = antenna("pull", ("str", "property"))
+            property_name_buffer = buffer("pull", ("str", "property"))
+            connect(property_name, property_name_buffer)
+
+            property_value = output("pull", type_)
+            property_value_variable = variable(type_)
+            connect(property_value_variable, property_value)
+
+            pretrigger(property_value_variable, property_name_buffer)
 
             if idmode == "unbound":
                 identifier = antenna("pull", ("str", "identifier"))
+                identifier_buffer = buffer("pull", ("str", "identifier"))
+                connect(identifier, identifier_buffer)
+                pretrigger(property_value_variable, identifier_buffer)
+
+            else:
+                @property
+                def identifier_buffer(self):
+                    return self.get_entity().entityname
+
+            @modifier
+            def get_property_value(self):
+                self.property_value_variable = self.get_property(self.identifier_buffer, self.property_name_buffer)
+            pretrigger(property_value_variable, get_property_value)
 
             # Name the inputs and outputs
             guiparams = {
                 "identifier": {"name": "Identifier", "fold": True},
-                "prop": {"name": "Property Name", "fold": True},
-                "propval": {"name": "Property Value"},
-                "_memberorder": ["identifier", "prop", "propval"],
+                "property_name": {"name": "Property Name", "fold": True},
+                "property_value": {"name": "Property Value"},
+                "_memberorder": ["identifier", "property_name", "property_value"],
             }
 
+            def set_get_property(self, get_property):
+                self.get_property = get_property
+
             def place(self):
-                raise NotImplementedError("sparta.assessors.get_property has not been implemented yet")
+                if idmode == "bound":
+                    libcontext.socket("entity", socket_single_required(self.set_get_entity))
+
+                libcontext.socket(("entity", "get_property"), socket_single_required(self.set_get_property))
 
         return get_property
