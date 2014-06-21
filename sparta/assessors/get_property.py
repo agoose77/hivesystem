@@ -72,6 +72,9 @@ class get_property(object):
             def set_get_property(self, get_property):
                 self.get_property = get_property
 
+            def set_get_entity(self, get_entity):
+                self.get_entity = get_entity
+
             def place(self):
                 if idmode == "bound":
                     libcontext.socket("entity", socket_single_required(self.set_get_entity))
