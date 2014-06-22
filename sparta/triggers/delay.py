@@ -86,9 +86,6 @@ class delay(object):
             def set_add_listener(self, add_listener):
                 self.add_listener = add_listener
 
-            def set_remove_listener(self, remove_listener):
-                self.remove_listener = remove_listener
-
             def set_pacemaker(self, pacemaker):
                 self.pacemaker = pacemaker
 
@@ -102,6 +99,5 @@ class delay(object):
 
                 libcontext.socket("pacemaker", socket_single_required(self.set_pacemaker))
                 libcontext.socket(("evin", "add_listener"), socket_single_required(self.set_add_listener))
-                libcontext.socket(("evin", "remove_listener"), socket_single_required(self.set_remove_listener))
 
         return delay
