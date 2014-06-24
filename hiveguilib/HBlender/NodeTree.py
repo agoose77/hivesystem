@@ -120,21 +120,24 @@ class FakeLink:
 class HiveNodeTree:
 
     def _check_deletions(self):
-        ret = []
+        removed_node_ids = []
         bntm = BlendManager.blendmanager.get_nodetree_manager(self.name)
         canvas = bntm.canvas
         ids = [node.label for node in self.nodes]
-        for id_ in canvas.h()._nodes:
-            if id_ not in ids:
-                ret.append(id_)
-        if ret:
-            ok = canvas.gui_removes_nodes(ret)
-            assert ok
-        return ret
+        print(canvas.h(), canvas)
+        for node_id in canvas.h()._nodes:
+            if node_id not in ids:
+                removed_node_ids.append(node_id)
+
+        logging.debug("Removing nodes [" + ', '.join(removed_node_ids) + "]")
+
+        if removed_node_ids:
+            success = canvas.gui_removes_nodes(removed_node_ids)
+            assert success
+        return removed_node_ids
 
     def _check_links(self, deletions):
         bntm = BlendManager.blendmanager.get_nodetree_manager(self.name)
-        print(self.name, bntm, bntm.canvas.h())
         hcanvas = bntm.canvas.h()
 
         attempted_new_connections = []
@@ -170,8 +173,7 @@ class HiveNodeTree:
                 self.links.remove(link)
 
         for link in removed_connections:
-            #TODO determine why it checked node.identifier here
-            if link.from_node in deletions or link.to_node in deletions:
+            if link.from_node.label in deletions or link.to_node.label in deletions:
                 continue
 
             attempt_success = hcanvas.gui_removes_connection(link)

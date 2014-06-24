@@ -62,6 +62,16 @@ Parameters
         reserved = ("code", "code_parameter_", "outp", "v_outp", "con_outp", "form")
         output_type = stringtupleparser(output_type)
 
+        cls_dict = {
+            "code": variable("str"),
+            "outp": output("pull", output_type),
+            "v_outp": variable(output_type),
+            "con_outp": connect("v_outp", "outp")
+        }
+        cls_dict["code_parameter_"] = parameter(cls_dict["code"], "")
+        guiparams = {"outp": {"name": "Output"}}
+
+        # Build set of IO names
         for input_ in inputs:
             if input_.io_name in reserved:
                 raise ValueError("Reserved input name: %s" % input_.io_name)
@@ -71,35 +81,28 @@ Parameters
 
             io_names.add(input_.io_name)
 
-        cls_dict = {
-            "code": variable("str"),
-            "outp": output("pull", output_type),
-            "v_outp": variable(output_type),
-            "con_outp": connect("v_outp", "outp")
-        }
-        cls_dict["code_parameter_"] = parameter(cls_dict["code"], "")
-        guiparams = {}
-        guiparams["outp"] = {"name": "Output"}
-        counter = 0
-
+        # Create connections
         for input_ in inputs:
-            name = input_.io_name
-            name2 = name + "_"
+            buffer_name = input_.io_name
+            antenna_name = buffer_name + "_"
             type_ = input_.type_
+
             if type_ == "custom":
                 type_ = input_.customtype
+
             if type_:
                 type_ = stringtupleparser(type_)
 
-            cls_dict[name2] = antenna("pull", type_)
-            cls_dict[name] = buffer("pull", type_)
-            guiparams[name2] = {"name": name}
-            while 1:
-                counter += 1
-                conname = "con" + str(counter)
-                if conname not in io_names:
-                    break
-            cls_dict[conname] = connect(name2, name)
+            cls_dict[antenna_name] = antenna("pull", type_)
+            cls_dict[buffer_name] = buffer("pull", type_)
+            guiparams[antenna_name] = {"name": buffer_name}
+
+            # Ensure we don't have a name clash with IO names
+            connection_name = antenna_name + "connection"
+            while connection_name in io_names:
+                connection_name += "_"
+
+            cls_dict[connection_name] = connect(antenna_name, buffer_name)
 
         cls_dict["guiparams"] = guiparams
         return type("python", (_python_base,), cls_dict)

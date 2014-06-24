@@ -17,4 +17,3 @@ class stop(bee.worker):
 
     def place(self):
         raise NotImplementedError("sparta.triggers.stop has not been implemented yet")
-    

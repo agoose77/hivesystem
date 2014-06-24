@@ -14,9 +14,6 @@ class if_(bee.worker):
     outp = output("push", "trigger")
     trig_outp = triggerfunc(outp)
 
-    # When we receive a trigger:
-    # - Update the input
-    # - Test the value, and trigger the output if True
     trigger(trig, b_inp)
 
     @modifier
@@ -32,5 +29,3 @@ class if_(bee.worker):
         "outp": {"name": "Output"},
         "_memberorder": ["inp", "trig", "outp"],
     }
-              
-      

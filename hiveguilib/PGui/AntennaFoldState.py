@@ -82,7 +82,7 @@ class AntennaFoldState(object):
         assert not antenna.fold
         if not antenna.foldable: return
         antenna.fold = True
-        folded, value = self._nodecanvas().fold_antenna_connection(workerid, member, antenna.typ, onload=False)
+        folded, value = self._nodecanvas().fold_antenna_connection(workerid, member, antenna.typ, called_on_load=False)
         if not folded:
             antenna.fold = False
             return

@@ -81,7 +81,7 @@ m.close()
 m.init()
 print
 "BLOCKS:"
-for g in m.select_block.w_blocks.get_value(): print
+for g in m.select_block.w_blocks.set_property_value(): print
 g.get_values()
 print
 "SELECTED :", m.blockgrid.value.get_values()
@@ -101,7 +101,7 @@ m2.close()
 m2.init()
 print
 "BLOCKS2:"
-for g in m2.select_block.w_blocks.get_value(): print
+for g in m2.select_block.w_blocks.set_property_value(): print
 g.get_values()
 print
 "SELECTED2:", m2.blockgrid.value.get_values()

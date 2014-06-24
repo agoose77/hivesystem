@@ -81,11 +81,13 @@ class Attribute(object):
 
 
 class Node(object):
+
     def __init__(self, name, position, attributes, tooltip=None, empty=False):
         self.name = name
         self.position = position
         self.attributes = attributes
-        for a in attributes: assert isinstance(a, Attribute)
+        for a in attributes:
+            assert isinstance(a, Attribute)
         self.tooltip = tooltip
         self.empty = empty
 

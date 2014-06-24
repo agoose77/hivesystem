@@ -94,8 +94,10 @@ class interval_ticks(bee.worker):
 
     @modifier
     def m_set_ticks(self):
-        if self.v_running: raise ValueError("Interval worker is running, cannot change ticks")
-        if self.v_paused: raise ValueError("Interval worker is paused, cannot change ticks")
+        if self.v_running:
+            raise ValueError("Interval worker is running, cannot change ticks")
+        if self.v_paused:
+            raise ValueError("Interval worker is paused, cannot change ticks")
         self.ticks = self.v_set_ticks
 
     trigger(v_set_ticks, m_set_ticks)

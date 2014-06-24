@@ -40,7 +40,7 @@ class pandabgrid(object):
         for n in range(sx):
             for nn in range(sy):
                 try:
-                    v = self.grid.get_value(self.grid.minx + n, self.grid.miny + nn)
+                    v = self.grid.set_property_value(self.grid.minx + n, self.grid.miny + nn)
                 except ValueError:
                     v = False
                 square = self.squares[n, nn]

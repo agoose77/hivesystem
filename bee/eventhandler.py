@@ -3,7 +3,9 @@ import libcontext
 from libcontext.socketclasses import *
 from libcontext.pluginclasses import *
 from .event import event as eventclass
+
 import sys
+import operator
 
 python2 = (sys.version_info[0] == 2)
 
@@ -12,14 +14,19 @@ modes = ("all", "match", "leader", "match_leader", "head", "match_head", "trigge
 
 def func_cmp(func1, func2):
     f1, f2 = func1, func2
-    if python2: f1, f2 = f1.im_func, f2.im_func
-    if func1 != func2: return False
+    if python2:
+        f1, f2 = f1.im_func, f2.im_func
+    if func1 != func2:
+        return False
     if python2:
         b1 = hasattr(func1, "im_self")
         b2 = hasattr(func2, "im_self")
-        if b1 != b2: return False
-        if not b1: return True
+        if b1 != b2:
+            return False
+        if not b1:
+            return True
         return func1.im_self is func2.im_self
+
     else:
         return func1 is func2
 
@@ -39,33 +46,52 @@ class eventhandler(drone):
 
     def read_event(self, event):
         self.tick = None
-        if event.match("tick"): self.tick = event
+        if event.match("tick"):
+            self.tick = event
+
         for mode, callback, pattern, priority in list(self.listeners):
             self.lock = True
-            if self.doexit(): break
-            if event.processed: break
-            if mode == "all": callback(event)
+            if self.doexit():
+                break
+
+            if event.processed:
+                break
+
+            if mode == "all":
+                callback(event)
+
             if mode == "trigger":
                 if event.match_leader(pattern) is not None:
                     callback()
+
             elif mode == "match":
-                if event == pattern: callback()
+                if event == pattern:
+                    callback()
+
             elif mode == "leader":
                 match = event.match_leader(pattern)
                 if match is not None:
                     callback(match)
-                    if match.processed: event.processed = True
+                    if match.processed:
+                        event.processed = True
+
             elif mode == "match_leader":
                 match = event.match_leader(pattern)
-                if match is not None: callback(event)
+                if match is not None:
+                    callback(event)
+
             elif mode == "head":
                 match = event.match_head(pattern)
                 if match is not None:
                     callback(match)
-                    if match.processed: event.processed = True
+                    if match.processed:
+                        event.processed = True
+
             elif mode == "match_head":
                 match = event.match_head(pattern)
-                if match is not None: callback(event)
+                if match is not None:
+                    callback(event)
+
         self.process_next_events()
         self.lock = False
 
@@ -94,19 +120,23 @@ class eventhandler(drone):
 
     def add_listener(self, mode, callback, pattern=None, priority=0):
         assert mode in modes, mode
-        if mode != "all": assert pattern != None
-        # assert callable(callback)
+        if mode != "all":
+            assert pattern != None
+
         assert hasattr(callback, '__call__')
         listener = (mode, callback, pattern, priority)
         self.listeners.append(listener)
-        self.listeners.sort(key=lambda e: -e[3])
+        self.listeners.sort(key=operator.itemgetter(3), reverse=True)
         return listener
 
     def remove_listener(self, listener):
         listeners = [l for l in self.listeners if l is listener]
-        if not len(listeners): raise KeyError("Listener not found: %s" % (str(listener)))
+        if not len(listeners):
+            raise KeyError("Listener not found: %s" % (str(listener)))
+
         if len(listeners) > 1:
             raise KeyError("More than one listener: %s" % (str(listener)))
+
         self.listeners = [l for l in self.listeners if l is not listener]
 
     def set_doexit(self, doexit):

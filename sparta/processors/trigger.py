@@ -49,6 +49,3 @@ class trigger(bee.worker):
         libcontext.socket(("evin", "add_listener"), socket_single_required(self.set_add_listener))
         #Make sure we are enabled at startup
         libcontext.plugin(("bee", "init"), plugin_single_required(self.enable))
-    
-      
-      

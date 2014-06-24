@@ -174,7 +174,9 @@ class NodeItemManager:
 
     def draw_menu(self, struct, context):
         menu = self._nodeitem_objects
-        if not menu._active(context): return
+        if not menu._active(context):
+            return
+
         menu.draw(struct.layout, context)
 
     def register(self):

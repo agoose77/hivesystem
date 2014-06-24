@@ -221,7 +221,7 @@ class blenderapp(bee.drone):
         :param entity_name: name of entity
         :param property_name: name of property
         """
-        entity = self.get_entity(entity_name)
+        entity = self.get_entity_blender(entity_name)
         return entity[property_name]
 
     def entity_set_property(self, entity_name, property_name, property_value):
@@ -231,7 +231,7 @@ class blenderapp(bee.drone):
         :param property_name: name of property
         :param property_value: value of property
         """
-        entity = self.get_entity(entity_name)
+        entity = self.get_entity_blender(entity_name)
         entity[property_name] = property_value
 
     def entity_get_material(self, entity_name, material_name):
@@ -241,7 +241,7 @@ class blenderapp(bee.drone):
         :param material_name: name of material
         """
         #TODO add material proxy
-        entity = self.get_entity(entity_name)
+        entity = self.get_entity_blender(entity_name)
         name_to_material = {mesh.getMaterialName(material.material_index) for mesh in entity.meshes
                             for material in mesh.materials}
         return name_to_material[material_name]

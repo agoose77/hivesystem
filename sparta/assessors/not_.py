@@ -29,4 +29,3 @@ class not_(bee.worker):
         "outp": {"name": "Output"},
         "inp": {"name": "Input", "foldable": False},
     }
-    

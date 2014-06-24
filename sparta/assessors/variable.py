@@ -45,4 +45,3 @@ class variable(object):
             }
 
         return variable
-    

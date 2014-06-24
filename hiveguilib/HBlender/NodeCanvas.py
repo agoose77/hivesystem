@@ -30,6 +30,9 @@ class NodeCanvas:
         self._busy = False
         self.bntm = None
 
+        import logging
+        logging.nodecanvas = self
+
     def set_blendnodetreemanager(self, blendnodetreemanager):
         self.bntm = blendnodetreemanager
 
@@ -178,6 +181,8 @@ class NodeCanvas:
                     break
 
     def remove_node(self, id_):
+        import logging
+        logging.debug("Removing node blendercanvas")
         self._busy = True
         if id_ in self._positions:
             self._positions.pop(id_)
@@ -239,8 +244,10 @@ class NodeCanvas:
         try:
             link.use_socket_color = True
             link.dashed = (link.from_socket._shape == "DIAMOND")
+
         except AttributeError:
             pass
+
         self._connections[id_] = connection
         self._links = {FakeLink.from_link(l) for l in tree.links}
         fl = FakeLink.from_link(link)
@@ -275,29 +282,45 @@ class NodeCanvas:
             link.use_socket_color = False
         return ret
 
-    def gui_removes_connection(self, l):
-        if self._hgui is None: return True
-        if self._busy: return False
-        connection = self.map_link(l)
+    def gui_removes_connection(self, link):
+        if self._hgui is None:
+            return True
+
+        if self._busy:
+            return False
+
+        logging.debug("in GUI_REMOVES_CONNECTION")
+
+        connection = self.map_link(link)
         con_id = self.find_connection(connection)
-        ret = self._hgui().gui_removes_connection(con_id)
-        if ret:
+        success = self._hgui().gui_removes_connection(con_id)
+        if success:
             self._connections.pop(con_id)
-        return ret
+        return success
 
     def remove_connection(self, id_):
         # This may not do anything, if Blender already deleted the links,
         # e.g. if the connected node was just deleted
+
+        logging.debug("in REMOVE_CONNECTION")
         self._busy = True
         tree = self.bntm.get_nodetree()
         connection = self._connections.pop(id_)
-        for l in tree.links:
-            c = self.map_link(l)
-            if c.start_node != connection.start_node: continue
-            if c.end_node != connection.end_node: continue
-            if c.start_attribute != connection.start_attribute: continue
-            if c.end_attribute != connection.end_attribute: continue
-            tree.links.remove(l)
+        for link in tree.links:
+            c = self.map_link(link)
+            if c.start_node != connection.start_node:
+                continue
+
+            if c.end_node != connection.end_node:
+                continue
+
+            if c.start_attribute != connection.start_attribute:
+                continue
+
+            if c.end_attribute != connection.end_attribute:
+                continue
+
+            tree.links.remove(link)
         self._busy = False
 
     def set_statusbar_message(self, message):
@@ -334,12 +357,17 @@ class NodeCanvas:
         self._change_attribute(id_, attribute, hidden=True)
 
     def find_connection(self, connection):
-        for con_id, c in self._connections.items():
-            if c.start_node != connection.start_node: continue
-            if c.end_node != connection.end_node: continue
-            if c.start_attribute != connection.start_attribute: continue
-            if c.end_attribute != connection.end_attribute: continue
-            return con_id
+        #TODO implement __eq__ on connections?
+        for connection_id, connection_ in self._connections.items():
+            if connection_.start_node != connection.start_node:
+                continue
+            if connection_.end_node != connection.end_node:
+                continue
+            if connection_.start_attribute != connection.start_attribute:
+                continue
+            if connection_.end_attribute != connection.end_attribute:
+                continue
+            return connection_id
         raise KeyError
 
     def map_link(self, link):
@@ -349,9 +377,4 @@ class NodeCanvas:
         start_attribute = link.from_socket.identifier
         end_node = link.to_node.label
         end_attribute = link.to_socket.identifier
-        ret = Connection(start_node, start_attribute,
-                         end_node, end_attribute,
-            [],
-        )
-        return ret
-        
+        return Connection(start_node, start_attribute, end_node, end_attribute, [], )

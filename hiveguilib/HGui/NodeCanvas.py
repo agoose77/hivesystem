@@ -5,32 +5,35 @@ import weakref
 from bee.types import typecompare as bee_typecompare
 
 
-def typecompare(t1, t2):
-    if t1 == "any" or t2 == "any": return True
-    return bee_typecompare(t1, t2)
+def compare_types(type_a, type_b):
+    if type_a == "any" or type_b == "any":
+        return True
+
+    return bee_typecompare(type_a, type_b)
 
 
 class NodeCanvas(HGui):
     _NodeCanvasClass = None
 
-    def __init__(self, mainWindow, clipboard, statusbar=None):
+    def __init__(self, main_window, clipboard, status_bar=None):
         assert self._NodeCanvasClass is not None
-        self._hNodeCanvas = self._NodeCanvasClass(mainWindow.h(), clipboard, statusbar)
-        mainWindow.setNodeCanvas(self)
-        self.mainWindow = mainWindow
-        self._hNodeCanvas._hgui = weakref.ref(self)
+        self._hNodeCanvas = self._NodeCanvasClass(main_window.h(), clipboard, status_bar)
+        main_window.setNodeCanvas(self)
+        self.mainWindow = main_window
 
+        self._busy = False
+        self._clipboard = weakref.ref(clipboard)
         self._connections = {}
         self._connection_ids = []
-        self._nodes = {}
-        self.observers_selection = []
-        self.observers_remove = []
-        self._clipboard = weakref.ref(clipboard)
-        self.workermanager = None
-        self._busy = False
         self._folded_antenna_variables = {}
         self._folded_antenna_connections = {}
         self._folded_antennas = {}
+        self._hNodeCanvas._hgui = weakref.ref(self)
+        self._nodes = {}
+
+        self.observers_selection = []
+        self.observers_remove = []
+        self.workermanager = None
 
     def set_workermanager(self, workermanager):
         self.workermanager = workermanager
@@ -92,7 +95,7 @@ class NodeCanvas(HGui):
             if end is None: break
 
             # unequal types
-            if not typecompare(start.type, end.type): break
+            if not compare_types(start.type, end.type): break
             # unequal modes: only allowed if pull=>push, and if popups supported
             if start.mode != end.mode:
                 if start.mode != "pull": break
@@ -139,96 +142,118 @@ class NodeCanvas(HGui):
     def pushpull_connection(self, connection, pollmode):
         start_node = self._nodes[connection.start_node]
         end_node = self._nodes[connection.end_node]
-        pos1 = start_node.position
-        pos2 = end_node.position
-        midpos = (pos1[0] + pos2[0]) / 2, (pos1[1] + pos2[1]) / 2
+
+        start_point = start_node.position
+        end_point = end_node.position
+
+        position_midpoint = (start_point[0] + end_point[0]) / 2, (start_point[1] + end_point[1]) / 2
+
         if pollmode == "Manual":
-            transistor = "dragonfly.std.transistor"
-            t_offy = 0
-            trigger = None
+            transistor_type = "dragonfly.std.transistor"
+            offset_y = 0
+            trigger_type = None
+
         elif pollmode == "Every tick":
-            transistor = "dragonfly.std.transistor"
-            trigger = "dragonfly.io.ticksensor"
-            t_offy = 50
+            transistor_type = "dragonfly.std.transistor"
+            trigger_type = "dragonfly.io.ticksensor"
+            offset_y = 50
+
         elif pollmode == "On change":
-            transistor = "dragonfly.std.sync"
-            t_offy = 0
-            trigger = None
+            transistor_type = "dragonfly.std.sync"
+            offset_y = 0
+            trigger_type = None
+
         else:
             raise ValueError(pollmode)
 
-        transistor_id = self.workermanager.get_new_workerid(transistor)
+        transistor_id = self.workermanager.get_new_workerid(transistor_type)
         start = start_node.get_attribute(connection.start_attribute)
         metaparams = {"type": start.outhook.type}
-        t = self.workermanager.instantiate(
-            transistor_id, transistor, midpos[0], midpos[1] + t_offy, metaparams
-        )
-        self.add_connection(
-            self.workermanager.get_new_connection_id("con"),
-            (connection.start_node, connection.start_attribute),
-            (transistor_id, "inp"),
-        )
-        self.add_connection(
-            self.workermanager.get_new_connection_id("con"),
-            (transistor_id, "outp"),
-            (connection.end_node, connection.end_attribute),
-        )
-        if trigger is not None:
-            trigger_id = self.workermanager.get_new_workerid(trigger)
-            tr = self.workermanager.instantiate(
-                trigger_id, trigger, midpos[0] - 100, midpos[1] - 50
-            )
-            self.add_connection(
-                self.workermanager.get_new_connection_id("con"),
-                (trigger_id, "outp"),
-                (transistor_id, "trig"),
-            )
+        transistor = self.workermanager.instantiate(transistor_id, transistor_type, position_midpoint[0],
+                                                    position_midpoint[1] + offset_y, metaparams)
 
-    def gui_adds_connection(self, connection, id_, force=False):
-        ret = self.gui_asks_connection(connection, adding=True)
-        if ret or force:
-            assert id_ not in self._connections
-            self._connections[id_] = connection
-            self._connection_ids.append(id_)
-        return ret
+        connection_id = self.workermanager.get_new_connection_id("con")
+        self.add_connection(connection_id, (connection.start_node, connection.start_attribute), (transistor_id, "inp"))
 
-    def gui_offsets_connection_interpoints(self, con_id, offset):
-        if self._busy: return
-        con = self._connections[con_id]
-        dx, dy = offset
-        con.interpoints = [(x + dx, y + dy) for x, y in con.interpoints]
+        connection_id = self.workermanager.get_new_connection_id("con")
+        self.add_connection(connection_id, (transistor_id, "outp"), (connection.end_node, connection.end_attribute))
 
-    def gui_rearranges_connection(self, con_id, insertionpoint, pos):
-        if self._busy: return
-        assert pos in ("before", "after"), pos
-        old_index = self._connection_ids.index(con_id)
-        new_index = self._connection_ids.index(insertionpoint)
-        if old_index < new_index: new_index -= 1
-        if pos == "after": new_index += 1
-        if old_index == new_index: return True
+        if trigger_type is None:
+            return
+
+        trigger_id = self.workermanager.get_new_workerid(trigger_type)
+        trigger = self.workermanager.instantiate(trigger_id, trigger_type, position_midpoint[0] - 100,
+                                                 position_midpoint[1] - 50)
+
+        connection_id = self.workermanager.get_new_connection_id("con")
+        self.add_connection(connection_id, (trigger_id, "outp"), (transistor_id, "trig"))
+
+    def gui_adds_connection(self, connection, connection_id, force=False):
+        has_permission = self.gui_asks_connection(connection, adding=True)
+        if has_permission or force:
+            assert connection_id not in self._connections
+            self._connections[connection_id] = connection
+            self._connection_ids.append(connection_id)
+        return has_permission
+
+    def gui_offsets_connection_interpoints(self, connection_id, offset):
+        if self._busy:
+            return
+
+        connection_id = self._connections[connection_id]
+        x_delta, y_delta = offset
+        connection_id.interpoints = [(x + x_delta, y + y_delta) for x, y in connection_id.interpoints]
+
+    def gui_rearranges_connection(self, connection_id, insertion_point, position):
+        if self._busy:
+            return
+
+        assert position in ("before", "after"), position
+        old_index = self._connection_ids.index(connection_id)
+        new_index = self._connection_ids.index(insertion_point)
+
+        if old_index < new_index:
+            new_index -= 1
+
+        if position == "after":
+            new_index += 1
+
+        if old_index == new_index:
+            return True
+
         self._connection_ids.pop(old_index)  # removes con_id
         if new_index == len(self._connections):
-            self._connection_ids.append(con_id)
+            self._connection_ids.append(connection_id)
+
         else:
-            self._connection_ids.insert(new_index, con_id)
+            self._connection_ids.insert(new_index, connection_id)
+
         return True
 
-    def remove_connection(self, id_, pass_downward=True):
-        self._connections.pop(id_)
-        self._connection_ids.remove(id_)
-        if id_ in self._folded_antenna_connections.values():
-            for k, v in self._folded_antenna_connections.items():
-                if v == id_:
-                    self._folded_antenna_connections.pop(k)
-                    break
-        elif pass_downward:
-            self._hNodeCanvas.remove_connection(id_)
+    def remove_connection(self, connection_id, pass_downward=True):
+        self._connections.pop(connection_id)
+        self._connection_ids.remove(connection_id)
 
-    def gui_removes_connection(self, id_):
-        if self._busy: return False
-        if id_ in self._folded_antenna_connections.values(): return False
-        self._connections.pop(id_)
-        self._connection_ids.remove(id_)
+        if connection_id in self._folded_antenna_connections.values():
+
+            for connection, connection_id in self._folded_antenna_connections.items():
+
+                if connection_id == connection_id:
+                    self._folded_antenna_connections.pop(connection)
+                    break
+
+        elif pass_downward:
+            self._hNodeCanvas.remove_connection(connection_id)
+
+    def gui_removes_connection(self, connection_id):
+        if self._busy:
+            return False
+
+        if connection_id in self._folded_antenna_connections.values():
+            return False
+
+        self._connections.pop(connection_id)
+        self._connection_ids.remove(connection_id)
         return True
 
     def add_node(self, id_, node):
@@ -265,212 +290,263 @@ class NodeCanvas(HGui):
         self.select([new_id])
         self._busy = False
 
-    def morph_node(self, id_, newnode, maps_in, maps_out):
-        assert id_ in self._nodes, id_
-        mapcon = []
-        for conid in self._connection_ids:
-            con = self._connections[conid]
-            if con.start_node == id_:
-                a = con.start_attribute
+    def morph_node(self, node_id, replacement_node, maps_in, maps_out):
+        assert node_id in self._nodes, node_id
+        connection_map = []
+
+        for connection_id in self._connection_ids:
+            connection = self._connections[connection_id]
+            if connection.start_node == node_id:
+                start_attribute = connection.start_attribute
+
                 if maps_out is not None:
-                    aa = maps_out[a]
-                    if aa is None: raise KeyError
+                    aa = maps_out[start_attribute]
+                    if aa is None:
+                        raise KeyError
+
                 else:
-                    aa = a
-                con.start_attribute = aa
-                mapcon.append((a, aa, "out"))
-            if con.end_node == id_:
-                a = con.end_attribute
+                    aa = start_attribute
+
+                connection.start_attribute = aa
+                connection_map.append((start_attribute, aa, "out"))
+
+            if connection.end_node == node_id:
+                start_attribute = connection.end_attribute
                 if maps_in is not None:
-                    aa = maps_in[a]
-                    if aa is None: raise KeyError
+                    aa = maps_in[start_attribute]
+
+                    if aa is None:
+                        raise KeyError
+
                 else:
-                    aa = a
-                con.end_attribute = aa
-                mapcon.append((a, aa, "in"))
-        self._nodes[id_] = newnode
-        if id_ not in self._folded_antenna_variables:
-            self._hNodeCanvas.h_morph_node(id_, newnode, mapcon)
+                    aa = start_attribute
+
+                connection.end_attribute = aa
+                connection_map.append((start_attribute, aa, "in"))
+
+        self._nodes[node_id] = replacement_node
+        if node_id not in self._folded_antenna_variables:
+            self._hNodeCanvas.h_morph_node(node_id, replacement_node, connection_map)
 
     def copy_clipboard(self, nodes):
         self._clipboard().nodecanvas_copy_nodes(nodes)
 
     def paste_clipboard(self):
-        ids = self._clipboard().nodecanvas_paste_nodes()
-        if ids is not None: self.select(ids)
+        pasted_nodes_id_sequence = self._clipboard().nodecanvas_paste_nodes()
+        if pasted_nodes_id_sequence is not None:
+            self.select(pasted_nodes_id_sequence)
 
-    def select(self, ids):
-        for id_ in ids:
-            assert id_ in self._nodes, id_
-            assert id_ not in self._folded_antenna_variables, id_
-        self._hNodeCanvas.select(ids)
+    def select(self, selected_node_id_sequence):
+        for node_id in selected_node_id_sequence:
+            assert node_id in self._nodes, node_id
+            assert node_id not in self._folded_antenna_variables, node_id
+        self._hNodeCanvas.select(selected_node_id_sequence)
 
-    def gui_selects(self, ids):
-        if self._busy: return
+    def gui_selects(self, node_id_sequence):
+        if self._busy:
+            return
+
         for ob in self.observers_selection:
-            ob(ids)
+            ob(node_id_sequence)
         return True
 
     def gui_deselects(self):
-        if self._busy: return
+        if self._busy:
+            return
+
         for ob in self.observers_selection:
             ob(None)
+
         return True
 
     def gui_adds_node(self, id_, node):
-        if self._busy: return
+        if self._busy:
+            return
+
         assert isinstance(node, Node)
         assert id_ not in self._nodes
         self._nodes[id_] = node
         return True
 
-    def _remove_node(self, id_, pass_downward=True):
-        assert id_ in self._nodes, id_
-        self._nodes.pop(id_)
-        for con_id, connection in list(self._connections.items()):
-            if connection.start_node == id_ or \
-                            connection.end_node == id_:
-                self.remove_connection(con_id, pass_downward)
-        if id_ in self._folded_antennas:
-            antennas = self._folded_antennas.pop(id_)
-            for vid in antennas.values():
-                self._folded_antenna_variables.pop(vid)
-                self._remove_node(vid, pass_downward=False)
-                for ob in self.observers_remove:
-                    ob(vid)
+    def _remove_node(self, node_id, pass_downward=True):
+        assert node_id not in self._folded_antenna_variables, node_id
+        self._hNodeCanvas.remove_node(node_id)
 
-    def remove_node(self, id_):
-        self._remove_node(id_)
-        assert id_ not in self._folded_antenna_variables, id_
-        self._hNodeCanvas.remove_node(id_)
+        assert node_id in self._nodes, node_id
+        self._nodes.pop(node_id)
 
-    def gui_removes_nodes(self, ids):
-        if self._busy: return
-        for id_ in ids:
-            if id_ in self._folded_antenna_variables: continue
-            self._remove_node(id_)
+        for connection_id, connection in list(self._connections.items()):
+            if connection.start_node == node_id or connection.end_node == node_id:
+                self.remove_connection(connection_id, pass_downward)
+
+        if node_id in self._folded_antennas:
+            antennas = self._folded_antennas.pop(node_id)
+            for folded_node_id in antennas.values():
+                self._folded_antenna_variables.pop(folded_node_id)
+                self._remove_node(folded_node_id, pass_downward=False)
+
+                for observer in self.observers_remove:
+                    observer(folded_node_id)
+
+    def remove_node(self, node_id):
+        self._remove_node(node_id)
+
+    def gui_removes_nodes(self, node_id_sequence):
+        if self._busy:
+            import logging
+            logging.debug("BUSY, COULD NOT REMOVE")
+            return
+
+        for node_id in node_id_sequence:
+            if node_id in self._folded_antenna_variables:
+                continue
+
+            self._remove_node(node_id)
+
             for ob in self.observers_remove:
-                ob(id_)
+                ob(node_id)
+
         return True
 
-    def gui_moves_node(self, id_, position):
+    def gui_moves_node(self, node_id, position):
         if self._busy: return
-        node = self._nodes[id_]
+        node = self._nodes[node_id]
         node.position = position
         return True
 
     def get_connections(self):
-        return [self._connections[id_] for id_ in self._connection_ids]
+        return [self._connections[node_id] for node_id in self._connection_ids]
 
     def get_connection_ids(self):
         return self._connection_ids
 
-    def set_attribute_value(self, id_, attribute, value):
-        if id_ in self._folded_antenna_variables: return
+    def set_attribute_value(self, node_id, attribute, value):
+        if node_id in self._folded_antenna_variables: return
         # nodes themselves are not modified!
-        self._hNodeCanvas.set_attribute_value(id_, attribute, value)
+        self._hNodeCanvas.set_attribute_value(node_id, attribute, value)
 
-    def fold_antenna_connection(self, id_, antenna, typ, onload):
-        assert id_ in self._nodes, id_
-        assert id_ not in self._folded_antenna_variables, id_
-        if id_ in self._folded_antennas:
-            assert antenna not in self._folded_antennas[id_], (id_, antenna)
+    def fold_antenna_connection(self, node_id, antenna, value_type, called_on_load):
+        assert node_id in self._nodes, node_id
+        assert node_id not in self._folded_antenna_variables, node_id
 
-        foldable = True
-        varid = None
+        if node_id in self._folded_antennas:
+            assert antenna not in self._folded_antennas[node_id], (node_id, antenna)
+
+        can_be_folded = True
+        variable_id = None
         value = None
-        con_id = None
-        for conid in self._connection_ids:
-            con = self._connections[conid]
-            if con.end_node == id_ and con.end_attribute == antenna:
-                varid = con.start_node
-                foldable = False
-                desc = self.workermanager.get_worker_descriptor(varid)
-                gp = desc[7].get("guiparams", {})
-                if not onload:
-                    coor_ok = True
-                else:
-                    coor_ok = False
-                    x, y = desc[2], desc[3]
-                    if x == 0 and y == 0: coor_ok = True
-                if "is_variable" in gp and gp["is_variable"] and coor_ok:
-                    vcon = [c for c in self._connections.values() \
-                            if c.start_node == varid or c.end_node == varid]
-                    vartype = desc[4]["type"]
-                    if len(vcon) == 1 and vartype == typ:
-                        foldable = True
-                        con_id = conid
-                        self._nodes[varid].position = 0, 0
-                        if isinstance(desc[5], dict) and "value" in desc[5]:
-                            value = desc[5]["value"]
-                break
+        connection_id = None
+        for connection_id_ in self._connection_ids:
+            connection = self._connections[connection_id_]
+            if not (connection.end_node == node_id and connection.end_attribute == antenna):
+                continue
 
-        if not foldable or (varid is None and onload):
+            variable_id = connection.start_node
+            can_be_folded = False
+            worker_descriptor = self.workermanager.get_worker_descriptor(variable_id)
+            gui_params = worker_descriptor[7].get("guiparams", {})
+
+            if not called_on_load:
+                coordinate_valid = True
+
+            else:
+                coordinate_valid = False
+                x, y = worker_descriptor[2], worker_descriptor[3]
+                if x == y == 0:
+                    coordinate_valid = True
+
+            if gui_params.get("is_variable") and coordinate_valid:
+                variable_node = self._nodes[variable_id]
+                variable_connections = [c for c in self._connections.values() if c.start_node == variable_id or
+                                        c.end_node == variable_id]
+
+                variable_type = worker_descriptor[4]["type"]
+                if len(variable_connections) == 1 and variable_type == value_type:
+                    can_be_folded = True
+                    connection_id = connection_id_
+
+                    if isinstance(worker_descriptor[5], dict) and "value" in worker_descriptor[5]:
+                        value = worker_descriptor[5]["value"]
+
+                    variable_node.position = 0, 0
+            break
+
+        if not can_be_folded or (variable_id is None and called_on_load):
             return False, None
 
-        if varid is None:
-            varid = id_.rstrip("_") + "_ant_" + antenna
-            varid0 = varid
+        if variable_id is None:
+            variable_id = node_id.rstrip("_") + "_ant_" + antenna
+            original_variable_id = variable_id
             count = 0
-            while varid in self._nodes:
+            while variable_id in self._nodes:
                 count += 1
-                varid = varid0 + str(count)
-            metaparamvalues = {"type": typ}
-            self.workermanager.instantiate(
-                varid, "dragonfly.std.variable", 0, 0,
-                metaparamvalues=metaparamvalues,
-            )
-            con_id = self.workermanager.get_new_connection_id("con")
-            wim = self.workermanager.get_wim()
-            wim.add_connection(con_id, (varid, "outp"), (id_, antenna))
+                variable_id = original_variable_id + str(count)
 
-        if id_ not in self._folded_antennas:
-            self._folded_antennas[id_] = {}
-        self._folded_antennas[id_][antenna] = varid
-        self._folded_antenna_variables[varid] = id_
-        self._folded_antenna_connections[varid] = con_id
+            meta_params = {"type": value_type}
+            self.workermanager.instantiate(variable_id, "dragonfly.std.variable", 0, 0, metaparamvalues=meta_params)
+            connection_id = self.workermanager.get_new_connection_id("con")
+            wim = self.workermanager.get_wim()
+            wim.add_connection(connection_id, (variable_id, "outp"), (node_id, antenna))
+
+        if node_id not in self._folded_antennas:
+            self._folded_antennas[node_id] = {}
+
+        self._folded_antennas[node_id][antenna] = variable_id
+        self._folded_antenna_variables[variable_id] = node_id
+        self._folded_antenna_connections[variable_id] = connection_id
 
         # remove the folded node from the rendered canvas
-        self._hNodeCanvas.remove_connection(con_id)
-        self._hNodeCanvas.remove_node(varid)
-        self._hNodeCanvas.hide_attribute(id_, antenna)
+        self._hNodeCanvas.remove_connection(connection_id)
+        self._hNodeCanvas.remove_node(variable_id)
+        self._hNodeCanvas.hide_attribute(node_id, antenna)
 
-        self.select([id_])
+        self.select([node_id])
         return True, value
 
-    def get_antenna_connected_variable(self, workerid, antenna):
-        assert workerid in self._folded_antennas, workerid
-        assert antenna in self._folded_antennas[workerid], antenna
-        return self._folded_antennas[workerid][antenna]
+    def get_antenna_connected_variable(self, worker_id, antenna):
+        assert worker_id in self._folded_antennas, worker_id
+        assert antenna in self._folded_antennas[worker_id], antenna
+        return self._folded_antennas[worker_id][antenna]
 
-    def expand_antenna_connection(self, workerid, antenna):
-        varid = self.get_antenna_connected_variable(workerid, antenna)
-        node = self._nodes[workerid]
-        for anr in range(len(node.attributes)):
-            a = node.attributes[anr]
-            if a.name == antenna: break
-        yrange = (anr + 0.5) / len(node.attributes) - 0.5
+    def expand_antenna_connection(self, worker_id, antenna):
+        variable_id = self.get_antenna_connected_variable(worker_id, antenna)
+
+        node = self._nodes[worker_id]
+        variable = self._nodes[variable_id]
+
+        # Get the attribute with the antenna name
+        for index, attribute in enumerate(node.attributes):
+            if attribute.name == antenna:
+                break
+
+        yrange = (index + 0.5) / len(node.attributes) - 0.5
         x = node.position[0] - 150
         y = node.position[1] - 50 - 300 * yrange
-        variable = self._nodes[varid]
-        variable.position = x, y
-        self._hNodeCanvas.h_add_node(varid, variable)
-        con_id = self._folded_antenna_connections[varid]
-        connection = self._connections[con_id]
-        valid, pushpull = self._valid_connection(connection)
-        if pushpull: valid = False
-        self._hNodeCanvas.show_attribute(workerid, antenna)
-        self._hNodeCanvas.h_add_connection(con_id, connection, valid)
 
-        self._folded_antennas[workerid].pop(antenna)
-        self._folded_antenna_variables.pop(varid)
-        self._folded_antenna_connections.pop(varid)
-        desc = self.workermanager.get_worker_descriptor(varid)
-        if isinstance(desc[5], dict) and "value" in desc[5]:
-            value = desc[5]["value"]
-            self._hNodeCanvas.set_attribute_value(varid, "value", value)
-        self.select([workerid])
+        variable.position = x, y
+        self._hNodeCanvas.h_add_node(variable_id, variable)
+
+        connection_id = self._folded_antenna_connections[variable_id]
+        connection = self._connections[connection_id]
+        valid, is_push_pull = self._valid_connection(connection)
+
+        if is_push_pull:
+            valid = False
+
+        self._hNodeCanvas.show_attribute(worker_id, antenna)
+        self._hNodeCanvas.h_add_connection(connection_id, connection, valid)
+
+        self._folded_antennas[worker_id].pop(antenna)
+        self._folded_antenna_variables.pop(variable_id)
+        self._folded_antenna_connections.pop(variable_id)
+
+        worker_descriptor = self.workermanager.get_worker_descriptor(variable_id)
+        if isinstance(worker_descriptor[5], dict) and "value" in worker_descriptor[5]:
+            value = worker_descriptor[5]["value"]
+            self._hNodeCanvas.set_attribute_value(variable_id, "value", value)
+
+        self.select([worker_id])
 
     def h(self):
         return self._hNodeCanvas
-  
+

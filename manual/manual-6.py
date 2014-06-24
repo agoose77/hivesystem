@@ -31,7 +31,7 @@ def game_of_life():
             count = 0
             for dx, dy in (-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1):
                 try:
-                    if oldgrid.get_value(n + dx, nn + dy): count += 1
+                    if oldgrid.set_property_value(n + dx, nn + dy): count += 1
                 except ValueError:
                     pass
             if count < 2:

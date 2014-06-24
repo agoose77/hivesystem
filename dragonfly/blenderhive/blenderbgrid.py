@@ -61,6 +61,6 @@ class blenderbgrid(object):
         values = []
         for n in range(sx):
             for nn in range(sy):
-                v = self.grid.get_value(self.grid.minx + n, self.grid.miny + nn)
+                v = self.grid.set_property_value(self.grid.minx + n, self.grid.miny + nn)
                 values.append(v)
         self.draw = functools.partial(draw_grid, sx, sy, color, values)

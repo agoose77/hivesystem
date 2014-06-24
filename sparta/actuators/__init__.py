@@ -1,3 +1,4 @@
+from .debug_print import debug_print
 from .object_ import object_
 from .motion import motion
 from .view import view

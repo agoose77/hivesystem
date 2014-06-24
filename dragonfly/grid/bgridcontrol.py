@@ -68,7 +68,7 @@ class bgridcontrol(bee.worker):
         self.trig_get_value_pos()
         x, y = self.b_get_value_pos
         self.get_grid()
-        self.v_get_value = self.v_grid.get_value(x, y)
+        self.v_get_value = self.v_grid.set_property_value(x, y)
 
     pretrigger(v_get_value, m_get_value)
 
