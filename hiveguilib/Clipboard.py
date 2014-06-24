@@ -47,9 +47,11 @@ class Clipboard(object):
         wd = []
         for workerid in workerids:
             workerdesc = wm.get_worker_descriptor(workerid)
-            if workerdesc is None: continue
+            if workerdesc is None:
+                continue
             wd.append(workerdesc)
-        if len(wd):
+
+        if wd:
             self._clipboard = "worker_descriptor", wd
 
     def nodecanvas_copy_nodes(self, nodes):

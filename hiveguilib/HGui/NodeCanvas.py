@@ -61,11 +61,14 @@ class NodeCanvas(HGui):
         self._connections[id_] = connection
         self._connection_ids.append(id_)
 
-        if start_node in self._folded_antenna_variables or \
-                        end_node in self._folded_antenna_variables:
+        if start_node in self._folded_antenna_variables or end_node in self._folded_antenna_variables:
             return
+
         valid, pushpull = self._valid_connection(connection)
-        if pushpull: valid = False
+
+        if pushpull:
+            valid = False
+
         self._hNodeCanvas.h_add_connection(id_, connection, valid)
 
     def _redundant_connection(self,
@@ -328,8 +331,8 @@ class NodeCanvas(HGui):
         if node_id not in self._folded_antenna_variables:
             self._hNodeCanvas.h_morph_node(node_id, replacement_node, connection_map)
 
-    def copy_clipboard(self, nodes):
-        self._clipboard().nodecanvas_copy_nodes(nodes)
+    def copy_clipboard(self, node_ids):
+        self._clipboard().nodecanvas_copy_nodes(node_ids)
 
     def paste_clipboard(self):
         pasted_nodes_id_sequence = self._clipboard().nodecanvas_paste_nodes()
@@ -369,10 +372,11 @@ class NodeCanvas(HGui):
         return True
 
     def _remove_node(self, node_id, pass_downward=True):
-        assert node_id not in self._folded_antenna_variables, node_id
-        self._hNodeCanvas.remove_node(node_id)
-
         assert node_id in self._nodes, node_id
+        import logging
+        logging.debug("RUNNING REMOVE" + node_id)
+        if node_id in self._hNodeCanvas._nodes:
+            self._hNodeCanvas.remove_node(node_id)
         self._nodes.pop(node_id)
 
         for connection_id, connection in list(self._connections.items()):
@@ -389,6 +393,7 @@ class NodeCanvas(HGui):
                     observer(folded_node_id)
 
     def remove_node(self, node_id):
+        assert node_id not in self._folded_antenna_variables, node_id
         self._remove_node(node_id)
 
     def gui_removes_nodes(self, node_id_sequence):
@@ -400,6 +405,8 @@ class NodeCanvas(HGui):
         for node_id in node_id_sequence:
             if node_id in self._folded_antenna_variables:
                 continue
+            import logging
+            logging.debug(str(self) + "CALLING REMOVE FROM GUI_REMOVES_NODES" + node_id)
 
             self._remove_node(node_id)
 

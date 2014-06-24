@@ -25,6 +25,7 @@ class NodeCanvas:
         self._connections = {}
         self._selection = {}  # dict of node names (RNA Node labels), set by NodeTree
         self._positions = {}  # dict, set by NodeTree
+        self._pending_copy = set()
         self._labels = []
         self._links = set()
         self._busy = False
@@ -180,9 +181,18 @@ class NodeCanvas:
                     nodetree.nodes.active = node
                     break
 
+    def mark_pending_copy(self, node_id):
+        self._pending_copy.add(node_id)
+
+    def copy_pending_nodes(self):
+        if not self._pending_copy:
+            return
+        self._hgui().copy_clipboard(self._pending_copy)
+        self._pending_copy.clear()
+
     def remove_node(self, id_):
         import logging
-        logging.debug("Removing node blendercanvas")
+        logging.debug("Removing node blendercanvas" + id_)
         self._busy = True
         if id_ in self._positions:
             self._positions.pop(id_)

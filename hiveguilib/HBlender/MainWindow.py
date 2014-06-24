@@ -95,7 +95,7 @@ class BlenderParameterPanel:
         raise NotImplementedError(attr, self.name)
 
     def draw(self, context, layout):
-        if not self.widget or not self._visible or isinstance(self.widget, BlenderEmptyWidget): return
+        if not self.widget or not self._visible or isinstance(self.widget, BlenderEmptyWidget): returnF
         if self.name == "props-metaparams":
             # for metaparams panel, don't draw the buttons if all parameters have been hidden
             hide = True
@@ -104,7 +104,8 @@ class BlenderParameterPanel:
                     if not child.advanced or level.minlevel(context, 2):
                         hide = False
                         break
-            if hide: return
+            if hide:
+                return
         l = layout.column()
         l.label(self.title)
         self.widget.draw(context, l)

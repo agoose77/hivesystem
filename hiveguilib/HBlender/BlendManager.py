@@ -666,8 +666,11 @@ class BlendManager:
 
             traceback.print_exc()
 
-    def get_nodetree_manager(self, nodetreename):
-        return self.blend_nodetree_managers[nodetreename]
+    def get_nodetree_manager(self, finder, is_key=False):
+        if not is_key:
+            return self.blend_nodetree_managers[finder]
+
+        return next((m for m in self.blend_nodetree_managers.values() if finder(m)))
 
     def game_pre(self):
         self._sync_nodetree_to_text()

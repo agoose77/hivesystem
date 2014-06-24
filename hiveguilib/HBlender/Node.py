@@ -3,7 +3,7 @@ import logging
 from . import NodeSocket
 
 _all_attributes = {}
-
+_node_to_nodetree = {}
 
 class HiveNode:
     bl_icon = 'NODETREE'
@@ -11,7 +11,17 @@ class HiveNode:
 
     # Copy function to initialize a copied node from an existing one.
     def copy(self, node):
-        raise NotImplementedError
+        from . import BlendManager
+        # TODO allow relabelling of nodes (or use the ID function? - unless we can catch "on rename")
+        try:
+            nodetree = _node_to_nodetree[self.bl_idname]
+        except KeyError:
+            logging.debug("Couldn't find Nodetree for node to copy")
+            return
+
+        logging.debug("Node pending copy")
+        blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(nodetree.name)
+        blend_nodetree_manager.canvas.h().mark_pending_copy(self.label)
 
     def set_attributes(self, attributes):
         for index, attribute in enumerate(attributes):
@@ -67,9 +77,13 @@ class HiveNode:
         from . import BlendManager
         # TODO allow relabelling of nodes (or use the ID function? - unless we can catch "on rename")
         nodetree = self.id_data
+
+        # This currently knows the first node is a node group, which represents the node tree #HACKY
         blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(nodetree.name)
         if nodetree.nodes[0].label == self.label:
             nodetree.full_update()
+
+        _node_to_nodetree[self.bl_idname] = nodetree
 
         node = blend_nodetree_manager.canvas.get_node(self.label)
         attributes = node.attributes

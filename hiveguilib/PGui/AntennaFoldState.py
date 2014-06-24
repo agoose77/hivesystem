@@ -80,7 +80,8 @@ class AntennaFoldState(object):
     def fold(self, workerid, member):
         antenna = self.states[workerid][member]
         assert not antenna.fold
-        if not antenna.foldable: return
+        if not antenna.foldable:
+            return
         antenna.fold = True
         folded, value = self._nodecanvas().fold_antenna_connection(workerid, member, antenna.typ, called_on_load=False)
         if not folded:
@@ -98,7 +99,8 @@ class AntennaFoldState(object):
 
     def expand(self, workerid, member):
         antenna = self.states[workerid][member]
-        if not antenna.fold: return
+        if not antenna.fold:
+            return
         antenna.fold = False
         self._nodecanvas().expand_antenna_connection(workerid, member)
         if workerid in self._init_widget:
@@ -122,7 +124,8 @@ class AntennaFoldState(object):
         self._sync[workerid] = True
         for a in state:
             antenna = state[a]
-            if not onload and not antenna.fold: continue
+            if not onload and not antenna.fold:
+                continue
             folded, value = self._nodecanvas().fold_antenna_connection(
                 workerid, a, antenna.typ, onload
             )

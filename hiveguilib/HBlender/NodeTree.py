@@ -120,14 +120,17 @@ class FakeLink:
 class HiveNodeTree:
 
     def _check_deletions(self):
-        removed_node_ids = []
+        # TODO REMOVE THIS
+        import logging
+        # For debugging in Blender
+        logging.t = self
+
         bntm = BlendManager.blendmanager.get_nodetree_manager(self.name)
         canvas = bntm.canvas
-        ids = [node.label for node in self.nodes]
-        print(canvas.h(), canvas)
-        for node_id in canvas.h()._nodes:
-            if node_id not in ids:
-                removed_node_ids.append(node_id)
+
+        gui_node_ids = [node.label for node in self.nodes]
+        hblender_canvas_node_ids = canvas.h()._nodes
+        removed_node_ids = list(set(hblender_canvas_node_ids).difference(gui_node_ids))
 
         logging.debug("Removing nodes [" + ', '.join(removed_node_ids) + "]")
 
@@ -204,6 +207,11 @@ class HiveNodeTree:
                 positions[label] = position = copy.copy(node.location)
                 hcanvas.gui_moves_node(label, position)
 
+    def _copy_pending_nodes(self):
+        blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(self.name)
+        canvas = blend_nodetree_manager.canvas
+        canvas.h().copy_pending_nodes()
+
     def _check_selection(self):
         bntm = BlendManager.blendmanager.get_nodetree_manager(self.name)
         canvas = bntm.canvas
@@ -277,6 +285,7 @@ class HiveNodeTree:
         """
         BlendManager.blendmanager.schedule(self._check_positions)
         BlendManager.blendmanager.schedule(self._check_selection)
+        BlendManager.blendmanager.schedule(self._copy_pending_nodes)
 
 from . import BlendManager
 
