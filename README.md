@@ -8,7 +8,7 @@ Current TODO
 ============
 
   * Enable Export/ Import of hivemaps from Hive GUI
-  Mirror existing Logic Brick support as far as possible
-  Implement tooltips for workers
-  Simplify Hive Binding
-  Clean code internals
+  * Mirror existing Logic Brick support as far as possible
+  * Implement tooltips for workers
+  * Simplify Hive Binding
+  * Clean code internals
