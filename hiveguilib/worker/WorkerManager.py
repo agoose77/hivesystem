@@ -416,9 +416,7 @@ class WorkerManager(object):
         self.instantiate(workerid, workertype, x, y, autocreate)
         return True
 
-    def create(self,
-               workerid, workertype, x, y, metaparamvalues=None, paramvalues=None
-    ):
+    def create(self, workerid, workertype, x, y, metaparamvalues=None, paramvalues=None):
         assert workerid not in self._worker_parameters, workerid
 
         if metaparamvalues == {}:
@@ -526,7 +524,8 @@ class WorkerManager(object):
 
     def get_worker_descriptor(self, workerid):
         node, mapping = self._wim.get_node(workerid)
-        if node.empty: return None
+        if node.empty:
+            return None
         inst = self._wim.get_workerinstance(workerid)
         profile = inst.curr_profile
         gp = inst.guiparams

@@ -330,7 +330,8 @@ class BlendManager:
         import spyder, Spyder
         from .NodeTree import HiveNodeTree, HivemapNodeTree, WorkermapNodeTree, SpydermapNodeTree
 
-        if self._loading: return
+        if self._loading:
+            return
         self._do_schedule()
         self.check_hivemap_change()
 
@@ -404,6 +405,7 @@ class BlendManager:
                     if name in hivenodegroupnames:
                         done.add(name)
                     else:
+                        # TODO check node tree contentse to find renamed trees
                         assert oldname is None  #we can't know how to rename more than one NodeTree!
                         oldname = name
                         c = c0

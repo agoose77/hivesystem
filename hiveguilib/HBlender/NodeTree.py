@@ -128,7 +128,7 @@ class HiveNodeTree:
         bntm = BlendManager.blendmanager.get_nodetree_manager(self.name)
         canvas = bntm.canvas
 
-        gui_node_ids = [node.label for node in self.nodes]
+        gui_node_ids = [node.name for node in self.nodes]
         hblender_canvas_node_ids = canvas.h()._nodes
         removed_node_ids = list(set(hblender_canvas_node_ids).difference(gui_node_ids))
 
@@ -194,6 +194,12 @@ class HiveNodeTree:
 
         hcanvas._links = {FakeLink.from_link(l) for l in self.links}
 
+    def _check_copying(self):
+        blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(self.name)
+        canvas = blend_nodetree_manager.canvas
+
+        canvas.h()._on_copy_nodes()
+
     def _check_positions(self):
         blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(self.name)
         canvas = blend_nodetree_manager.canvas
@@ -201,11 +207,11 @@ class HiveNodeTree:
         positions = hcanvas._positions
 
         for node in self.nodes:
-            label = node.label
+            name = node.name
 
-            if positions.get(label) != node.location:
-                positions[label] = position = copy.copy(node.location)
-                hcanvas.gui_moves_node(label, position)
+            if positions.get(name) != node.location:
+                positions[name] = position = copy.copy(node.location)
+                hcanvas.gui_moves_node(name, position)
 
     def _copy_pending_nodes(self):
         blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(self.name)
@@ -220,7 +226,7 @@ class HiveNodeTree:
         changed = False
         selections = hcanvas._selection
         for node in self.nodes:
-            label = node.label
+            label = node.name
             if label not in selections:
                 selections[label] = bool(node.select)
                 if selections[label]:
@@ -257,7 +263,7 @@ class HiveNodeTree:
 
     def find_node(self, name):
         for node in self.nodes:
-            if node.label == name:
+            if node.name == name:
                 return node
 
         raise AttributeError(name)
@@ -283,6 +289,7 @@ class HiveNodeTree:
         self._check_positions()
         self._check_selection()
         """
+        BlendManager.blendmanager.schedule(self._check_copying)
         BlendManager.blendmanager.schedule(self._check_positions)
         BlendManager.blendmanager.schedule(self._check_selection)
         BlendManager.blendmanager.schedule(self._copy_pending_nodes)

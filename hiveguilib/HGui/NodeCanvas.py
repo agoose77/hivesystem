@@ -334,10 +334,18 @@ class NodeCanvas(HGui):
     def copy_clipboard(self, node_ids):
         self._clipboard().nodecanvas_copy_nodes(node_ids)
 
-    def paste_clipboard(self):
-        pasted_nodes_id_sequence = self._clipboard().nodecanvas_paste_nodes()
-        if pasted_nodes_id_sequence is not None:
-            self.select(pasted_nodes_id_sequence)
+    def paste_clipboard(self, handle_relationship=None):
+        result = self._clipboard().nodecanvas_paste_nodes()
+
+        if result is None:
+            return
+
+        pasted_nodes_id_sequence, id_mapping = result
+
+        if handle_relationship is not None:
+            handle_relationship(id_mapping)
+
+        self.select(pasted_nodes_id_sequence)
 
     def select(self, selected_node_id_sequence):
         for node_id in selected_node_id_sequence:
@@ -435,7 +443,6 @@ class NodeCanvas(HGui):
     def fold_antenna_connection(self, node_id, antenna, value_type, called_on_load):
         assert node_id in self._nodes, node_id
         assert node_id not in self._folded_antenna_variables, node_id
-
         if node_id in self._folded_antennas:
             assert antenna not in self._folded_antennas[node_id], (node_id, antenna)
 

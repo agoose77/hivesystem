@@ -272,11 +272,12 @@ class WorkerInstanceManager(object):
         self._workerparams[workerid] = params
         wi = self._workerinstances[workerid]
         pmapping = wi.profile()[1].pmap
-        #print("PARAMS", params, pmapping, wi.guiparams)
+
         mparams = {}
         for p in params:
             mp = pmapping[p]
-            if mp is None: continue
+            if mp is None:
+                continue
             mparams[p] = params[mp]
         for p, v in mparams.items():
             self._canvas.set_attribute_value(workerid, p, v)

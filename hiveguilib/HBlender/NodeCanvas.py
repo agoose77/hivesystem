@@ -28,11 +28,31 @@ class NodeCanvas:
         self._pending_copy = set()
         self._labels = []
         self._links = set()
-        self._busy = False
+        self._busy_count = 0
+        self._is_copying = False
         self.bntm = None
 
         import logging
         logging.nodecanvas = self
+
+    @property
+    def _busy(self):
+        return bool(self._busy_count)
+
+    def push_busy(self):
+        self._busy_count += 1
+
+    def pop_busy(self):
+        self._busy_count -= 1
+
+    def rename_blender_node(self, node, name, set_label=True):
+        self.push_busy()
+        node.name = name
+
+        if set_label:
+            node.label = name
+
+        self.pop_busy()
 
     def set_blendnodetreemanager(self, blendnodetreemanager):
         self.bntm = blendnodetreemanager
@@ -51,19 +71,76 @@ class NodeCanvas:
         raise ValueError(tree.bl_idname)
 
     def _add_node(self, id_, name, attributes, position, tooltip):
-        self._busy = True
+        self.push_busy()
+
         try:
+            self._labels.append(name)
+            print("Add node label", id_)
             nodetree = self.bntm.get_nodetree()
             nodeclass = self.get_nodeclass()
             node = nodetree.nodes.new(nodeclass.bl_idname)
-            node.label = name
             node.location = position
-            self._labels.append(name)
             node.set_attributes(attributes)
             nodetree.nodes.active = node
+            self.rename_blender_node(node, id_)
 
         finally:
-            self._busy = False
+            self.pop_busy()
+
+    def _on_copy_nodes(self, copied_nodes=None):
+        """Blender callback when new nodes are detected"""
+        self.push_busy()
+
+        nodetree = self.bntm.get_nodetree()
+        self.copy_pending_nodes()
+
+        if copied_nodes is None:
+            copied_nodes = []
+
+            # Scrape Blender nodes and remove the default copied nodes
+            for node in list(nodetree.nodes):
+                node_id = node.name
+                if node_id in self._nodes:
+                    continue
+
+                source_node_id = node.label
+                copied_nodes.append(source_node_id)
+                nodetree.nodes.remove(node)
+
+        if not copied_nodes:
+            return
+
+        unhandled_nodes = copied_nodes.copy()
+
+        # Backup clipboard
+        clipboard = self._hgui()._clipboard()
+        type_, nodes_ = clipboard.get_clipboard_value()
+
+        def converter(id_mapping):
+            for source_id in id_mapping:
+                try:
+                    unhandled_nodes.remove(source_id)
+                except ValueError:
+                    print("{} not in unhandled nodes".format(source_id))
+
+            if clipboard._workermanager._antennafoldstate:
+                for workerid in id_mapping.values():
+                    clipboard._workermanager._antennafoldstate.sync(workerid, onload=False)
+
+        self._is_copying = True
+        self._hgui().paste_clipboard(converter)
+        self._is_copying = False
+
+        if not unhandled_nodes:
+            self.pop_busy()
+            return
+
+        print("Duplicating nodes", unhandled_nodes)
+
+        clipboard.copy_workers(unhandled_nodes)
+        self._on_copy_nodes(unhandled_nodes)
+        clipboard.set_clipboard_value(type_, nodes_)
+        self.pop_busy()
 
     def h_add_node(self, id_, hnode):
         mapnode = h_map_node(hnode)
@@ -78,9 +155,9 @@ class NodeCanvas:
         node.attributes = mapnode.attributes
 
         nodetree = self.bntm.get_nodetree()
-        node = [n for n in nodetree.nodes if n.label == node.name][0]
+        node = [n for n in nodetree.nodes if n.name == node.name][0]
 
-        self._busy = True
+        self.pop_busy()
         in_out_attributes = [a.name for a in mapnode.attributes if a.inhook is not None and a.outhook is not None]
         matched_inputs = set()
         matched_outputs = set()
@@ -98,7 +175,7 @@ class NodeCanvas:
                 at0 = node.find_output_socket(attribute_name_a)
                 matched_outputs.add(attribute_name_a)
                 accounted_outputs.add(attribute_name_b)
-            print(mapnode.attributes)
+
             at0.name = [n for n in mapnode.attributes if n.name == attribute_name_b][0].label
 
         # Remove unmatched sockets
@@ -122,7 +199,8 @@ class NodeCanvas:
         #Create new sockets that didn't exist before
         for a in mapnode.attributes:
             label = a.name
-            if a.label is not None: label = a.label
+            if a.label is not None:
+                label = a.label
             if a.outhook:
                 if a.name in accounted_outputs: continue
                 h = a.outhook
@@ -157,7 +235,7 @@ class NodeCanvas:
                 sock.row = anr + 1
                 outputpos += 1
 
-        self._busy = False
+        self.pop_busy()
 
     def gui_moves_node(self, id_, position):
         ret = True
@@ -169,7 +247,7 @@ class NodeCanvas:
         nodetree = self.bntm.get_nodetree()
         nodenames = [self._nodes[id].name for id in ids]
         for node in nodetree.nodes:
-            if node.label in nodenames:
+            if node.name in nodenames:
                 node.select = True
             else:
                 node.select = False
@@ -177,23 +255,31 @@ class NodeCanvas:
         if len(nodenames) == 1:
             nodename = nodenames[0]
             for node in nodetree.nodes:
-                if node.label == nodename:
+                if node.name == nodename:
                     nodetree.nodes.active = node
                     break
 
-    def mark_pending_copy(self, node_id):
+    def mark_pending_copy(self, blender_node):
+        node_id = blender_node.label
         self._pending_copy.add(node_id)
 
     def copy_pending_nodes(self):
         if not self._pending_copy:
             return
-        self._hgui().copy_clipboard(self._pending_copy)
-        self._pending_copy.clear()
+
+        try:
+            self._hgui().copy_clipboard(self._pending_copy)
+        except Exception as err:
+            print(err)
+
+        finally:
+            print("written clipboard", self._pending_copy)
+            self._pending_copy.clear()
 
     def remove_node(self, id_):
         import logging
         logging.debug("Removing node blendercanvas" + id_)
-        self._busy = True
+        self.push_busy()
         if id_ in self._positions:
             self._positions.pop(id_)
 
@@ -201,7 +287,7 @@ class NodeCanvas:
         nodetree = self.bntm.get_nodetree()
 
         for nr, n in list(enumerate(nodetree.nodes)):
-            if n.label != node.name:
+            if n.name != node.name:
                 continue
 
             nodetree.nodes.remove(n)
@@ -209,10 +295,10 @@ class NodeCanvas:
             break
 
         self._links = {FakeLink.from_link(l) for l in nodetree.links}
-        self._busy = False
+        self.pop_busy()
 
     def rename_node(self, old_id, new_id, new_name):
-        self._busy = True
+        self.push_busy()
         node = self._nodes.pop(old_id)
         self._nodes[new_id] = node
         old_name = node.name
@@ -220,10 +306,10 @@ class NodeCanvas:
         nodetree = self.bntm.get_nodetree()
 
         for nr, n in enumerate(nodetree.nodes):
-            if n.label != old_name:
+            if n.name != old_name:
                 continue
 
-            n.label = new_name
+            self.rename_blender_node(n, new_name)
             self._labels[nr] = new_name
 
             break
@@ -236,10 +322,10 @@ class NodeCanvas:
                 selected_ids = [id_ for id_, n in self._nodes.items() if n.name in sel]
                 self._hgui().gui_selects(selected_ids)
 
-        self._busy = False
+        self.pop_busy()
 
     def h_add_connection(self, id_, connection, valid):
-        self._busy = True
+        self.push_busy()
         tree = self.bntm.get_nodetree()
         start_node = tree.find_node(connection.start_node)
         start = start_node.find_output_socket(connection.start_attribute)
@@ -264,7 +350,7 @@ class NodeCanvas:
         self._links.add(fl)  # adding a new link goes slowly...
         start.check_update()
         end.check_update()
-        self._busy = False
+        self.pop_busy()
 
     def gui_adds_connection(self, link, force):
         from .BlendManager import blendmanager
@@ -313,7 +399,7 @@ class NodeCanvas:
         # e.g. if the connected node was just deleted
 
         logging.debug("in REMOVE_CONNECTION")
-        self._busy = True
+        self.push_busy()
         tree = self.bntm.get_nodetree()
         connection = self._connections.pop(id_)
         for link in tree.links:
@@ -331,7 +417,7 @@ class NodeCanvas:
                 continue
 
             tree.links.remove(link)
-        self._busy = False
+        self.pop_busy()
 
     def set_statusbar_message(self, message):
         if self._statusbar is None: return
@@ -348,7 +434,7 @@ class NodeCanvas:
         nodetree = self.bntm.get_nodetree()
         node = None
         for nr, n in enumerate(nodetree.nodes):
-            if n.label != id_:
+            if n.name != id_:
                 continue
 
             node = n

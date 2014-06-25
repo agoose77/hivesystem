@@ -5,25 +5,25 @@ from . import NodeSocket
 _all_attributes = {}
 _node_to_nodetree = {}
 
+
 class HiveNode:
     bl_icon = 'NODETREE'
     bl_generic_sockets = True
 
     # Copy function to initialize a copied node from an existing one.
     def copy(self, node):
-        from . import BlendManager
-        # TODO allow relabelling of nodes (or use the ID function? - unless we can catch "on rename")
-        try:
-            nodetree = _node_to_nodetree[self.bl_idname]
-        except KeyError:
+        blend_nodetree_manager = self.get_hgui_blend_nodetree_manager()
+        if blend_nodetree_manager is None:
             logging.debug("Couldn't find Nodetree for node to copy")
             return
 
         logging.debug("Node pending copy")
-        blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(nodetree.name)
-        blend_nodetree_manager.canvas.h().mark_pending_copy(self.label)
+        blend_nodetree_manager.canvas.h().mark_pending_copy(self)
 
     def set_attributes(self, attributes):
+        self.inputs.clear()
+        self.outputs.clear()
+
         for index, attribute in enumerate(attributes):
             name = attribute.name
             label = name
@@ -73,21 +73,41 @@ class HiveNode:
 
         raise AttributeError(name)
 
-    def draw_buttons(self, context, layout):
+    def get_hgui_blend_nodetree_manager(self):
         from . import BlendManager
-        # TODO allow relabelling of nodes (or use the ID function? - unless we can catch "on rename")
         nodetree = self.id_data
+        if nodetree is None:
+            try:
+                nodetree = _node_to_nodetree[self.bl_idname]
+            except KeyError:
+                return
 
-        # This currently knows the first node is a node group, which represents the node tree #HACKY
-        blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(nodetree.name)
-        if nodetree.nodes[0].label == self.label:
+        return BlendManager.blendmanager.get_nodetree_manager(nodetree.name)
+
+    def get_hgui_node(self, blend_nodetree_manager):
+        canvas = blend_nodetree_manager.canvas
+
+        try:
+            return canvas.get_node(self.name)
+
+        except KeyError:
+            return None
+
+    def draw_buttons(self, context, layout):
+        nodetree = self.id_data
+        _node_to_nodetree[self.bl_idname] = nodetree
+        if nodetree.nodes[0].name == self.name:
             nodetree.full_update()
 
-        _node_to_nodetree[self.bl_idname] = nodetree
+        # This currently knows the first node is a node group, which represents the node tree #HACKY
+        blend_nodetree_manager = self.get_hgui_blend_nodetree_manager()
+        node = self.get_hgui_node(blend_nodetree_manager)
 
-        node = blend_nodetree_manager.canvas.get_node(self.label)
+        # If we are a copy we need initialisation
+        if node is None:
+            return
+
         attributes = node.attributes
-
         try:
             layout.node_socket
 
@@ -108,16 +128,24 @@ class HiveNode:
                 output_index += 1
 
     def draw_buttons_ext(self, context, layout):
-        from . import BlendManager
+        blend_nodetree_manager = self.get_hgui_blend_nodetree_manager()
+        if blend_nodetree_manager is None:
+            return
 
-        nodetree = self.id_data
-        blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(nodetree.name)
+        # If we are a copy we need initialisation
+        node = self.get_hgui_node(blend_nodetree_manager)
+        if node is None:
+            return
+
         blend_nodetree_manager.mainWin.h().draw_panel(context, layout)
 
     def __del__(self):
-        pointer = self.as_pointer()
-        if pointer in _all_attributes:
-            del _all_attributes[pointer]
+        try:
+            pointer = self.as_pointer()
+            if pointer in _all_attributes:
+                del _all_attributes[pointer]
+        except ReferenceError:
+            return
 
 
 class BaseNode(bpy.types.Node, HiveNode):
