@@ -1,12 +1,30 @@
 import bpy
+import bpy_extras
 import logging
 import copy
 
 from . import level
 
 
+def tag_redraw_area(tree_name):
+    """Ask Blender to redraw node area for node tree
+
+    :param tree_name: name of node tree
+    """
+    if bpy.context.screen is not None:
+        for area in bpy.context.screen.areas:
+            space = area.spaces[0]
+            if space.type != 'NODE_EDITOR':
+                continue
+
+            if space.edit_tree.name != tree_name:
+                continue
+
+            area.tag_redraw()
+
+
 class ChangeHiveLevel(bpy.types.Operator):
-    """Handles keyboard events to change HIVE level"""
+    """Handles keyboard events to change HIVE level with TAB / SHIFT TAB"""
 
     _running = []
 
@@ -99,6 +117,34 @@ class ChangeHiveLevel(bpy.types.Operator):
         return {"PASS_THROUGH"}
 
 
+class HiveToolsMenu(bpy.types.Menu):
+    """Tools menu for HIVE operations"""
+    bl_label = "Hive Options"
+    bl_idname = "NODE_MT_hive_menu"
+
+    def draw(self, context):
+        layout = self.layout
+
+        layout.prop(context.screen, "use_hive")
+        layout.operator("wm.open_mainfile", text="Import map")
+        layout.operator("wm.open_mainfile", text="Export map")
+
+
+class HiveMapImport(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
+    """This appears in the tooltip of the operator and in the generated docs"""
+    bl_idname = "hive.import_map"  # important since its how bpy.ops.import_test.some_data is constructed
+    bl_label = "Import Hive Map"
+
+    # ImportHelper mixin class uses this
+    filename_ext = ".txt"
+
+    filter_glob = bpy.props.StringProperty(default="*.web", options={'HIDDEN'})
+
+    def execute(self, context):
+        return
+        return read_some_data(context, self.filepath)
+
+
 class FakeLink:
 
     def __init__(self, from_node, from_socket, to_node, to_socket):
@@ -118,8 +164,10 @@ class FakeLink:
 
 
 class HiveNodeTree:
+    """Base class for HIVE node tree"""
 
     def _check_deletions(self):
+        """Poll the node tree and determine if any Blender nodes were deleted"""
         bntm = BlendManager.blendmanager.get_nodetree_manager(self.name)
         canvas = bntm.canvas
 
@@ -132,9 +180,14 @@ class HiveNodeTree:
         if removed_node_ids:
             success = canvas.gui_removes_nodes(removed_node_ids)
             assert success
+
         return removed_node_ids
 
     def _check_links(self, deletions):
+        """Poll the node tree and determine if any connections between Blender nodes were modified
+
+        :param deletions: deleted node ids
+        """
         bntm = BlendManager.blendmanager.get_nodetree_manager(self.name)
         hcanvas = bntm.canvas.h()
 
@@ -197,6 +250,7 @@ class HiveNodeTree:
         canvas.h().on_copy_nodes()
 
     def _check_positions(self):
+        """Handle any Blender nodes moved in the Blender UI"""
         blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(self.name)
         canvas = blend_nodetree_manager.canvas
         hcanvas = canvas.h()
@@ -219,25 +273,30 @@ class HiveNodeTree:
         canvas.h().copy_pending_nodes()
 
     def _check_selection(self):
+        """Handle any Blender nodes selected in the Blender UI"""
         bntm = BlendManager.blendmanager.get_nodetree_manager(self.name)
         canvas = bntm.canvas
-        hcanvas = canvas.h()
+        blender_canvas = canvas.h()
         selected = []
         changed = False
-        selections = hcanvas._selection
+        selections = blender_canvas._selection
+
         for node in self.nodes:
-            label = node.name
-            if label not in selections:
-                selections[label] = bool(node.select)
-                if selections[label]:
-                    selected.append(label)
+            id_ = node.name
+
+            if id_ not in selections:
+                selections[id_] = bool(node.select)
+
+                if selections[id_]:
+                    selected.append(id_)
                     changed = True
 
-            elif selections[label] != node.select:
+            elif selections[id_] != node.select:
                 if node.select:
-                    selected.append(label)
+                    selected.append(id_)
+
                 changed = True
-                selections[label] = bool(node.select)
+                selections[id_] = bool(node.select)
 
         if not changed:
             return
@@ -250,18 +309,13 @@ class HiveNodeTree:
 
         assert operation_success
 
-        if bpy.context.screen is not None:
-            for area in bpy.context.screen.areas:
-                space = area.spaces[0]
-                if space.type != 'NODE_EDITOR':
-                    continue
-
-                if space.edit_tree.name != self.name:
-                    continue
-
-                area.tag_redraw()
+        tag_redraw_area(self.name)
 
     def find_node(self, name):
+        """Find Blender node with name
+
+        :param name: name of Blender node
+        """
         for node in self.nodes:
             if node.name == name:
                 return node
@@ -338,14 +392,14 @@ class SpydermapNodeTree(bpy.types.NodeTree, HiveNodeTree):
         return level.active_spydergui(context)
 
 
-def draw_use_hive(self, context):
+def draw_hive_menu(self, context):
     if context.space_data.tree_type == "Hivemap":
-        self.layout.prop(context.screen, "use_hive")
+        self.layout.menu("NODE_MT_hive_menu")
 
 
 def draw_hive_level(self, context):
-    if BlendManager.use_hive_get(context):
-        self.layout.label("Hive level")
+    if BlendManager.use_hive_get(context) and context.space_data.tree_type == "Hivemap":
+     #   self.layout.label("Hive Level")
         self.layout.prop(context.screen, "hive_level", text="")
 
 
@@ -369,7 +423,10 @@ def register():
     bpy.utils.register_class(HivemapNodeTree)
     bpy.utils.register_class(WorkermapNodeTree)
     bpy.utils.register_class(SpydermapNodeTree)
+    bpy.utils.register_class(HiveMapImport)
     bpy.utils.register_class(ChangeHiveLevel)
+    bpy.utils.register_class(HiveToolsMenu)
+
     bpy.types.Screen.use_hive = bpy.props.BoolProperty(
         name="Use Hive Logic",
         description="Enables the Hive system in the Game Engine for this scene",
@@ -389,8 +446,9 @@ def register():
         ),
         update=BlendManager.change_hive_level
     )
+
+    bpy.types.NODE_HT_header.append(draw_hive_menu)
     bpy.types.NODE_HT_header.append(draw_hive_level)
-    bpy.types.NODE_HT_header.append(draw_use_hive)
     bpy.types.NODE_HT_header.append(draw_spyderhive)
     bpy.types.NODE_HT_header.append(check_tab_control)
 
@@ -400,9 +458,13 @@ def unregister():
     bpy.utils.unregister_class(WorkermapNodeTree)
     bpy.utils.unregister_class(SpydermapNodeTree)
     bpy.utils.unregister_class(ChangeHiveLevel)
+    bpy.utils.unregister_class(HiveMapImport)
+    bpy.utils.unregister_class(HiveToolsMenu)
+
     bpy.types.NODE_HT_header.remove(draw_hive_level)
-    bpy.types.NODE_HT_header.remove(draw_use_hive)
     bpy.types.NODE_HT_header.remove(draw_spyderhive)
+    bpy.types.NODE_HT_header.remove(check_tab_control)
+    bpy.types.NODE_HT_header.remove(draw_hive_menu)
 
 if __name__ == "__main__":
     unregister()

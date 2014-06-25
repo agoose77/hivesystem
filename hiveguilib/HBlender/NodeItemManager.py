@@ -67,8 +67,10 @@ class NodeItem:
         self.fullkey = fullkey
 
     def _active(self, context):
-        if context.space_data.edit_tree is None: return False
-        if context.space_data.edit_tree.name not in self.manager._nodeitem_trees[self.fullkey]: return False
+        if context.space_data.edit_tree is None:
+            return False
+        if context.space_data.edit_tree.name not in self.manager._nodeitem_trees[self.fullkey]:
+            return False
         if not level.active(context, tuple(self.fullkey.split("."))): return
         return True
 

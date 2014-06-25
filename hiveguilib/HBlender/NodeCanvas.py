@@ -38,16 +38,31 @@ class NodeCanvas:
 
     @property
     def _busy(self):
+        """Check the busy stack and determine if we're in the middle of an operation"""
         return bool(self._busy_stack)
 
     def push_busy(self, name):
+        """Push a busy context name onto the busy stack
+
+        :param name: name of busy context, used for debugging
+        """
         self._busy_stack.append(name)
 
     def pop_busy(self, name):
+        """Pop a busy context name from the busy stack
+
+        :param name: name of busy context, used for debugging
+        """
         assert self._busy_stack[-1] == name, name
         self._busy_stack[:] = self._busy_stack[:-1]
 
     def rename_blender_node(self, node, name, set_label=True):
+        """Rename Blender node
+
+        :param node: Blender node instance
+        :param name: new name
+        :param set_label: option to also set label
+        """
         self.push_busy("rename")
         node.name = name
 
@@ -94,7 +109,10 @@ class NodeCanvas:
             self.pop_busy("_add")
 
     def on_copy_nodes(self, copied_nodes=None):
-        """Blender callback when new nodes are detected"""
+        """Blender callback when new nodes are detected
+
+        :param copied_nodes: optionally use these nodes instead of reading new nodes from graph
+        """
         self.push_busy("on_copy")
 
         nodetree = self.bntm.get_nodetree()

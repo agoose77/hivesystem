@@ -290,6 +290,7 @@ class BlendManager:
         # TODO: is not currently triggered from anywhere...
         try:
             bpy.data.node_groups[name].remove()
+
         except:
             self._clear_nodetree(bpy.data.node_groups[name])
 
