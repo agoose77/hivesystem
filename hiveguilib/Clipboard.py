@@ -59,34 +59,36 @@ class Clipboard(object):
 
         if wd:
             self._clipboard = "worker_descriptor", wd
-        print("\n\n\n\n")
 
     def nodecanvas_copy_nodes(self, nodes):
         self.copy_workers(nodes)
 
-    def paste_workers(self):
+    def paste_workers(self, pre_conversion=None):
         assert self._workermanager is not None
         wm = self._workermanager
         worker_type, worker_description = self._clipboard
 
         if worker_type != "worker_descriptor":
             return None
-
         worker_id_mapping = {}
 
         if len(worker_description) == 1:
             workerdesc = worker_description[0]
             workerid, workertype, x, y, metaparamvalues, paramvalues, profile, gp = workerdesc
             if workerid in wm.workerids():
-                    old_worker_id = workerid
-                    workerid = wm.get_new_workerid(workerid)
-                    worker_id_mapping[old_worker_id] = workerid
+                old_worker_id = workerid
+                workerid = wm.get_new_workerid(workerid)
+                worker_id_mapping[old_worker_id] = workerid
+
+                if callable(pre_conversion):
+                    pre_conversion(old_worker_id, workerid)
+
             wm.instantiate(workerid, workertype, x, y, metaparamvalues, paramvalues, self._offset)
 
             if profile != "default":
                 wim = wm.get_wim()
                 wim.morph_worker(workerid, profile)
-            return [workerid], worker_id_mapping
+            return [workerid]
 
         else:
             wim = wm.get_wim()
@@ -103,6 +105,9 @@ class Clipboard(object):
                     old_worker_id = workerid
                     workerid = wm.get_new_workerid(workerid)
                     worker_id_mapping[old_worker_id] = workerid
+
+                    if callable(pre_conversion):
+                        pre_conversion(old_worker_id, workerid)
 
                 wm.instantiate(workerid, workertype, x, y, metaparamvalues, paramvalues, self._offset)
                 if profile != "default":
@@ -124,7 +129,7 @@ class Clipboard(object):
             if not new_worker_ids:
                 return None
 
-            return new_worker_ids, worker_id_mapping
+            return new_worker_ids
 
-    def nodecanvas_paste_nodes(self):
-        return self.paste_workers()
+    def nodecanvas_paste_nodes(self, pre_conversion=None):
+        return self.paste_workers(pre_conversion)

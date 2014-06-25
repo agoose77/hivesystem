@@ -334,16 +334,11 @@ class NodeCanvas(HGui):
     def copy_clipboard(self, node_ids):
         self._clipboard().nodecanvas_copy_nodes(node_ids)
 
-    def paste_clipboard(self, handle_relationship=None):
-        result = self._clipboard().nodecanvas_paste_nodes()
+    def paste_clipboard(self, pre_conversion=None):
+        pasted_nodes_id_sequence = self._clipboard().nodecanvas_paste_nodes(pre_conversion)
 
-        if result is None:
+        if pasted_nodes_id_sequence is None:
             return
-
-        pasted_nodes_id_sequence, id_mapping = result
-
-        if handle_relationship is not None:
-            handle_relationship(id_mapping)
 
         self.select(pasted_nodes_id_sequence)
 

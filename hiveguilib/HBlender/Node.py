@@ -12,6 +12,7 @@ class HiveNode:
 
     # Copy function to initialize a copied node from an existing one.
     def copy(self, node):
+        """Informs the canvas that node is waiting to be copied"""
         blend_nodetree_manager = self.get_hgui_blend_nodetree_manager()
         if blend_nodetree_manager is None:
             logging.debug("Couldn't find Nodetree for node to copy")

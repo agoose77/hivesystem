@@ -25,6 +25,7 @@ class NodeCanvas:
         self._connections = {}
         self._selection = {}  # dict of node names (RNA Node labels), set by NodeTree
         self._positions = {}  # dict, set by NodeTree
+        self._during_conversion = {}
         self._pending_copy = set()
         self._labels = []
         self._links = set()
@@ -77,8 +78,12 @@ class NodeCanvas:
             self._labels.append(name)
             print("Add node label", id_)
             nodetree = self.bntm.get_nodetree()
-            nodeclass = self.get_nodeclass()
-            node = nodetree.nodes.new(nodeclass.bl_idname)
+            if id_ in self._during_conversion:
+                node = self._during_conversion[id_]
+            else:
+                nodeclass = self.get_nodeclass()
+                node = nodetree.nodes.new(nodeclass.bl_idname)
+
             node.location = position
             node.set_attributes(attributes)
             nodetree.nodes.active = node
@@ -87,7 +92,7 @@ class NodeCanvas:
         finally:
             self.pop_busy()
 
-    def _on_copy_nodes(self, copied_nodes=None):
+    def on_copy_nodes(self, copied_nodes=None):
         """Blender callback when new nodes are detected"""
         self.push_busy()
 
@@ -95,7 +100,7 @@ class NodeCanvas:
         self.copy_pending_nodes()
 
         if copied_nodes is None:
-            copied_nodes = []
+            copied_nodes = {}
 
             # Scrape Blender nodes and remove the default copied nodes
             for node in list(nodetree.nodes):
@@ -104,42 +109,26 @@ class NodeCanvas:
                     continue
 
                 source_node_id = node.label
-                copied_nodes.append(source_node_id)
-                nodetree.nodes.remove(node)
+                copied_nodes[source_node_id] = node
+                #nodetree.nodes.remove(node)
 
         if not copied_nodes:
             return
-
-        unhandled_nodes = copied_nodes.copy()
 
         # Backup clipboard
         clipboard = self._hgui()._clipboard()
         type_, nodes_ = clipboard.get_clipboard_value()
 
-        def converter(id_mapping):
-            for source_id in id_mapping:
-                try:
-                    unhandled_nodes.remove(source_id)
-                except ValueError:
-                    print("{} not in unhandled nodes".format(source_id))
+        def converter(old_worker_id, new_worker_id):
+            self._during_conversion[new_worker_id] = copied_nodes[old_worker_id]
 
-            if clipboard._workermanager._antennafoldstate:
-                for workerid in id_mapping.values():
-                    clipboard._workermanager._antennafoldstate.sync(workerid, onload=False)
-
-        self._is_copying = True
         self._hgui().paste_clipboard(converter)
-        self._is_copying = False
 
-        if not unhandled_nodes:
-            self.pop_busy()
-            return
+        if clipboard._workermanager._antennafoldstate:
+            for workerid in self._during_conversion.keys():
+                clipboard._workermanager._antennafoldstate.sync(workerid, onload=False)
 
-        print("Duplicating nodes", unhandled_nodes)
-
-        clipboard.copy_workers(unhandled_nodes)
-        self._on_copy_nodes(unhandled_nodes)
-        clipboard.set_clipboard_value(type_, nodes_)
+        self._during_conversion.clear()
         self.pop_busy()
 
     def h_add_node(self, id_, hnode):

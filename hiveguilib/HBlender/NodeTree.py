@@ -120,11 +120,6 @@ class FakeLink:
 class HiveNodeTree:
 
     def _check_deletions(self):
-        # TODO REMOVE THIS
-        import logging
-        # For debugging in Blender
-        logging.t = self
-
         bntm = BlendManager.blendmanager.get_nodetree_manager(self.name)
         canvas = bntm.canvas
 
@@ -195,10 +190,11 @@ class HiveNodeTree:
         hcanvas._links = {FakeLink.from_link(l) for l in self.links}
 
     def _check_copying(self):
+        """Handle any Blender-clipboard pasted nodes (we need to register them into our internal model"""
         blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(self.name)
         canvas = blend_nodetree_manager.canvas
 
-        canvas.h()._on_copy_nodes()
+        canvas.h().on_copy_nodes()
 
     def _check_positions(self):
         blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(self.name)
@@ -214,6 +210,10 @@ class HiveNodeTree:
                 hcanvas.gui_moves_node(name, position)
 
     def _copy_pending_nodes(self):
+        """Copy any pending nodes into the clipboard
+
+        Workaround for single-copy operations overwriting clipboard for multiple copies
+        """
         blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(self.name)
         canvas = blend_nodetree_manager.canvas
         canvas.h().copy_pending_nodes()
