@@ -29,7 +29,7 @@ class NodeCanvas:
         self._pending_copy = set()
         self._labels = []
         self._links = set()
-        self._busy_count = 0
+        self._busy_stack = []
         self._is_copying = False
         self.bntm = None
 
@@ -38,22 +38,23 @@ class NodeCanvas:
 
     @property
     def _busy(self):
-        return bool(self._busy_count)
+        return bool(self._busy_stack)
 
-    def push_busy(self):
-        self._busy_count += 1
+    def push_busy(self, name):
+        self._busy_stack.append(name)
 
-    def pop_busy(self):
-        self._busy_count -= 1
+    def pop_busy(self, name):
+        assert self._busy_stack[-1] == name, name
+        self._busy_stack[:] = self._busy_stack[:-1]
 
     def rename_blender_node(self, node, name, set_label=True):
-        self.push_busy()
+        self.push_busy("rename")
         node.name = name
 
         if set_label:
             node.label = name
 
-        self.pop_busy()
+        self.pop_busy("rename")
 
     def set_blendnodetreemanager(self, blendnodetreemanager):
         self.bntm = blendnodetreemanager
@@ -72,7 +73,7 @@ class NodeCanvas:
         raise ValueError(tree.bl_idname)
 
     def _add_node(self, id_, name, attributes, position, tooltip):
-        self.push_busy()
+        self.push_busy("_add")
 
         try:
             self._labels.append(name)
@@ -90,11 +91,11 @@ class NodeCanvas:
             self.rename_blender_node(node, id_)
 
         finally:
-            self.pop_busy()
+            self.pop_busy("_add")
 
     def on_copy_nodes(self, copied_nodes=None):
         """Blender callback when new nodes are detected"""
-        self.push_busy()
+        self.push_busy("on_copy")
 
         nodetree = self.bntm.get_nodetree()
         self.copy_pending_nodes()
@@ -110,9 +111,9 @@ class NodeCanvas:
 
                 source_node_id = node.label
                 copied_nodes[source_node_id] = node
-                #nodetree.nodes.remove(node)
 
         if not copied_nodes:
+            self.pop_busy("on_copy")
             return
 
         # Backup clipboard
@@ -129,7 +130,7 @@ class NodeCanvas:
                 clipboard._workermanager._antennafoldstate.sync(workerid, onload=False)
 
         self._during_conversion.clear()
-        self.pop_busy()
+        self.pop_busy("on_copy")
 
     def h_add_node(self, id_, hnode):
         mapnode = h_map_node(hnode)
@@ -146,7 +147,7 @@ class NodeCanvas:
         nodetree = self.bntm.get_nodetree()
         node = [n for n in nodetree.nodes if n.name == node.name][0]
 
-        self.pop_busy()
+        self.push_busy("morph")
         in_out_attributes = [a.name for a in mapnode.attributes if a.inhook is not None and a.outhook is not None]
         matched_inputs = set()
         matched_outputs = set()
@@ -224,7 +225,7 @@ class NodeCanvas:
                 sock.row = anr + 1
                 outputpos += 1
 
-        self.pop_busy()
+        self.pop_busy("morph")
 
     def gui_moves_node(self, id_, position):
         ret = True
@@ -268,7 +269,7 @@ class NodeCanvas:
     def remove_node(self, id_):
         import logging
         logging.debug("Removing node blendercanvas" + id_)
-        self.push_busy()
+        self.push_busy("remove")
         if id_ in self._positions:
             self._positions.pop(id_)
 
@@ -311,10 +312,10 @@ class NodeCanvas:
                 selected_ids = [id_ for id_, n in self._nodes.items() if n.name in sel]
                 self._hgui().gui_selects(selected_ids)
 
-        self.pop_busy()
+        self.pop_busy("remove")
 
     def h_add_connection(self, id_, connection, valid):
-        self.push_busy()
+        self.push_busy("h_add")
         tree = self.bntm.get_nodetree()
         start_node = tree.find_node(connection.start_node)
         start = start_node.find_output_socket(connection.start_attribute)
@@ -339,7 +340,7 @@ class NodeCanvas:
         self._links.add(fl)  # adding a new link goes slowly...
         start.check_update()
         end.check_update()
-        self.pop_busy()
+        self.pop_busy("h_add")
 
     def gui_adds_connection(self, link, force):
         from .BlendManager import blendmanager
@@ -388,7 +389,7 @@ class NodeCanvas:
         # e.g. if the connected node was just deleted
 
         logging.debug("in REMOVE_CONNECTION")
-        self.push_busy()
+        self.push_busy("remove_con")
         tree = self.bntm.get_nodetree()
         connection = self._connections.pop(id_)
         for link in tree.links:
@@ -406,7 +407,7 @@ class NodeCanvas:
                 continue
 
             tree.links.remove(link)
-        self.pop_busy()
+        self.pop_busy("remove_con")
 
     def set_statusbar_message(self, message):
         if self._statusbar is None: return
