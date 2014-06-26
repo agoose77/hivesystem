@@ -336,7 +336,7 @@ class NodeCanvas:
                 sel = [n for n in self._selection if self._selection[n]]
                 selected_ids = [id_ for id_, n in self._nodes.items() if n.name in sel]
                 self._hgui().gui_selects(selected_ids)
-
+                #TODO RENAMING fix
         self.pop_busy("rename")
 
     def h_add_connection(self, id_, connection, valid):

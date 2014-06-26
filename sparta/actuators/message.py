@@ -8,7 +8,7 @@ class message(bee.worker):
     """
     The message actuator sends a message to a target process 
     Target process can be empty (sends a message to self)
-     It can also be .. to send to the parent, ../sibling to send to a sibling, etc.
+    It can also be used to send messages the parent, or from one sibling to another, etc.
     """
     # Inputs and outputs
     trig = antenna("push", "trigger")

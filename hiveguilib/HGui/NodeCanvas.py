@@ -310,23 +310,33 @@ class NodeCanvas(HGui):
     def rename_node(self, old_id, new_id, new_name):
         assert old_id in self._nodes, old_id
         assert new_id not in self._nodes, new_id
+
         node = self._nodes.pop(old_id)
         node.name = new_name
+
         self._nodes[new_id] = node
-        for con in self._connections.values():
-            if con.start_node == old_id: con.start_node = new_id
-            if con.end_node == old_id: con.end_node = new_id
+
+        for connection in self._connections.values():
+            if connection.start_node == old_id:
+                connection.start_node = new_id
+
+            if connection.end_node == old_id:
+                connection.end_node = new_id
+
         if old_id in self._folded_antenna_variables:
             folding_node, folding_antenna = self._folded_antenna_variables.pop(old_id)
             self._folded_antennas[folding_node][folding_antenna] = new_id
             self._folded_antenna_variables[new_id] = folding_node, folding_antenna
-            con_id = self._folded_antenna_connections.pop(old_id)
-            self._folded_antenna_connections[new_id] = con_id
+            connection_id = self._folded_antenna_connections.pop(old_id)
+            self._folded_antenna_connections[new_id] = connection_id
+
         else:
             if old_id in self._folded_antennas:
                 antennas = self._folded_antennas.pop(old_id)
                 self._folded_antennas[new_id] = old_id
+
             self._hNodeCanvas.rename_node(old_id, new_id, new_name)
+
         self._busy = True
         self.select([new_id])
         self._busy = False

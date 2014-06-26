@@ -32,6 +32,7 @@ class PControllerGeneral(PGui):
         p = manager.get_parameters(workerid)
         profile = None
         type_ = "worker"
+        tooltip = ""
         try:
             instance = self._wim().get_workerinstance(workerid)
             profile = instance.curr_profile

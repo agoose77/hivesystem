@@ -151,7 +151,8 @@ class BlenderLabelWidget(BlenderWidget):
         BlenderWidget.__init__(self, parent)
 
     def draw2(self, context, layout):
-        layout.label(self.text)
+        for line in self.text.split("\n"):
+            layout.label(line)
 
 
 class BlenderButtonWidget(BlenderWidget):
