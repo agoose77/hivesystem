@@ -89,8 +89,10 @@ class blendblockimporter:
         global os
         #if os is None: os = sys.modules["os"] #BGE re-initialization, or something...
         if os is None: raise ImportError
-        if not path_entry.startswith("//"): raise BlendImportError
-        if self.datablocks is ini_dict: raise BlendImportError
+        if not path_entry.startswith("//"):
+            raise BlendImportError
+        if self.datablocks is ini_dict:
+            raise BlendImportError
 
         self.path_entry = path_entry
 

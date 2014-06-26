@@ -47,7 +47,7 @@ class PControllerGeneral(object):
         self.profiles = newprofiles
         self.w_profile.addItems([v[1] for v in self.profiles])
 
-    def set_values(self, workerid, workertype, profiletype, profile):
+    def set_values(self, workerid, workertype, profiletype, profile, tooltip):
         newprofiles = profiletypes[profiletype]
         self.switch_profiles(newprofiles)
         self.w_workerid.setText(workerid)

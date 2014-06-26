@@ -60,6 +60,7 @@ bpy.utils.register_class(AddHiveNode)
 
 
 class NodeItem:
+    """FAKE DESC"""
 
     def __init__(self, manager, key, fullkey):
         self.manager = manager
@@ -84,37 +85,38 @@ class NodeItemMenu:
     name = "NODE_MT_HIVE"
 
     def __init__(self, title, fullname, make_panel=False):
-        if title is not None: assert fullname is not None
+        if title is not None:
+            assert fullname is not None
+
         self.title = title
         self.fullname = fullname
         self.children = []
 
         def menudraw(struct, context):
-            if not level.active(context, self.fullname): return
+            if not level.active(context, self.fullname):
+                return
+
             return self.draw(struct.layout, context)
 
-        d = dict(
+        cls_dict = dict(
             bl_space_type='NODE_EDITOR',
             bl_label="<HiveMenu>",
             draw=menudraw,
             poll=self.poll,
         )
-        n = self.name
-        if self.fullname is not None: n = self.name + "_" + "_".join(self.fullname)
-        self.name = n
-        self.menuclass = type(n, (bpy.types.Menu,), d)
+        name = self.name
+        if self.fullname is not None:
+            name = self.name + "_" + "_".join(self.fullname)
+
+        self.name = name
+        self.menuclass = type(name, (bpy.types.Menu,), cls_dict)
         bpy.utils.register_class(self.menuclass)
+
         if make_panel:
-            nn = n.replace("NODE_MT_", "NODE_PT_")
-            d = dict(
-                bl_space_type='NODE_EDITOR',
-                bl_label=title,
-                bl_region_type='TOOLS',
-                bl_options={'DEFAULT_CLOSED'},
-                poll=self._active,
-                draw=menudraw,
-            )
-            self.panelclass = type(nn, (bpy.types.Panel,), d)
+            type_name = name.replace("NODE_MT_", "NODE_PT_")
+            cls_dict = dict(bl_space_type='NODE_EDITOR', bl_label=title, bl_region_type='TOOLS',
+                            bl_options={'DEFAULT_CLOSED'}, poll=self._active, draw=menudraw)
+            self.panelclass = type(type_name, (bpy.types.Panel,), cls_dict)
             bpy.utils.register_class(self.panelclass)
 
     def _active(self, context):
@@ -126,9 +128,12 @@ class NodeItemMenu:
     def draw(self, layout, context):
         col = layout.column()
         for child in self.children:
-            if not child._active(context): continue
+            if not child._active(context):
+                continue
+
             if isinstance(child, NodeItemMenu):
                 layout.menu(self.name + "_" + child.title, text=child.title)
+
             else:
                 child.draw(col, context)
 

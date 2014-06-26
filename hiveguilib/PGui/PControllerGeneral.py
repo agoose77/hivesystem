@@ -36,11 +36,12 @@ class PControllerGeneral(PGui):
             instance = self._wim().get_workerinstance(workerid)
             profile = instance.curr_profile
             type_ = instance.type
+            tooltip = instance.tooltip
         except KeyError:
             pass
         workertype, params, metaparams = p
         cont = self._pControllerGeneral
-        cont.set_values(workerid, workertype, type_, profile)
+        cont.set_values(workerid, workertype, type_, profile, tooltip)
         self._workerid = workerid
 
     def refresh(self):

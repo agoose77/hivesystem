@@ -251,8 +251,10 @@ class WorkerFinder(object):
                 lines = readlines(lconf)
             for l in lines:
                 l = l.strip()
-                if l.startswith("#"): continue
-                if not len(l): continue
+                if l.startswith("#"):
+                    continue
+                if not len(l):
+                    continue
                 if l.startswith("@"):
                     l = os.path.expandvars(l[1:])
                     if localdir is not None:

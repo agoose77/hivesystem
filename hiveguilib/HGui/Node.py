@@ -47,16 +47,8 @@ class Hook(object):
 
 
 class Attribute(object):
-    def __init__(self,
-                 name,
-                 inhook=None,
-                 outhook=None,
-                 type=None,
-                 value=None,
-                 label=None,
-                 tooltip=None,
-                 visible=True
-    ):
+
+    def __init__(self, name, inhook=None, outhook=None, type=None, value=None, label=None, tooltip=None,  visible=True):
         self.name = name
         assert inhook is None or isinstance(inhook, Hook)
         self.inhook = inhook
@@ -86,21 +78,21 @@ class Node(object):
         self.name = name
         self.position = position
         self.attributes = attributes
-        for a in attributes:
-            assert isinstance(a, Attribute)
+        for attribute in attributes:
+            assert isinstance(attribute, Attribute)
         self.tooltip = tooltip
         self.empty = empty
 
-    def get_attribute(self, attribute):
-        at = [a for a in self.attributes if a.name == attribute]
-        if len(at) == 0:
-            raise NameError("Node '%s' has no attribute named '%s'" % (self.name, attribute))
-        elif len(at) > 1:
-            raise NameError("Node '%s' has %d attributes named '%s'" % (self.name, len(at), attribute))
-        return at[0]
+    def get_attribute(self, attribute_name):
+        matching_attributes = [a for a in self.attributes if a.name == attribute_name]
+        if len(matching_attributes) == 0:
+            raise NameError("Node '%s' has no attribute named '%s'" % (self.name, attribute_name))
+        elif len(matching_attributes) > 1:
+            raise NameError("Node '%s' has %d attributes named '%s'" % (self.name, len(matching_attributes),
+                                                                        attribute_name))
+        return matching_attributes[0]
 
     def __copy__(self):
         import copy
-
         attribs = [copy.copy(a) for a in self.attributes]
         return Node(self.name, self.position, attribs, self.tooltip)

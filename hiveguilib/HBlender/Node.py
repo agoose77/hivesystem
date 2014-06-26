@@ -155,7 +155,7 @@ class BaseNode(bpy.types.Node, HiveNode):
     @classmethod
     def poll(cls, node_tree):
         """Determine if node can be added to a node tree"""
-        nodetree_name = cls.bl_idname.rstrip("Node")
+        nodetree_name = cls.nodetree_idname
         return node_tree.bl_idname == nodetree_name
 
 
@@ -166,17 +166,23 @@ class HivemapNode(BaseNode):
     bl_generic_sockets = True
     bl_width_default = 50
 
+    nodetree_idname = "Hivemap"
+
 
 class WorkermapNode(BaseNode):
 
     bl_idname = "WorkermapNode"
     bl_label = bl_idname
 
+    nodetree_idname = "Workermap"
+
 
 class SpydermapNode(BaseNode):
 
     bl_idname = "SpydermapNode"
     bl_label = bl_idname
+
+    nodetree_idname = "Spydermap"
 
 
 def register():

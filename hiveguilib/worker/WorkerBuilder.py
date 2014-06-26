@@ -10,9 +10,15 @@ support_simplified = False  # if enabled, also build the "simplified" profile
 from ..HGui import Attribute, Hook
 from ..params import get_paramtypelist, get_param_pullantennas, parse_paramtypelist, typetuple
 from .WorkerInstanceManager import WorkerInstance
+
+from collections import namedtuple
+
 import copy
 import functools
 
+
+WorkerData = namedtuple("WorkerData", ("beename", "antennas", "outputs", "ev", "paramnames", "paramtypelist", "block", "guiparams",
+                         "tooltip"))
 
 def keyfunc(memberorder, a):
     name = a[0]
@@ -86,13 +92,8 @@ def build_droneinstance():
     m = dict(zip(args, [None] * len(args)))
     mapping = WorkerMapping()
     mapping.set_pmap(m)
-    droneinstance = WorkerInstance(
-        "drone",
-        {"default": ([], mapping)},
-        args,
-        [(("expression", str, 'no-defaultvalue'), None)] * 5,
-        None, {}
-    )
+    droneinstance = WorkerInstance("drone", {"default": ([], mapping)}, args,
+                                   [(("expression", str, 'no-defaultvalue'), None)] * 5,  None, {}, "DRONE TOOLTIP")
 
 
 build_droneinstance()
@@ -108,7 +109,8 @@ def build_zeroinstance():
         {"default": ([], mapping)},
         [],
         [],
-        None, {}
+        None, {},
+        "ZERO TOOLTIP"
     )
 
 
@@ -164,7 +166,8 @@ def build_worker_plain(beename, antennas, outputs, ev, paramnames, paramtypelist
 
 
 def build_worker_default(beename, antennas, outputs, ev, paramnames, paramtypelist, guiparams):
-    if paramnames is None: raise Exception(beename)
+    if paramnames is None:
+        raise Exception(beename)
     mapping = WorkerMapping()
     attribs = []
     attrs = [(pname, "antenna", pval) for pname, pval in antennas.items()] + \
@@ -405,9 +408,7 @@ class WorkerTemplate(object):
         "simplified": build_worker_simplified,
     }
 
-    def __init__(self,
-                 beename, antennas, outputs, ev, paramnames, paramtypelist, block, guiparams=None
-    ):
+    def __init__(self, beename, antennas, outputs, ev, paramnames, paramtypelist, block, tooltip, guiparams=None):
         self.beename = beename
         self.antennas = antennas
         self.outputs = outputs
@@ -417,23 +418,29 @@ class WorkerTemplate(object):
         self.block = build_block(block)
         self.forms = {}
         self.primary_instance = None
+        self.tooltip = tooltip
+        if guiparams is None:
+            guiparams = {}
         self.guiparams = guiparams
 
         for profile in self._builders:
-            if profile == "simplified" and not support_simplified: continue
+            if profile == "simplified" and not support_simplified:
+                continue
             builder = self._builders[profile]
             args = [beename, antennas, outputs, ev, paramnames, paramtypelist]
-            if self._type == "worker": args.append(guiparams)
+            if self._type == "worker":
+                args.append(guiparams)
+
             attribs, mapping = builder(*args)
-            if profile == "simplified" and (attribs, mapping) == (None, None): continue
+            if profile == "simplified" and (attribs, mapping) == (None, None):
+                continue
             self.forms[profile] = attribs, mapping
-        self.primary_instance = WorkerInstance(
-            self._type, self.forms, self.paramnames, self.paramtypelist, self.block, self.guiparams
-        )
+        self.primary_instance = self.get_workerinstance()
 
     def get_workerinstance(self):
         # We don't need a deep copy if we don't modify the attributes in the profiles!!
-        return WorkerInstance(self._type, self.forms, self.paramnames, self.paramtypelist, self.block, self.guiparams)
+        return WorkerInstance(self._type, self.forms, self.paramnames, self.paramtypelist, self.block, self.guiparams,
+                              self.tooltip)
 
 
 from ..segments.SegmentBuilder import \
@@ -441,12 +448,14 @@ from ..segments.SegmentBuilder import \
     SegmentPushBufferTemplate, SegmentPullBufferTemplate
 
 
-def build_workertemplate(
-        beename, antennas, outputs, ev, paramnames, paramtypelist, block, guiparams=None
-):
-    args = (beename, antennas, outputs, ev, paramnames, paramtypelist, block)
+def build_workertemplate(worker_data):
+    ev = worker_data.ev
+    beename = worker_data.beename
+    block = worker_data.block
+    args = list(worker_data[:7]) + [worker_data.tooltip]
+
     if len(ev):
-        return WorkerTemplate(*args, guiparams=guiparams)
+        return WorkerTemplate(*args, guiparams=worker_data.guiparams)
     elif beename == "variable":
         assert block is None
         return SegmentVariableTemplate(*args)
@@ -508,7 +517,8 @@ class WorkerBuilder(object):
         pullantennas = get_param_pullantennas(antennas)
         update_params_pullantennas(parameters, pullantennas)
         paramnames, paramtypelist = get_paramtypelist(workername, parameters)
-        return beename, antennas, outputs, ev, paramnames, paramtypelist, block, gp
+        return WorkerData(beename, antennas, outputs, ev, paramnames, paramtypelist, block, gp,
+                          (worker.__doc__ or "").lstrip().rstrip())
 
     def _build_hivemapworker(self, workername, hivemap):
         from bee.types import stringtupleparser
@@ -537,15 +547,15 @@ class WorkerBuilder(object):
             update_params_pullantennas(parameters, pullantennas)
             paramnames, paramtypelist = get_paramtypelist(workername, parameters)
         block = None
-        return beename, antennas, outputs, ev, paramnames, paramtypelist, block
+        return WorkerData(beename, antennas, outputs, ev, paramnames, paramtypelist, block, {}, "")
 
     def build_worker(self, id_, worker):
         assert id_ not in self._workers
 
         w = self._build_worker("worker " + id_, worker)
-        paramtypelist = w[5]
+        paramtypelist = w.paramtypelist
         if paramtypelist is None: return False  # some error in loading...
-        ww = build_workertemplate(*w)
+        ww = build_workertemplate(w)
         self._workers[id_] = ww
         manip = None
         if hasattr(worker, "form") and callable(worker.form):
@@ -557,8 +567,9 @@ class WorkerBuilder(object):
         assert id_ not in self._workers
 
         w = self._build_hivemapworker("hivemapworker " + id_, hivemapworker)
-        if w is None: return False
-        ww = build_workertemplate(*w)
+        if w is None:
+            return False
+        ww = build_workertemplate(w)
         self._workers[id_] = ww
         self._form_manipulators[id_] = None
 
@@ -616,10 +627,10 @@ class WorkerBuilder(object):
 
         w = self._build_worker(metaworkername, workerclass)
 
-        paramtypelist = w[5]
+        paramtypelist = w.paramtypelist
         assert paramtypelist is not None
 
-        worker = build_workertemplate(*w)
+        worker = build_workertemplate(w)
         manip = None
         if hasattr(workerclass, "form") and callable(workerclass.form):
             manip = workerclass.form

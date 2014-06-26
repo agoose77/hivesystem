@@ -28,6 +28,9 @@ class PControllerGeneral(object):
         self.l_workertype = BlenderLabelWidget(self.widget, "%s Type" % self.label)
         self.widget.children.append(self.l_workertype)
 
+        self.l_workertooltip = BlenderLabelWidget(self.widget, "%s Description" % self.label)
+        self.widget.children.append(self.l_workertooltip)
+
         self.w_profile = BlenderOptionWidget(self.widget, "%s Profile" % self.label, [], advanced=True)
         self.widget.children.append(self.w_profile)
         self.profiles = profiles_worker
@@ -90,9 +93,12 @@ class PControllerGeneral(object):
         self.profiles = newprofiles
         self._update_profilewidget()
 
-    def set_values(self, workerid, workertype, profiletype, profile):
+    def set_values(self, workerid, workertype, profiletype, profile, tooltip):
         self.w_workerid.value = workerid
         self.l_workertype.text = "%s Type: %s" % (self.label, workertype)
+        self.l_workertooltip.text = "%s Description: %s" % (self.label, tooltip)
+
+
         self._workerid = workerid
         self.l_workerid.text = "%s ID" % self.label
         newprofiles = profiletypes[profiletype]

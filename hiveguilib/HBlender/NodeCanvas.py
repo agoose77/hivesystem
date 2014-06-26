@@ -2,6 +2,7 @@ from ..HUtil.Node import h_map_node
 from .NodeTree import FakeLink
 from . import Node, NodeSocket, NodeTree, scalepos, unscalepos
 import logging
+import bpy
 
 
 def nullfunc(*args, **kwargs):
@@ -30,7 +31,6 @@ class NodeCanvas:
         self._labels = []
         self._links = set()
         self._busy_stack = []
-        self._is_copying = False
         self.bntm = None
 
         import logging
@@ -92,17 +92,19 @@ class NodeCanvas:
 
         try:
             self._labels.append(name)
-            print("Add node label", id_)
-            nodetree = self.bntm.get_nodetree()
+            node_tree = self.bntm.get_nodetree()
+
+            # Don't create Blender node if it already exists due to copy+paste
             if id_ in self._during_conversion:
                 node = self._during_conversion[id_]
+
             else:
-                nodeclass = self.get_nodeclass()
-                node = nodetree.nodes.new(nodeclass.bl_idname)
+                node_class = self.get_nodeclass()
+                node = node_tree.nodes.new(node_class.bl_idname)
 
             node.location = position
             node.set_attributes(attributes)
-            nodetree.nodes.active = node
+            node_tree.nodes.active = node
             self.rename_blender_node(node, id_)
 
         finally:
@@ -151,6 +153,11 @@ class NodeCanvas:
         self.pop_busy("on_copy")
 
     def h_add_node(self, id_, hnode):
+        """Create GUI node (from HGUI canvas
+
+        :param id_: id of node
+        :param hnode:
+        """
         mapnode = h_map_node(hnode)
         pos = scalepos(mapnode.position)
         self._add_node(id_, mapnode.name, mapnode.attributes, pos, mapnode.tooltip)
@@ -287,7 +294,7 @@ class NodeCanvas:
     def remove_node(self, id_):
         import logging
         logging.debug("Removing node blendercanvas" + id_)
-        self.push_busy("remove")
+        self.push_busy("remove_node")
         if id_ in self._positions:
             self._positions.pop(id_)
 
@@ -303,10 +310,10 @@ class NodeCanvas:
             break
 
         self._links = {FakeLink.from_link(l) for l in nodetree.links}
-        self.pop_busy()
+        self.pop_busy("remove_node")
 
     def rename_node(self, old_id, new_id, new_name):
-        self.push_busy()
+        self.push_busy("rename")
         node = self._nodes.pop(old_id)
         self._nodes[new_id] = node
         old_name = node.name
@@ -330,7 +337,7 @@ class NodeCanvas:
                 selected_ids = [id_ for id_, n in self._nodes.items() if n.name in sel]
                 self._hgui().gui_selects(selected_ids)
 
-        self.pop_busy("remove")
+        self.pop_busy("rename")
 
     def h_add_connection(self, id_, connection, valid):
         self.push_busy("h_add")

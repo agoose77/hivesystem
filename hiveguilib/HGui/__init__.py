@@ -2,6 +2,7 @@ from __future__ import print_function, absolute_import
 
 
 class HGui(object):
+
     def h(self):
         raise AttributeError("Abstract method HGui.h() must be re-implemented")
 

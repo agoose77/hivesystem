@@ -71,74 +71,112 @@ class NodeCanvas(HGui):
 
         self._hNodeCanvas.h_add_connection(id_, connection, valid)
 
-    def _redundant_connection(self,
-                              start_node, end_node,
-                              start_attribute, end_attribute
-    ):
-        for con in self._connections.values():
-            if con.start_node != start_node: continue
-            if con.end_node != end_node: continue
-            if con.start_attribute != start_attribute: continue
-            if con.end_attribute != end_attribute: continue
+    def _redundant_connection(self, start_node, end_node, start_attribute, end_attribute):
+        """Determine if a connection with the given parameters already exists
+
+        :param start_node: start node of connection
+        :param end_node: end node of connection
+        :param start_node: start attribute of connection
+        :param end_attribute: end attribute of connection
+        """
+        for connection in self._connections.values():
+            if connection.start_node != start_node:
+                continue
+
+            if connection.end_node != end_node:
+                continue
+
+            if connection.start_attribute != start_attribute:
+                continue
+
+            if connection.end_attribute != end_attribute:
+                continue
+
             return True
+
         return False
 
     def _valid_connection(self, connection):
-        ret = False
-        pushpull = False
-        while 1:
+        """Determine if a connection is valid
+
+        :param connection: connection instance
+        :returns: is_valid boolean, is_push_pull boolean
+        """
+        is_valid = False
+        push_pull = False
+
+        while True:
             start_node = self._nodes[connection.start_node]
-            start = start_node.get_attribute(connection.start_attribute)
-            start = start.outhook
-            if start is None: break
+            start_attribute = start_node.get_attribute(connection.start_attribute)
+            start_hook = start_attribute.outhook
+            if start_hook is None:
+                break
 
             end_node = self._nodes[connection.end_node]
-            end = end_node.get_attribute(connection.end_attribute)
-            end = end.inhook
-            if end is None: break
+            end_attribute = end_node.get_attribute(connection.end_attribute)
+            end_hook = end_attribute.inhook
+            if end_hook is None:
+                break
 
             # unequal types
-            if not compare_types(start.type, end.type): break
+            if not compare_types(start_hook.type, end_hook.type):
+                break
+
             # unequal modes: only allowed if pull=>push, and if popups supported
-            if start.mode != end.mode:
-                if start.mode != "pull": break
-                if not self.mainWindow.supports_popup(): break
-                pushpull = True
+            if start_hook.mode != end_hook.mode:
+                if start_hook.mode != "pull":
+                    break
+
+                if not self.mainWindow.supports_popup():
+                    break
+
+                push_pull = True
 
             #more than 1 connection to pull antenna
-            if end.mode == "pull":
-                first_con = True
-                for con in self._connections.values():
-                    if con is connection: continue
-                    if con.end_node != connection.end_node: continue
-                    if con.end_attribute != connection.end_attribute: continue
-                    first_con = False
-                    break
-                if not first_con:
+            if end_hook.mode == "pull":
+                is_single_connection = True
+                for connection in self._connections.values():
+                    if connection is connection:
+                        continue
+
+                    if connection.end_node != connection.end_node:
+                        continue
+
+                    if connection.end_attribute != connection.end_attribute:
+                        continue
+
+                    is_single_connection = False
                     break
 
-            ret = True
+                if not is_single_connection:
+                    break
+
+            is_valid = True
             break
-        if not ret: pushpull = False
-        return ret, pushpull
+
+        if not is_valid:
+            push_pull = False
+
+        return is_valid, push_pull
 
     def gui_asks_connection(self, connection, adding=False):
         start_node, end_node = connection.start_node, connection.end_node
-        start_attribute, end_attribute = connection.start_attribute, \
-                                         connection.end_attribute
+        start_attribute, end_attribute = connection.start_attribute, connection.end_attribute
 
-        if self._redundant_connection(
-                start_node, end_node,
-                start_attribute, end_attribute
-        ):
+        if self._redundant_connection(start_node, end_node, start_attribute, end_attribute):
             return False
 
-        ok, pushpull = self._valid_connection(connection)
-        if not pushpull or not adding: return ok
-        if self.workermanager is None: return False  # in case we are running WorkerGUI
+        is_valid, is_push_pull = self._valid_connection(connection)
+        if not is_push_pull or not adding:
+            return is_valid
+
+        if self.workermanager is None:
+            return False  # in case we are running WorkerGUI
 
         result = self.mainWindow.popup("Poll mode", ["Manual", "Every tick", "On change"])
-        if result is None: return False  # non-blocking popup
+        if result is None:
+            return False  # non-blocking popup
+
         self.pushpull_connection(connection, result)  # or: blocking popup
         return False  # in any case, the old connection must go
 

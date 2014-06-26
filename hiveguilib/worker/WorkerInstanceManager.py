@@ -10,13 +10,14 @@ class WorkerInstance(object):
         "evexc": {"default": "default_evio", "plain": "plain_evio", "simplified": "default_evio"},
     }
 
-    def __init__(self, type_, profiles, paramnames, paramtypelist, block, guiparams):
+    def __init__(self, type_, profiles, paramnames, paramtypelist, block, guiparams, tooltip):
         self.type = type_
         self.profiles = profiles
         self.paramnames = paramnames
         self.paramtypelist = paramtypelist
         self.block = block
         self.guiparams = guiparams
+        self.tooltip = tooltip
         self.curr_profile = None
         self.curr_blockvalues = []
 
@@ -90,7 +91,7 @@ class WorkerInstanceManager(object):
         if prof not in workerinstance.profiles: prof = "default"
         attribs, mapping = workerinstance.profiles[prof]
         nodename = workerid_to_nodename(workerid)
-        node = Node(nodename, (x, y), attribs)
+        node = Node(nodename, (x, y), attribs, workerinstance.tooltip)
         self._canvas.add_node(workerid, node)
         workerinstance.curr_profile = prof
         self._workerinstances[workerid] = workerinstance
