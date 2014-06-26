@@ -399,6 +399,7 @@ def update_params_pullantennas(parameters, pullantennas):
 
 
 class WorkerTemplate(object):
+
     _type = "worker"
     _builders = {
         "default": build_worker_default,
@@ -419,9 +420,7 @@ class WorkerTemplate(object):
         self.forms = {}
         self.primary_instance = None
         self.tooltip = tooltip
-        if guiparams is None:
-            guiparams = {}
-        self.guiparams = guiparams
+        self.guiparams = guiparams or {}
 
         for profile in self._builders:
             if profile == "simplified" and not support_simplified:
@@ -432,8 +431,10 @@ class WorkerTemplate(object):
                 args.append(guiparams)
 
             attribs, mapping = builder(*args)
+
             if profile == "simplified" and (attribs, mapping) == (None, None):
                 continue
+
             self.forms[profile] = attribs, mapping
         self.primary_instance = self.get_workerinstance()
 
@@ -454,17 +455,21 @@ def build_workertemplate(worker_data):
     block = worker_data.block
     args = list(worker_data[:7]) + [worker_data.tooltip]
 
-    if len(ev):
+    if ev:
         return WorkerTemplate(*args, guiparams=worker_data.guiparams)
+
     elif beename == "variable":
         assert block is None
         return SegmentVariableTemplate(*args)
+
     elif beename == "push_buffer":
         assert block is None
         return SegmentPushBufferTemplate(*args)
+
     elif beename == "pull_buffer":
         assert block is None
         return SegmentPullBufferTemplate(*args)
+
     else:
         assert block is None
         return SegmentTemplate(*args)
@@ -473,15 +478,19 @@ def build_workertemplate(worker_data):
 from functools import partial
 
 
-def modify_antenna_forms(antennas, guiparams, form):
-    for a in antennas:
-        f = getattr(form, a, None)
-        if f is None: continue
-        f.is_antenna = True
-        if a not in guiparams: continue
-        p = guiparams[a]
-        if "name" in p and not hasattr(f, "name"):
-            f.name = p["name"]
+def modify_antenna_forms(antennas, guiparams, form_antenna):
+    for antenna_name in antennas:
+        form_antenna = getattr(form_antenna, antenna_name, None)
+        if form_antenna is None:
+            continue
+
+        form_antenna.is_antenna = True
+        if antenna_name not in guiparams:
+            continue
+
+        parameter = guiparams[antenna_name]
+        if "name" in parameter and not hasattr(form_antenna, "name"):
+            form_antenna.name = parameter["name"]
 
 
 def make_form_manipulators(guiparams, manip):
@@ -489,10 +498,10 @@ def make_form_manipulators(guiparams, manip):
     if guiparams is not None and "antennas" in guiparams:
         antennas = guiparams["antennas"]
     form_antennas = []
-    for a in antennas:
-        antenna = antennas[a]
+    for antenna_name in antennas:
+        antenna = antennas[antenna_name]
         if antenna[0] != "pull": continue
-        form_antennas.append(a)
+        form_antennas.append(antenna_name)
     if manip is None and not len(form_antennas): return []
     if not len(form_antennas): return [manip]
     m = partial(modify_antenna_forms, form_antennas, guiparams.get("guiparams", {}))
@@ -501,23 +510,24 @@ def make_form_manipulators(guiparams, manip):
 
 
 class WorkerBuilder(object):
+
     def __init__(self):
         self._workers = {}
         self._metaworkers = {}
         self._form_manipulators = {}
 
     def _build_worker(self, workername, worker):
-        gp = worker.guiparams
-        beename = gp["__beename__"]
-        antennas = gp.get("antennas", {})
-        outputs = gp.get("outputs", {})
-        ev = gp.get("__ev__", [])
-        block = gp.get("block", None)
-        parameters = gp.get("parameters", {}).copy()
+        gui_params = worker.guiparams
+        beename = gui_params["__beename__"]
+        antennas = gui_params.get("antennas", {})
+        outputs = gui_params.get("outputs", {})
+        ev = gui_params.get("__ev__", [])
+        block = gui_params.get("block", None)
+        parameters = gui_params.get("parameters", {}).copy()
         pullantennas = get_param_pullantennas(antennas)
         update_params_pullantennas(parameters, pullantennas)
         paramnames, paramtypelist = get_paramtypelist(workername, parameters)
-        return WorkerData(beename, antennas, outputs, ev, paramnames, paramtypelist, block, gp,
+        return WorkerData(beename, antennas, outputs, ev, paramnames, paramtypelist, block, gui_params,
                           (worker.__doc__ or "").lstrip().rstrip())
 
     def _build_hivemapworker(self, workername, hivemap):
@@ -526,55 +536,64 @@ class WorkerBuilder(object):
         beename = workername
         antennas = {}
         outputs = {}
+
         if hivemap.io is not None:
             for io in hivemap.io:
                 if io.mode is None or io.datatype is None:
                     print("Cannot register hivemapworker '%s': HivemapIO mode/type not completely defined" % workername)
                     return None
-                datatype = stringtupleparser(io.datatype)
+
                 hio = (io.mode, io.datatype)
                 if io.io == "antenna":
                     antennas[io.io_id] = hio
                 else:
                     outputs[io.io_id] = hio
+
         ev = ['everr', 'evexc', 'evin', 'evout']
-        paramnames, paramtypelist = [], []
+
+        param_names, param_type_list = [], []
         if hivemap.parameters is not None:
             parameters = {}
-            for p in hivemap.parameters:
-                parameters[p.extern_id] = p.paramtypename
-            pullantennas = get_param_pullantennas(antennas)
-            update_params_pullantennas(parameters, pullantennas)
-            paramnames, paramtypelist = get_paramtypelist(workername, parameters)
+            for parameter in hivemap.parameters:
+                parameters[parameter.extern_id] = parameter.paramtypename
+
+            pull_antennas = get_param_pullantennas(antennas)
+            update_params_pullantennas(parameters, pull_antennas)
+            param_names, param_type_list = get_paramtypelist(workername, parameters)
+
+        # TODO support tooltip here
         block = None
-        return WorkerData(beename, antennas, outputs, ev, paramnames, paramtypelist, block, {}, "")
+        return WorkerData(beename, antennas, outputs, ev, param_names, param_type_list, block, {}, "")
 
     def build_worker(self, id_, worker):
         assert id_ not in self._workers
 
-        w = self._build_worker("worker " + id_, worker)
-        paramtypelist = w.paramtypelist
-        if paramtypelist is None: return False  # some error in loading...
-        ww = build_workertemplate(w)
-        self._workers[id_] = ww
-        manip = None
+        worker_data = self._build_worker("worker " + id_, worker)
+        paramtypelist = worker_data.paramtypelist
+        if paramtypelist is None:
+            return False  # some error in loading...
+
+        worker_template = build_workertemplate(worker_data)
+        self._workers[id_] = worker_template
+
+        manipulator = None
         if hasattr(worker, "form") and callable(worker.form):
-            manip = worker.form
-        self._form_manipulators[id_] = make_form_manipulators(worker.guiparams, manip)
+            manipulator = worker.form
+
+        self._form_manipulators[id_] = make_form_manipulators(worker.guiparams, manipulator)
         return True
 
     def build_hivemapworker(self, id_, hivemapworker):
         assert id_ not in self._workers
 
-        w = self._build_hivemapworker("hivemapworker " + id_, hivemapworker)
-        if w is None:
+        worker_data = self._build_hivemapworker("hivemapworker " + id_, hivemapworker)
+        if worker_data is None:
             return False
-        ww = build_workertemplate(w)
-        self._workers[id_] = ww
+
+        self._workers[id_] = build_workertemplate(worker_data)
         self._form_manipulators[id_] = None
 
         return True
-
 
     def get_block(self, id_):
         return self._workers[id_].block
@@ -585,26 +604,32 @@ class WorkerBuilder(object):
     def build_metaworker(self, id_, metaworker):
         assert id_ not in self._metaworkers
 
-        mgp = {}
-        memberorder = None
-        for k in metaworker.metaguiparams:
-            if k == "_memberorder":
-                memberorder = metaworker.metaguiparams[k]
+        meta_guiparams = {}
+        member_order = None
+        for key, value in metaworker.metaguiparams.items():
+
+            if key == "_memberorder":
+                member_order = value
                 continue
-            if k not in ("guiparams", "autocreate"):
-                mgp[k] = metaworker.metaguiparams[k]
-        paramnames, paramtypelist = get_paramtypelist(
-            "metaworker " + id_, mgp
-        )
-        if paramtypelist is None: return False  # some error in loading...
-        if memberorder is not None:
-            p = sorted(zip(paramnames, paramtypelist), key=partial(keyfunc, memberorder))
-            paramnames, paramtypelist = zip(*p)
+
+            if key not in ("guiparams", "autocreate"):
+                meta_guiparams[key] = value
+
+        paramnames, paramtypelist = get_paramtypelist("metaworker " + id_, meta_guiparams)
+
+        if paramtypelist is None:
+            return False  # some error in loading...
+
+        if member_order is not None:
+            sorted_parameters = sorted(zip(paramnames, paramtypelist), key=partial(keyfunc, member_order))
+            paramnames, paramtypelist = zip(*sorted_parameters)
+
         self._metaworkers[id_] = metaworker, paramnames, paramtypelist
-        manip = None
+
+        manipulator = None
         if hasattr(metaworker, "form") and callable(metaworker.form):
-            manip = metaworker.form
-        self._form_manipulators[id_] = make_form_manipulators(metaworker.metaguiparams, manip)
+            manipulator = metaworker.form
+        self._form_manipulators[id_] = make_form_manipulators(metaworker.metaguiparams, manipulator)
 
     def get_metaworker(self, id_):
         return self._metaworkers[id_]
@@ -613,29 +638,29 @@ class WorkerBuilder(object):
         self._metaworkers.pop(id_)
 
     def build_worker_from_meta(self, metaworkername, metaparams):
-        mw = self._metaworkers[metaworkername]
-        metaworker, mparamnames, mparamtypelist = mw
-        arglist = []
-        for mparamname in mparamnames:
-            v = metaparams.get(mparamname, None)
-            arglist.append(v)
+        metaworker_data = self._metaworkers[metaworkername]
+        metaworker, mparamnames, mparamtypelist = metaworker_data
+
+        arglist = [metaparams.get(mparamname, None) for mparamname in mparamnames]
         args = parse_paramtypelist(mparamtypelist, arglist)
         mparams = dict(zip(mparamnames, args))
 
         workerclass = metaworker(**mparams)
         assert workerclass is not None, metaworkername
 
-        w = self._build_worker(metaworkername, workerclass)
+        worker_data = self._build_worker(metaworkername, workerclass)
 
-        paramtypelist = w.paramtypelist
+        paramtypelist = worker_data.paramtypelist
         assert paramtypelist is not None
 
-        worker = build_workertemplate(w)
-        manip = None
+        worker = build_workertemplate(worker_data)
+
+        manipulator = None
         if hasattr(workerclass, "form") and callable(workerclass.form):
-            manip = workerclass.form
+            manipulator = workerclass.form
+
         key = metaworkername, freeze(mparams.items())
-        self._form_manipulators[key] = make_form_manipulators(worker.guiparams, manip)
+        self._form_manipulators[key] = make_form_manipulators(worker.guiparams, manipulator)
 
         return worker, mparamnames, mparamtypelist, mparams
 
