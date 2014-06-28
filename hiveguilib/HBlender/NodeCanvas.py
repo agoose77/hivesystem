@@ -136,18 +136,10 @@ class NodeCanvas:
             self.pop_busy("on_copy")
             return
 
-        # Backup clipboard
-        clipboard = self._hgui()._clipboard()
-        type_, nodes_ = clipboard.get_clipboard_value()
-
         def converter(old_worker_id, new_worker_id):
             self._during_conversion[new_worker_id] = copied_nodes[old_worker_id]
 
         self._hgui().paste_clipboard(converter)
-
-        if clipboard._workermanager._antennafoldstate:
-            for workerid in self._during_conversion.keys():
-                clipboard._workermanager._antennafoldstate.sync(workerid, onload=False)
 
         self._during_conversion.clear()
         self.pop_busy("on_copy")

@@ -388,7 +388,7 @@ class NodeCanvas(HGui):
         if pasted_nodes_id_sequence is None:
             return
 
-        self.select(pasted_nodes_id_sequence)
+        self.select([x for x in pasted_nodes_id_sequence if not x in self._folded_antenna_variables])
 
     def select(self, selected_node_id_sequence):
         for node_id in selected_node_id_sequence:
@@ -453,9 +453,10 @@ class NodeCanvas(HGui):
             return
 
         for node_id in node_id_sequence:
-            if node_id in self._folded_antenna_variables:
-                continue
             import logging
+            if node_id in self._folded_antenna_variables:
+                logging.debug("DONT REMOVE THESE ANTENANE")
+                continue
             logging.debug(str(self) + "CALLING REMOVE FROM GUI_REMOVES_NODES" + node_id)
 
             self._remove_node(node_id)

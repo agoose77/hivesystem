@@ -248,7 +248,11 @@ class WorkerManager(object):
                 pullantennas,
                 gp,
             )
+
         self._wim.set_parameters(workerid, pvalues)
+
+        if self._antennafoldstate is not None:
+            self._antennafoldstate.sync(workerid, onload=False)
 
     def _select(self, workerids):
         self._pmanager.deselect()
@@ -405,8 +409,6 @@ class WorkerManager(object):
             workerid = self.get_new_workerid(workertype)
 
         self.instantiate(workerid, workertype, x, y, metaparamvalues)
-        if self._antennafoldstate is not None:
-            self._antennafoldstate.sync(workerid, onload=False)
 
         if already_existed:
             for connection in worker_connections:
@@ -451,16 +453,12 @@ class WorkerManager(object):
             assert paramvalues is None
             autocreate = self._meta_autocreate(workertype, workerid, x, y)
             if autocreate:
-                if self._antennafoldstate is not None:
-                    self._antennafoldstate.sync(workerid, onload=False)
                 return workerid
             empty_workerid = self.get_new_empty_workerid()
             self.meta_empty_instantiate(empty_workerid, workertype, x, y)
             return empty_workerid
         else:
             self.instantiate(workerid, workertype, x, y, metaparamvalues, paramvalues)
-            if self._antennafoldstate is not None:
-                self._antennafoldstate.sync(workerid, onload=False)
             return workerid
 
     def create_drone(self, workerid, dronetype, x, y, paramvalues=None):

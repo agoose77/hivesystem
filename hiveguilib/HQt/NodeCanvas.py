@@ -49,7 +49,10 @@ class NodeCanvas(HQt):
 
     def _add_node(self, id_, name, attributes, position=None, tooltip=""):
         nodeUi = self._nodeUiClass(name, attributes, tooltip)
-        if position is not None: nodeUi.setPos(*position)
+
+        if position is not None:
+            nodeUi.setPos(*position)
+
         self._nodeuis[id_] = nodeUi
         self._nodeuis_rev[nodeUi] = id_
         self._scene.addItem(nodeUi)
@@ -120,6 +123,9 @@ class NodeCanvas(HQt):
         return ret
 
     def remove_node(self, id_):
+        if not id_ in self._nodeuis:
+            return
+
         nodeUi = self._nodeuis.pop(id_)
         self._nodeuis_rev.pop(nodeUi)
         nodeUi.deleteIt()
@@ -138,14 +144,9 @@ class NodeCanvas(HQt):
 
     def gui_removes_nodes(self, nodeUis):
         ids = [self._nodeuis_rev[nodeUi] for nodeUi in nodeUis]
-
         ret = True
         if self._hgui is not None:
             ret = self._hgui().gui_removes_nodes(ids)
-        if ret:
-            for nodeUi, id_ in zip(nodeUis, ids):
-                nodeUi = self._nodeuis.pop(id_)
-                self._nodeuis_rev.pop(nodeUi)
         return ret
 
     def gui_moves_node(self, nodeUi, offset):
@@ -212,6 +213,9 @@ class NodeCanvas(HQt):
         return ret
 
     def remove_connection(self, id_):
+        # Shell meta instantiation has no actual connections
+        if not id_ in self._connections:
+            return
         connection = self._connections.pop(id_)
         connection.deleteIt()
 
