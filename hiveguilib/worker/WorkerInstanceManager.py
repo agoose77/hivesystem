@@ -53,7 +53,8 @@ class WorkerInstance(object):
 
     def check_output(self, attribute):
         if self.block is not None and self.block.io == "output":
-            if attribute in self.curr_blockvalues: return None  # OK
+            if attribute in self.curr_blockvalues:
+                return None  # OK
         prof = self.profiles[self.curr_profile]
         attribs, mapping = prof
         at = mapping.outmap[attribute]
@@ -170,7 +171,8 @@ class WorkerInstanceManager(object):
         start_id, start_attr = start
         wi_start = self._workerinstances[start_id]
         morph = wi_start.check_output(start_attr)
-        if morph is not None: self.morph_worker(start_id, morph)
+        if morph is not None:
+            self.morph_worker(start_id, morph)
 
         end_id, end_attr = end
         wi_end = self._workerinstances[end_id]

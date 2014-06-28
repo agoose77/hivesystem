@@ -399,20 +399,19 @@ def workergen(name, m):
         tdic[seg.segid] = type_
 
     #Generate code for connections
-    for con in m.connections:
-        id1 = con.start.segid
-        id2 = con.end.segid
-        t1 = tdic[id1]
-        t2 = tdic[id2]
-        seg1 = allsegments[id1]
-        seg2 = allsegments[id2]
+    for connection_name in m.connections:
+        start_segmnent_id = connection_name.start.segid
+        end_segment_id = connection_name.end.segid
+        t1 = tdic[start_segmnent_id]
+        t2 = tdic[end_segment_id]
+        seg1 = allsegments[start_segmnent_id]
+        seg2 = allsegments[end_segment_id]
 
-        source, target = id1, id2
+        source, target = start_segmnent_id, end_segment_id
         arg = None
         k = "connect"
         if t1.startswith("push_antenna"):
-            if t1 == "push_antenna_trigger" or \
-                                    t1 == "push_antenna" and seg1.type == "trigger":
+            if t1 == "push_antenna_trigger" or t1 == "push_antenna" and seg1.type == "trigger":
                 #Special case: ("push", "trigger") may send triggers
                 k = "trigger"
             else:
@@ -430,25 +429,25 @@ def workergen(name, m):
         elif t1 == "modifier":
             k = "trigger"
         elif t1.startswith("variable"):
-            if con.start.io == "pre_update":
+            if connection_name.start.io == "pre_update":
                 k = "pretrigger"
                 arg = "update"
-            elif con.start.io == "pre_output":
+            elif connection_name.start.io == "pre_output":
                 k = "pretrigger"
-            elif con.start.io == "on_update":
+            elif connection_name.start.io == "on_update":
                 k = "trigger"
-            elif con.start.io == "on_output":
+            elif connection_name.start.io == "on_output":
                 k = "trigger"
                 arg = "output"
         elif t1.startswith("push_buffer"):
-            if con.start.io == "pre_update":
+            if connection_name.start.io == "pre_update":
                 k = "pretrigger"
-            elif con.start.io == "on_update":
+            elif connection_name.start.io == "on_update":
                 k = "trigger"
         elif t1.startswith("pull_buffer"):
-            if con.start.io == "pre_output":
+            if connection_name.start.io == "pre_output":
                 k = "pretrigger"
-            elif con.start.io == "on_output":
+            elif connection_name.start.io == "on_output":
                 k = "trigger"
         else:
             raise Exception(t1)

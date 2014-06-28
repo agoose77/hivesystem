@@ -384,9 +384,20 @@ class WorkerManager(object):
         )
 
         # all set, there should be no exceptions now
-        if workerid in self._worker_parameters:  #re-instantiation, delete the old worker
+        already_existed = workerid in self._worker_parameters
+        if already_existed:  #re-instantiation, delete the old worker
             #TODO: re-form connections of the old worker, and restore parameters, if we can
+
+            all_connections = self._wim.get_connections()
+            worker_connections = []
+            for connection in all_connections:
+                if connection.start_node == workerid:
+                    worker_connections.append(connection)
+                elif connection.end_node == workerid:
+                    worker_connections.append(connection)
+
             self.remove(workerid)
+
         else:  #the worker was only a shell, instantiating for the first time
             self._wim.remove_empty(workerid)
             self._worker_metaparameters.pop(workerid)
@@ -396,6 +407,18 @@ class WorkerManager(object):
         self.instantiate(workerid, workertype, x, y, metaparamvalues)
         if self._antennafoldstate is not None:
             self._antennafoldstate.sync(workerid, onload=False)
+
+        if already_existed:
+            for connection in worker_connections:
+                con_id = self.get_new_connection_id("con")
+                start = connection.start_node
+                end = connection.end_node
+                try:
+                    self._wim.add_connection(con_id, (start, connection.start_attribute),
+                                             (end, connection.end_attribute), connection.interpoints)
+                except KeyError:
+                    continue
+
         self.select([workerid])
 
     def _meta_autocreate(self, workertype, workerid, x, y):
@@ -503,16 +526,22 @@ class WorkerManager(object):
         return True
 
     def _update_worker_parameters(self, workerid, paramnames, parameters):
-        # print("UP", workerid, parameters)
         params_old = self._worker_parameters[workerid][3]
+
         if parameters is None:
-            if params_old is None: return
+            if params_old is None:
+                return
+
             parameters = {}
+
         else:
-            paramcopy = {}
-            for p in parameters:
-                if p in paramnames: paramcopy[p] = parameters[p]
-            parameters = paramcopy
+            parameters_copy = {}
+            for parameter_name in parameters:
+                if parameter_name in paramnames:
+                    parameters_copy[parameter_name] = parameters[parameter_name]
+
+            parameters = parameters_copy
+
         self._wim.set_parameters(workerid, parameters)
         self._worker_parameters[workerid][3] = parameters
 

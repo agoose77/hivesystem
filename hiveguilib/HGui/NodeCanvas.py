@@ -424,8 +424,7 @@ class NodeCanvas(HGui):
 
     def _remove_node(self, node_id, pass_downward=True):
         assert node_id in self._nodes, node_id
-        import logging
-        logging.debug("RUNNING REMOVE" + node_id)
+
         if node_id in self._hNodeCanvas._nodes:
             self._hNodeCanvas.remove_node(node_id)
         self._nodes.pop(node_id)

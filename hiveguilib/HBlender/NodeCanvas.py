@@ -173,7 +173,7 @@ class NodeCanvas:
         node = [n for n in nodetree.nodes if n.name == node.name][0]
 
         self.push_busy("morph")
-        in_out_attributes = [a.name for a in mapnode.attributes if a.inhook is not None and a.outhook is not None]
+
         matched_inputs = set()
         matched_outputs = set()
         accounted_inputs = set()
@@ -299,8 +299,6 @@ class NodeCanvas:
             self._pending_copy.clear()
 
     def remove_node(self, id_):
-        import logging
-        logging.debug("Removing node blendercanvas" + id_)
         self.push_busy("remove_node")
         if id_ in self._positions:
             self._positions.pop(id_)
@@ -419,8 +417,11 @@ class NodeCanvas:
     def remove_connection(self, id_):
         # This may not do anything, if Blender already deleted the links,
         # e.g. if the connected node was just deleted
-
         logging.debug("in REMOVE_CONNECTION")
+        if not id_ in self._connections:
+            logging.debug("no GUI connection found (maybe initial folding)")
+            return
+
         self.push_busy("remove_con")
         tree = self.bntm.get_nodetree()
         connection = self._connections.pop(id_)
