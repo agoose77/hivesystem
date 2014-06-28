@@ -353,6 +353,9 @@ def workergen(name, m):
     # Check for duplicate segids
     segids0 = set()
 
+    #if m.docstring is not None:
+     #   codestate.classcode += "\"\"\"\n" + m.docstring + "\"\"\"\n"
+
     def check_segid(segid):
         if re.match(identifier, segid) is None:
             raise Exception("Invalid segment ID '%s'" % segid)

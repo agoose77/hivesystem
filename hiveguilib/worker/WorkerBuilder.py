@@ -385,7 +385,8 @@ class Block(object):
 
 
 def build_block(block):
-    if block is None: return None
+    if block is None:
+        return None
     io, mode, spydertype = block
     return Block(io, mode, spydertype)
 
@@ -394,7 +395,8 @@ def update_params_pullantennas(parameters, pullantennas):
     for a, pp in pullantennas:
         if a not in parameters:
             p2 = pp
-            if isinstance(pp, tuple): p2 = (pp, None)
+            if isinstance(pp, tuple):
+                p2 = (pp, None)
             parameters[a] = p2
 
 

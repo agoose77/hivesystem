@@ -5,9 +5,7 @@ from libcontext.pluginclasses import *
 
 
 class action(bee.worker):
-    """
-    The action actuator plays a 3D action 
-    """
+    """The action actuator plays a 3D action"""
 
     # Inputs and outputs
     trig = antenna("push", "trigger")
@@ -21,6 +19,4 @@ class action(bee.worker):
     }
 
     def place(self):
-        raise NotImplementedError("sparta.actuators.action has not been implemented yet") 
-      
-      
+        raise NotImplementedError("sparta.actuators.action has not been implemented yet")

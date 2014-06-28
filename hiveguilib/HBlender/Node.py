@@ -44,6 +44,7 @@ class HiveNode:
                 socket.name = label
                 socket.link_limit = 99
                 socket.row = index + 1
+                socket.internal_name = name
 
             if attribute.inhook:
                 hook = attribute.inhook
@@ -52,6 +53,7 @@ class HiveNode:
                 socket.name = label
                 socket.link_limit = 99
                 socket.row = index + 1
+                socket.internal_name = name
 
     def check_update(self):
         for socket in self.inputs:

@@ -473,7 +473,8 @@ class WorkerManager(object):
     def _rename_worker(self, old_workerid, new_workerid):
         for dic in (self._worker_parameters, self._worker_metaparameters):
             if old_workerid in dic:
-                if new_workerid in dic: return False
+                if new_workerid in dic:
+                    return False
         for dic in (self._worker_parameters, self._worker_metaparameters):
             if old_workerid in dic:
                 params = dic.pop(old_workerid)
@@ -494,7 +495,8 @@ class WorkerManager(object):
         Worker has been renamed by the PGui, not the canvas...
         """
         ok = self._rename_worker(old_workerid, new_workerid)
-        if not ok: return False
+        if not ok:
+            return False
         self._wim.rename_workerinstance(old_workerid, new_workerid)
         if self._antennafoldstate is not None:
             self._antennafoldstate.rename_worker(old_workerid, new_workerid)

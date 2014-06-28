@@ -193,13 +193,15 @@ class NodeCanvas:
 
             at0.name = [n for n in mapnode.attributes if n.name == attribute_name_b][0].label
 
+        print(matched_outputs, mapcon)
+
         # Remove unmatched sockets
         # This should be safe: attributes with connections won't be allowed to be deleted
         change = True
         while change:
             change = False
             for a in node.inputs:
-                if a.name not in matched_inputs:
+                if a.identifier not in matched_inputs:
                     node.inputs.remove(a)
                     change = True
 
@@ -207,8 +209,8 @@ class NodeCanvas:
         while change:
             change = False
             for a in node.outputs:
-                if a.name not in matched_outputs:
-                    node.inputs.remove(a)
+                if a.identifier not in matched_outputs:
+                    node.outputs.remove(a)
                     change = True
 
         #Create new sockets that didn't exist before
@@ -216,8 +218,11 @@ class NodeCanvas:
             label = a.name
             if a.label is not None:
                 label = a.label
+
             if a.outhook:
-                if a.name in accounted_outputs: continue
+                if a.name in accounted_outputs:
+                    continue
+
                 h = a.outhook
                 if a.inhook:
                     socktype = NodeSocket.socketclasses[h.shape, h.color, True]  #complementary socket
@@ -231,6 +236,7 @@ class NodeCanvas:
             if a.inhook:
                 if a.name in accounted_inputs:
                     continue
+
                 h = a.inhook
                 socktype = NodeSocket.socketclasses[h.shape, h.color]
                 sock = node.inputs.new(socktype.bl_idname, a.name)
@@ -240,6 +246,7 @@ class NodeCanvas:
         #Assign the correct rows
         inputpos = 0
         outputpos = 0
+
         for anr, a in enumerate(mapnode.attributes):
             if a.inhook:
                 sock = node.inputs[inputpos]
@@ -335,7 +342,7 @@ class NodeCanvas:
             if self._hgui is not None:
                 sel = [n for n in self._selection if self._selection[n]]
                 selected_ids = [id_ for id_, n in self._nodes.items() if n.name in sel]
-                self._hgui().gui_selects(selected_ids)
+                #self._hgui().gui_selects(selected_ids)
                 #TODO RENAMING fix
         self.pop_busy("rename")
 

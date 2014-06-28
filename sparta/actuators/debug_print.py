@@ -3,9 +3,7 @@ from bee.segments import *
 
 
 class debug_print(bee.worker):
-    """
-The set_property actuator modifies a named property
-    """
+    """The set_property actuator modifies a named property"""
 
     trig = antenna("push", "trigger")
     message_default = variable("str")

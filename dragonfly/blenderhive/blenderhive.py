@@ -500,7 +500,7 @@ class current_scene(bee.drone):
 from .blenderscene import blenderscene, entityloader, entityclassloader, cameraloader, animationloader
 
 
-class blenderhive(bee.initAhive):
+class blenderhive(bee.inithive):
     _hivecontext = hivemodule.appcontext(blenderapp)
     inputhandler = inputhandlerhive()
     connect(("inputhandler", "evout"), "evin")

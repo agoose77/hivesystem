@@ -51,9 +51,12 @@ class AntennaFoldState(object):
                 ele.add_button("Fold %s" % name, "before")
 
     def init_widget(self, workerid, widget, controller):
-        p = self._parent()
-        state = p.states[workerid]
-        if state is None: return
+        parent_pgui = self._parent()
+        state = parent_pgui.states[workerid]
+
+        if state is None:
+            return
+
         view = controller._view()
         model = controller._model()
         self._widgets[workerid] = {}
@@ -66,7 +69,8 @@ class AntennaFoldState(object):
             antenna = state[a]
             widgets = []
             ele = getattr(view, a, None)
-            if ele is None: continue
+            if ele is None:
+                continue
             if not hasattr(ele, "widget"):
                 raise Exception("Unfoldable: %s.%s has no associated widget in parameter tab" % (workerid, a))
             e = ele.widget
@@ -103,12 +107,18 @@ class AntennaFoldState(object):
                 self._parent().gui_sets_value(workerid, member, value)
 
     def remove_worker(self, workerid):
+        if not workerid in self._widgets:
+            return
+
         self._widgets.pop(workerid)
         self._submodels.pop(workerid)
         numid = self._idmap.pop(workerid)
         self._idmaprev.pop(numid)
 
     def rename_worker(self, workerid, newid):
+        if not workerid in self._widgets:
+            return
+
         w = self._widgets.pop(workerid)
         self._widgets[newid] = w
         s = self._submodels.pop(workerid)
