@@ -14,11 +14,12 @@ class HiveNode:
     def copy(self, node):
         """Informs the canvas that node is waiting to be copied"""
         blend_nodetree_manager = self.get_hgui_blend_nodetree_manager()
+
         if blend_nodetree_manager is None:
             logging.debug("Couldn't find Nodetree for node to copy")
             return
 
-        logging.debug("Node pending copy")
+        logging.debug("Node pending copy to clipboard")
         blend_nodetree_manager.canvas.h().mark_pending_copy(self)
 
     def set_attributes(self, attributes):

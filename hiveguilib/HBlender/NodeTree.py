@@ -163,6 +163,14 @@ class FakeLink:
         )
 
 
+def debugger(func):
+    name = func.__qualname__
+    def wrapper(self, *args, **kwargs):
+        print("Calling {}, current node names: {}".format(name, [x.name for x in self.nodes.values()]))
+        return func(self, *args, **kwargs)
+    return wrapper
+
+
 class HiveNodeTree:
     """Base class for HIVE node tree"""
 
@@ -174,8 +182,6 @@ class HiveNodeTree:
         gui_node_ids = [node.name for node in self.nodes]
         hblender_canvas_node_ids = canvas.h()._nodes
         removed_node_ids = list(set(hblender_canvas_node_ids).difference(gui_node_ids))
-
-        logging.debug("Removing nodes [" + ', '.join(removed_node_ids) + "]")
 
         if removed_node_ids:
             success = canvas.gui_removes_nodes(removed_node_ids)
@@ -242,12 +248,24 @@ class HiveNodeTree:
 
         hcanvas._links = {FakeLink.from_link(l) for l in self.links}
 
-    def _check_copying(self):
+    def _check_for_blender_copies(self):
         """Handle any Blender-clipboard pasted nodes (we need to register them into our internal model"""
         blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(self.name)
         canvas = blend_nodetree_manager.canvas
+        blender_canvas = canvas.h()
 
-        canvas.h().on_copy_nodes()
+        copied_nodes = {}
+
+        # Scrape node tree and find copied nodes
+        for node in list(self.nodes):
+            node_id = node.name
+            if node_id in blender_canvas._nodes:
+                continue
+
+            source_node_id = node.label
+            copied_nodes[source_node_id] = node
+
+        canvas.h().on_copy_nodes(copied_nodes)
 
     def _check_positions(self):
         """Handle any Blender nodes moved in the Blender UI"""
@@ -258,12 +276,11 @@ class HiveNodeTree:
 
         for node in self.nodes:
             name = node.name
-
             if positions.get(name) != node.location:
                 positions[name] = position = copy.copy(node.location)
                 hcanvas.gui_moves_node(name, position)
 
-    def _copy_pending_nodes(self):
+    def _update_clipboard(self):
         """Copy any pending nodes into the clipboard
 
         Workaround for single-copy operations overwriting clipboard for multiple copies
@@ -283,6 +300,9 @@ class HiveNodeTree:
 
         for node in self.nodes:
             id_ = node.name
+
+            if not id in blender_canvas._nodes:
+                continue
 
             if id_ not in selections:
                 selections[id_] = bool(node.select)
@@ -343,10 +363,10 @@ class HiveNodeTree:
         self._check_positions()
         self._check_selection()
         """
-        BlendManager.blendmanager.schedule(self._check_copying)
+        BlendManager.blendmanager.schedule(self._update_clipboard)
+        BlendManager.blendmanager.schedule(self._check_for_blender_copies)
         BlendManager.blendmanager.schedule(self._check_positions)
         BlendManager.blendmanager.schedule(self._check_selection)
-        BlendManager.blendmanager.schedule(self._copy_pending_nodes)
 
 from . import BlendManager
 

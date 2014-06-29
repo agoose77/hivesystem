@@ -48,13 +48,14 @@ class Clipboard(object):
         assert self._workermanager is not None
         wm = self._workermanager
         wd = []
-        print("Clipboard:")
+        print_data = ["Clipboard:"]
+
         for workerid in workerids:
             workerdesc = wm.get_worker_descriptor(workerid)
 
             if workerdesc is None:
                 continue
-            print(workerid)
+            print_data.append(workerid)
             wd.append(workerdesc)
 
         if wd:
@@ -83,6 +84,11 @@ class Clipboard(object):
                 if callable(pre_conversion):
                     pre_conversion(old_worker_id, workerid)
 
+            else:
+                # The new ID and the previous ID are the same
+                if callable(pre_conversion):
+                    pre_conversion(workerid, workerid)
+
             wm.instantiate(workerid, workertype, x, y, metaparamvalues, paramvalues, self._offset)
 
             if profile != "default":
@@ -108,6 +114,11 @@ class Clipboard(object):
 
                     if callable(pre_conversion):
                         pre_conversion(old_worker_id, workerid)
+
+                else:
+                    # The new ID and the previous ID are the same
+                    if callable(pre_conversion):
+                        pre_conversion(workerid, workerid)
 
                 wm.instantiate(workerid, workertype, x, y, metaparamvalues, paramvalues, self._offset)
                 if profile != "default":

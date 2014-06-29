@@ -110,7 +110,7 @@ class NodeCanvas:
         finally:
             self.pop_busy("_add")
 
-    def on_copy_nodes(self, copied_nodes=None):
+    def on_copy_nodes(self, copied_nodes):
         """Blender callback when new nodes are detected
 
         :param copied_nodes: optionally use these nodes instead of reading new nodes from graph
@@ -120,25 +120,17 @@ class NodeCanvas:
         nodetree = self.bntm.get_nodetree()
         self.copy_pending_nodes()
 
-        if copied_nodes is None:
-            copied_nodes = {}
-
-            # Scrape Blender nodes and remove the default copied nodes
-            for node in list(nodetree.nodes):
-                node_id = node.name
-                if node_id in self._nodes:
-                    continue
-
-                source_node_id = node.label
-                copied_nodes[source_node_id] = node
-
         if not copied_nodes:
             self.pop_busy("on_copy")
             return
 
+        logging.debug("Found Blender copied nodes {}".format(copied_nodes.values()))
+
         def converter(old_worker_id, new_worker_id):
+            print("DURING CONV", old_worker_id, new_worker_id)
             self._during_conversion[new_worker_id] = copied_nodes[old_worker_id]
 
+        logging.debug("Pasting copied node data and trying to merge")
         self._hgui().paste_clipboard(converter)
 
         self._during_conversion.clear()
@@ -184,8 +176,6 @@ class NodeCanvas:
                 accounted_outputs.add(attribute_name_b)
 
             at0.name = [n for n in mapnode.attributes if n.name == attribute_name_b][0].label
-
-        print(matched_outputs, mapcon)
 
         # Remove unmatched sockets
         # This should be safe: attributes with connections won't be allowed to be deleted
@@ -272,6 +262,9 @@ class NodeCanvas:
                 if node.name == nodename:
                     nodetree.nodes.active = node
                     break
+
+    def is_pending_copy(self, blender_node):
+        return blender_node.name in self._pending_copy
 
     def mark_pending_copy(self, blender_node):
         node_id = blender_node.label
