@@ -60,6 +60,7 @@ def run(readmetxt=None):
     hivemapmanager = HivemapManager(
         mainWin, workermanager, workerinstancemanager, HGui.FileDialog
     )
+    clipboard.set_mapmanager(hivemapmanager)
 
     if len(argv) > 1:
         hivemapfile = argv[1]

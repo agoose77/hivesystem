@@ -110,42 +110,6 @@ class NodeCanvas:
         finally:
             self.pop_busy("_add")
 
-
-    def copy_to_spyder(self):
-        node_tree_manager = self.bntm()
-
-        if isinstance(node_tree_manager, HiveMapNodeTreeManager):
-            nam1 = "%s.hivemap" % node_tree_manager.name.replace(".", "_")
-            nam2 = "hivemaps/" + nam1
-            nam = nam1 if nam1 in bpy.data.texts else nam2
-            node_tree_manager.hivemapmanager.save(nam, self.filesaver)
-
-        elif isinstance(node_tree_manager, WorkerMapNodeTreeManager):
-            name = node_tree_manager.name
-            if name.endswith("-worker"): name = name[:-len("-worker")]
-            name = name.replace(".", "_")
-            nam1 = "%s.workermap" % name
-            nam2 = "workermaps/" + nam1
-            nam = nam1 if nam1 in bpy.data.texts else nam2
-            workermap = node_tree_manager.workermapmanager.save(nam, self.filesaver)
-            classname = name.split("/")[-1]
-            code = workergen(classname, workermap)
-            blockname = "workers/%s.py" % name
-            self.filesaver(blockname, code)
-
-        elif isinstance(node_tree_manager, SpyderMapNodeTreeManager):
-            name = node_tree_manager.name
-            if name.endswith("-spyder"): name = name[:-len("-spyder")]
-            name = name.replace(".", "_")
-            nam1 = "%s.spydermap" % name
-            nam2 = "spydermaps/" + nam1
-            nam = nam1 if nam1 in bpy.data.texts else nam2
-            node_tree_manager.spydermapmanager.save(nam, self.filesaver)
-
-
-
-
-
     def on_copy_nodes(self, copied_nodes):
         """Blender callback when new nodes are detected
 
@@ -155,28 +119,36 @@ class NodeCanvas:
             return
 
         self.push_busy("on_copy")
-        nodetree = self.bntm.get_nodetree()
+
+        # Ensure no pending copy operations
         self.copy_pending_nodes()
 
         logging.debug("Found Blender copied nodes {}".format(copied_nodes.values()))
-
         def converter(old_worker_id, new_worker_id):
-            print("DURING CONV", old_worker_id, new_worker_id)
+            """Associate HIVE nodes with pasted Blender nodes
+            :param old_worker_id: label of pasted Blender node and name of source (HIVE) worker
+            :param new_worker_id: new id for HIVE worker (if id already taken)
+            """
             self._during_conversion[new_worker_id] = copied_nodes[old_worker_id]
+
+        # Load in hivemap
+        hivemap = self._hgui()._clipboard().get_clipboard_value()
+        logging.debug("Loading: {}".format(hivemap))
 
         logging.debug("Pasting copied node data and trying to merge")
         self._hgui().paste_clipboard(converter)
 
-        # Cleanup if the keyboard wasn't populated
+        # Cleanup if the clipboard wasn't populated
         nodetree = self.bntm.get_nodetree()
         handled_nodes = self._during_conversion.values()
         for blender_node in copied_nodes.values():
             if not blender_node in handled_nodes:
+                logging.debug("Node wasn't found in clipboard {} but was duplicated by Blender"
+                              .format(blender_node.name))
                 nodetree.nodes.remove(blender_node)
 
         self._during_conversion.clear()
         self.pop_busy("on_copy")
-        print("DONE copying", self._nodes)
 
     def h_add_node(self, id_, hnode):
         """Create GUI node (from HGUI canvas
@@ -185,11 +157,10 @@ class NodeCanvas:
         :param hnode:
         """
         mapnode = h_map_node(hnode)
-        print("RUN ADD")
+
         pos = scalepos(mapnode.position)
         self._add_node(id_, mapnode.name, mapnode.attributes, pos, mapnode.tooltip)
         self._nodes[id_] = mapnode
-        print("DONE ADD", id_, "\n")
 
     def h_morph_node(self, id_, hnode, mapcon):
         mapnode = h_map_node(hnode)

@@ -61,7 +61,9 @@ class WorkermapManager(object):
             statustip="Generate Python code",
         )
 
-    def _load(self, workermap):
+    def _load(self, workermap, soft_load=False, pre_load=None):
+        segment_id_mapping = {}
+
         for seg in workermap.segments:
             x, y = seg.position.x, seg.position.y
             metaparamvalues = None
@@ -74,27 +76,48 @@ class WorkermapManager(object):
                 paramvalues = {}
                 for param in seg.parameters:
                     paramvalues[param.pname] = param.pvalue
+
+
+            worker_ids = self._workermanager.workerids()
+
+            # If an ID clash occurred
+            segment_id = seg.segid
+
+            if segment_id in worker_ids and soft_load:
+                old_segment_id = segment_id
+                segment_id = self._workermanager.get_new_workerid(segment_id)
+                segment_id_mapping[old_segment_id] = segment_id
+
+                if callable(pre_load):
+                    pre_load(old_segment_id, segment_id)
+
+            else:
+                # The new ID and the previous ID are the same
+                if callable(pre_load):
+                    pre_load(segment_id, segment_id)
+
             try:
                 self._workermanager.instantiate(
-                    seg.segid, seg.segtype, x, y, metaparamvalues, paramvalues
+                    segment_id, seg.segtype, x, y, metaparamvalues, paramvalues
                 )
                 if seg.profile != "default":
-                    self._wim.morph_worker(seg.segid, seg.profile)
+                    self._wim.morph_worker(segment_id, seg.profile)
             except KeyError:
-                print("Unknown segment:", seg.segtype, seg.segid.split(".")[-1])
+                print("Unknown segment:", seg.segtype, segment_id.split(".")[-1])
                 continue
 
         count = 0
-        for con in workermap.connections:
+        for connection in workermap.connections:
             count += 1
-            con_id = "con-%d" % count
-            interpoints = [(ip.x, ip.y) for ip in con.interpoints]
-            self._wim.add_connection(
-                con_id,
-                (con.start.segid, con.start.io),
-                (con.end.segid, con.end.io),
-                interpoints,
-            )
+            connection_id = self._workermanager.get_new_connection_id("con")
+            interpoints = [(ip.x, ip.y) for ip in connection.interpoints]
+
+            # Account for renamed segments
+            start_id = segment_id_mapping.get(connection.start.segid, connection.start.segid)
+            end_id = segment_id_mapping.get(connection.end.segid, connection.end.segid)
+
+            self._wim.add_connection(connection_id, (start_id, connection.start.io),
+                                     (end_id, connection.end.io), interpoints)
 
     def load(self, workermapfile):
         self.clear()
@@ -108,10 +131,10 @@ class WorkermapManager(object):
         workermap = Spyder.Workermap.fromfile(workermapfile)
         self._load(workermap)
 
-    def _build_workermap(self):
+    def _save(self, worker_ids):
         workermanager = self._workermanager
         segments, connections = [], []
-        for segid in sorted(workermanager.workerids()):
+        for segid in sorted(worker_ids):
             node, mapping = self._wim.get_node(segid)
             if node.empty: continue
             segtype, params, metaparams = workermanager.get_parameters(segid)
@@ -128,11 +151,15 @@ class WorkermapManager(object):
                 profile=profile,
             )
             segments.append(seg)
+
         for c in self._wim.get_connections():
             start_node, start_mapping = self._wim.get_node(c.start_node)
-            if start_mapping is None: raise KeyError(c.start_node)
+            if start_mapping is None:
+                raise KeyError(c.start_node)
             end_node, end_mapping = self._wim.get_node(c.end_node)
-            if end_mapping is None: raise KeyError(c.end_node)
+            if end_mapping is None:
+                raise KeyError(c.end_node)
+
             start_attribute = start_mapping._outmapr[c.start_attribute]
             end_attribute = end_mapping._inmapr[c.end_attribute]
             con = Spyder.WorkerSegmentConnection(
@@ -145,7 +172,7 @@ class WorkermapManager(object):
         return workermap
 
     def save(self, workermapfile, filesaver=None):
-        workermap = self._build_workermap()
+        workermap = self._save(self._workermanager.workerids())
         if filesaver:
             filesaver(workermapfile, str(workermap))
         else:
@@ -171,7 +198,7 @@ class WorkermapManager(object):
         self._workermanager.clear_workers()
 
     def generate(self):
-        workermap = self._build_workermap()
+        workermap = self._save()
         name = "myworker"
         if self._lastsave is not None:
             f = os.path.split(self._lastsave)[1]

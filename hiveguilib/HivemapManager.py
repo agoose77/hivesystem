@@ -59,7 +59,9 @@ class HivemapManager(object):
             statustip="Quits the editor",
         )
 
-    def _load(self, hivemap):
+    def _load(self, hivemap, soft_load=False, pre_load=None):
+        worker_id_mapping = {}
+
         for worker in hivemap.workers:
             x, y = worker.position.x, worker.position.y
             metaparamvalues = None
@@ -74,17 +76,34 @@ class HivemapManager(object):
                 for param in worker.parameters:
                     paramvalues[param.pname] = param.pvalue
 
+            worker_manager = self._workermanager
+            worker_ids = worker_manager.workerids()
+
+            # If an ID clash occurred
+            worker_id = worker.workerid
+
+            if worker_id in worker_ids and soft_load:
+                old_worker_id = worker_id
+                worker_id = worker_manager.get_new_workerid(worker_id)
+                worker_id_mapping[old_worker_id] = worker_id
+
+                if callable(pre_load):
+                    pre_load(old_worker_id, worker_id)
+
+            else:
+                # The new ID and the previous ID are the same
+                if callable(pre_load):
+                    pre_load(worker_id, worker_id)
+
             try:
-                self._workermanager.instantiate(
-                    worker.workerid, worker.workertype, x, y, metaparamvalues, paramvalues
-                )
+                self._workermanager.instantiate(worker_id, worker.workertype, x, y, metaparamvalues, paramvalues)
 
             except KeyError:
-                print("Unknown worker:", worker.workertype, worker.workerid)
+                print("Unknown worker:", worker.workertype, worker_id)
                 continue
 
             if worker.blockvalues:
-                self._wim.worker_update_blockvalues(worker.workerid, worker.blockvalues)
+                self._wim.worker_update_blockvalues(worker_id, worker.blockvalues)
 
         if hivemap.drones is not None:
             for drone in hivemap.drones:
@@ -103,15 +122,22 @@ class HivemapManager(object):
             connection_id = self._workermanager.get_new_connection_id("con")
             interpoints = [(ip.x, ip.y) for ip in connection.interpoints]
 
-            self._wim.add_connection(
-                connection_id,
-                (connection.start.workerid, connection.start.io),
-                (connection.end.workerid, connection.end.io),
-                interpoints,
-            )
+            start_id = connection.start.workerid
+            end_id = connection.end.workerid
+
+            # Support renamed workers for connections
+            start_id = worker_id_mapping.get(start_id, start_id)
+            end_id = worker_id_mapping.get(end_id, end_id)
+
+            print(start_id, "Connection Start")
+
+            self._wim.add_connection(connection_id, (start_id, connection.start.io),
+                                     (end_id, connection.end.io), interpoints)
 
         hmio = hivemap.io
-        if hmio is None: hmio = []
+        if hmio is None:
+            hmio = []
+
         for b in hmio:
             x, y = b.position.x, b.position.y
             target = self._workermanager.get_workertemplate(b.worker)
@@ -224,7 +250,22 @@ class HivemapManager(object):
         self._load(hivemap)
         worker_manager.sync_antennafoldstate()
 
-    def save(self, hivemapfile, filesaver=None, worker_ids=None):
+    def save(self, hivemapfile, filesaver=None):
+        # Default to all worker ids
+        worker_ids = self._workermanager.workerids()
+        hivemap = self._save(worker_ids)
+
+        # Save to file
+        hivemap_string = str(hivemap)
+
+        if filesaver:
+            filesaver(hivemapfile, hivemap_string)
+        else:
+            open(hivemapfile, "w").write(hivemap_string)
+
+        self._lastsave = hivemapfile
+
+    def _save(self, worker_ids):
         workermanager = self._workermanager
         workers = Spyder.WorkerArray()
         connections = Spyder.WorkerConnectionArray()
@@ -236,10 +277,6 @@ class HivemapManager(object):
         hparts = Spyder.HivemapPartBeeArray()
         hwasps = Spyder.HivemapWaspArray()
         bees = {}
-
-        # Default to all worker ids
-        if worker_ids is None:
-            worker_ids = workermanager.workerids()
 
         # storing workers
         for workerid in sorted(worker_ids):
@@ -286,15 +323,9 @@ class HivemapManager(object):
             if metaparams is not None:
                 metaparams = metaparams.items()
 
-            w = Spyder.Worker(
-                workerid,
-                workertype,
-                node.position,
-                parameters=params,
-                metaparameters=metaparams,
-                blockvalues=blockvalues,
-            )
-            workers.append(w)
+            worker = Spyder.Worker(workerid, workertype, node.position, parameters=params, metaparameters=metaparams,
+                              blockvalues=blockvalues)
+            workers.append(worker)
 
         #filtering connections for bees
         nconnections = []
@@ -431,6 +462,11 @@ class HivemapManager(object):
         for connection in nconnections:
             start_node, start_mapping = self._wim.get_node(connection.start_node)
             end_node, end_mapping = self._wim.get_node(connection.end_node)
+
+            # Only save wanted connections
+            if not (connection.start_node in worker_ids and connection.end_node in worker_ids):
+                continue
+
             try:
                 start_attribute = start_mapping._outmapr[connection.start_attribute]
             except KeyError:
@@ -472,14 +508,7 @@ class HivemapManager(object):
         hivemap.wasps = hwasps
         #hivemap.tofile(hivemapfile)
 
-        hivemap_string = str(hivemap)
-
-        if filesaver:
-            filesaver(hivemapfile, hivemap_string)
-        else:
-            open(hivemapfile, "w").write(hivemap_string)
-
-        self._lastsave = hivemapfile
+        return hivemap
 
     def menu_save_as(self):
         hivemapfile = self._file_dialog("save")

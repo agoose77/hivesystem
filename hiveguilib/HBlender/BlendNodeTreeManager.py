@@ -85,6 +85,7 @@ class HiveMapNodeTreeManager(BlendNodeTreeManager):
         self.hivemapmanager = HivemapManager(
             self.mainWin, self.workermanager, self.workerinstancemanager, HGui.FileDialog
         )
+        self.clipboard.set_mapmanager(self.hivemapmanager)
 
 
 class WorkerMapNodeTreeManager(BlendNodeTreeManager):
@@ -133,6 +134,7 @@ class WorkerMapNodeTreeManager(BlendNodeTreeManager):
         self.workermapmanager = WorkermapManager(
             self.mainWin, self.workermanager, self.workerinstancemanager, HGui.FileDialog
         )
+        self.clipboard.set_mapmanager(self.workermapmanager)
 
 
 class SpyderMapNodeTreeManager(BlendNodeTreeManager):
@@ -183,6 +185,7 @@ class SpyderMapNodeTreeManager(BlendNodeTreeManager):
             self.workermanager, self.workerinstancemanager, self.psh,
             HGui.FileDialog
         )
+        self.clipboard.set_mapmanager(self.spydermapmanager)
         self.spydermapmanager._spyderhive_global_candidates = list(self.parent._workerfinder_global_spyderhives)
         self.spydermapmanager.find_spyderhive_candidates()
         self.workermanager.build_workers(local=False)

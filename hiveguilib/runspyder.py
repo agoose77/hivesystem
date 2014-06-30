@@ -60,6 +60,7 @@ def run(readmetxt=None):
         workermanager, workerinstancemanager, psh,
         HGui.FileDialog
     )
+    clipboard.set_mapmanager(spydermapmanager)
     spydermapmanager.store_spyderhive_global_candidates()
 
     spyderbees = [

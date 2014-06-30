@@ -57,7 +57,7 @@ class SpydermapManager(object):
             statustip="Quits the editor",
         )
 
-    def _load(self, spydermap):
+    def _load(self, spydermap, soft_load=False, pre_load=None):
         self.set_spyderhive(spydermap.spyderhive)
         coordinates = spydermap.coordinates
         if coordinates is None:
@@ -138,7 +138,23 @@ class SpydermapManager(object):
         spydermap = Spyder.Spydermap.fromfile(spydermapfile)
         self._load(spydermap)
 
-    def save(self, spydermapfile, filesaver=None):
+    def save(self, spydermapfilename, filesaver=None):
+        # Default to all worker ids
+        worker_ids = self._workermanager.workerids()
+        spydermap = self._save(worker_ids)
+
+        # Save to file
+        spydermap_string = str(spydermap)
+
+        if filesaver:
+            filesaver(spydermapfilename, spydermap_string)
+
+        else:
+            spydermap.tofile(spydermapfilename)
+
+        self._lastsave = spydermapfilename
+
+    def _save(self, worker_ids):
         workermanager = self._workermanager
 
         spydernames = Spyder.StringArray()
@@ -148,9 +164,11 @@ class SpydermapManager(object):
         coordinates = Spyder.Coordinate2DArray()
         paramcoordinates = Spyder.Coordinate2DArray()
 
-        for workerid in sorted(workermanager.workerids()):
+        for workerid in sorted(worker_ids):
             node, mapping = self._wim.get_node(workerid)
-            if node.empty: continue
+            if node.empty:
+                continue
+
             workertype, params, metaparams = workermanager.get_parameters(workerid)
 
             if params is None: params = {}
@@ -193,7 +211,9 @@ class SpydermapManager(object):
 
         spydermap = Spyder.Spydermap.empty()
         spyderhive = self._spyderhive
-        if spyderhive is None: spyderhive = ""
+        if spyderhive is None:
+            spyderhive = ""
+
         spydermap.spyderhive = spyderhive
         spydermap.names = spydernames
         spydermap.objectdata = spyderobjectdata
@@ -201,11 +221,7 @@ class SpydermapManager(object):
         spydermap.coordinates = coordinates
         spydermap.paramcoordinates = paramcoordinates
         spydermap.wasps = wasps
-        if filesaver:
-            filesaver(spydermapfile, str(spydermap))
-        else:
-            spydermap.tofile(spydermapfile)
-        self._lastsave = spydermapfile
+        return spydermap
 
     def menu_save_as(self):
         spydermapfile = self._file_dialog("save")

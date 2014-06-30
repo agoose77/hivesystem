@@ -71,6 +71,7 @@ def run(readmetxt=None):
     workermapmanager = WorkermapManager(
         mainWin, workermanager, workerinstancemanager, HGui.FileDialog
     )
+    clipboard.set_mapmanager(workermapmanager)
 
     if len(argv) > 1:
         workermapfile = argv[1]
