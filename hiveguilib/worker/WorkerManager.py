@@ -155,11 +155,7 @@ class WorkerManager(object):
             raise KeyError(workername)
         self._pworkercreator.remove(workername)
 
-    def instantiate(self,
-                    workerid, workertype, x, y,
-                    metaparamvalues=None, paramvalues=None,
-                    clash_offset=None
-    ):
+    def instantiate(self, workerid, workertype, x, y, metaparamvalues=None, paramvalues=None, clash_offset=None):
         assert workerid not in self._worker_parameters, workerid
         if workertype.startswith("<drone>:"):
             worker_instance = self._workerbuilder.get_droneinstance()
@@ -221,31 +217,34 @@ class WorkerManager(object):
                 node = self._wim.get_node(wid)[0]
                 nx, ny = node.position
                 nodexy.append((nx, ny))
+
             while 1:
                 for nx, ny in nodexy:
-                    if \
-                                                            nx < x - 1 or \
-                                                            nx > x + 1 or \
-                                                    ny < y - 1 or \
-                                            ny > y + 1:
+                    if (nx < x - 1) or (nx > x + 1) or (ny < y - 1) or (ny > y + 1):
                         continue
                     x += cx
                     y += cy
                     break
+
                 else:
                     break
+
         self._wim.add_workerinstance(workerid, worker_instance, x, y)
 
-        pvalues = {}
+        paramter_values = {}
         if paramvalues is not None:
-            arglist = []
-            for paramname in worker_instance.paramnames:
-                v = paramvalues.get(paramname, None)
-                arglist.append(v)
-            args = parse_paramtypelist(worker_instance.paramtypelist, arglist)
-            for paramname, a in zip(worker_instance.paramnames, args):
-                if a is not None: pvalues[paramname] = a
-        self._worker_parameters[workerid] = [workertype, worker_instance.paramnames, worker_instance.paramtypelist, pvalues, worker_instance.guiparams]
+            argument_list = []
+            for parameter_name in worker_instance.paramnames:
+                parameter_value = paramvalues.get(parameter_name, None)
+                argument_list.append(parameter_value)
+
+            arguments = parse_paramtypelist(worker_instance.paramtypelist, argument_list)
+
+            for parameter_name, argument in zip(worker_instance.paramnames, arguments):
+                if argument is not None:
+                    paramter_values[parameter_name] = argument
+
+        self._worker_parameters[workerid] = [workertype, worker_instance.paramnames, worker_instance.paramtypelist, paramter_values, worker_instance.guiparams]
         if self._antennafoldstate is not None:
             gp = {}
             pullantennas = []
@@ -253,17 +252,13 @@ class WorkerManager(object):
                 gp = worker_instance.guiparams.get("guiparams", {})
                 antennas = worker_instance.guiparams.get("antennas", {})
                 pullantennas = get_param_pullantennas(antennas)
-            self._antennafoldstate.create_worker(
-                workerid,
-                pullantennas,
-                gp,
-            )
+            self._antennafoldstate.create_worker(workerid, pullantennas, gp)
 
-        self._wim.set_parameters(workerid, pvalues)
+        self._wim.set_parameters(workerid, paramter_values)
 
-        # can remove if spyder copying used
+        # First time we call this, so onload is True
         if self._antennafoldstate is not None:
-            self._antennafoldstate.sync(workerid, onload=False)
+            self._antennafoldstate.sync(workerid, onload=True)
 
     def _select(self, workerids):
         self._pmanager.deselect()
@@ -465,6 +460,7 @@ class WorkerManager(object):
             autocreate = self._meta_autocreate(workertype, workerid, x, y)
             if autocreate:
                 return workerid
+
             empty_workerid = self.get_new_empty_workerid()
             self.meta_empty_instantiate(empty_workerid, workertype, x, y)
             return empty_workerid
@@ -679,6 +675,8 @@ class WorkerManager(object):
         self._workerfinder_local = None
 
     def sync_antennafoldstate(self):
-        if self._antennafoldstate is None: return
+        if self._antennafoldstate is None:
+            return
+
         for workerid in self._wim.get_workerinstances():
             self._antennafoldstate.sync(workerid, onload=True)

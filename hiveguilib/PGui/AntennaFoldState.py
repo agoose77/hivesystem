@@ -148,18 +148,15 @@ class AntennaFoldState(object):
         assert workerid not in self._init_widget, workerid
         self._sync[workerid] = True
 
-        for a in state:
-            antenna = state[a]
+        for antenna_name in state:
+            antenna = state[antenna_name]
             if not onload and not antenna.fold:
                 continue
 
-            folded, value = self._nodecanvas().fold_antenna_connection(
-                workerid, a, antenna.typ, onload
-            )
+            folded, value = self._nodecanvas().fold_antenna_connection(workerid, antenna_name, antenna.typ, onload)
             if not folded:
                 antenna.fold = False
                 continue
+
             antenna.fold = True
-            self._pAntennaFoldState.p_set_value(workerid, a, value)
-      
-      
+            self._pAntennaFoldState.p_set_value(workerid, antenna_name, value)

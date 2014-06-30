@@ -118,34 +118,26 @@ class NodeCanvas:
         if not copied_nodes:
             return
 
+        # Stop external operations
         self.push_busy("on_copy")
 
         # Ensure no pending copy operations
         self.copy_pending_nodes()
 
+        # Cleanup Blender nodes
         logging.debug("Found Blender copied nodes {}".format(copied_nodes.values()))
-        def converter(old_worker_id, new_worker_id):
-            """Associate HIVE nodes with pasted Blender nodes
-            :param old_worker_id: label of pasted Blender node and name of source (HIVE) worker
-            :param new_worker_id: new id for HIVE worker (if id already taken)
-            """
-            self._during_conversion[new_worker_id] = copied_nodes[old_worker_id]
+        nodetree = self.bntm.get_nodetree()
+        for blender_node in copied_nodes.values():
+            logging.debug("Duplicated Blender node was deleted {}, will be added by the clipboard"
+                          .format(blender_node.name))
+            nodetree.nodes.remove(blender_node)
 
         # Load in hivemap
         hivemap = self._hgui()._clipboard().get_clipboard_value()
-        logging.debug("Loading: {}".format(hivemap))
+        logging.debug("Loading clipboard: {}".format(hivemap))
 
-        logging.debug("Pasting copied node data and trying to merge")
-        self._hgui().paste_clipboard(converter)
-
-        # Cleanup if the clipboard wasn't populated
-        nodetree = self.bntm.get_nodetree()
-        handled_nodes = self._during_conversion.values()
-        for blender_node in copied_nodes.values():
-            if not blender_node in handled_nodes:
-                logging.debug("Node wasn't found in clipboard {} but was duplicated by Blender"
-                              .format(blender_node.name))
-                nodetree.nodes.remove(blender_node)
+        self._hgui().paste_clipboard()
+        logging.debug("Pasted clipboard")
 
         self._during_conversion.clear()
         self.pop_busy("on_copy")
