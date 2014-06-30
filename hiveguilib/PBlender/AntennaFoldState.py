@@ -61,47 +61,61 @@ class AntennaFoldState(object):
         model = controller._model()
         self._widgets[workerid] = {}
         self._submodels[workerid] = {}
-        numid = self._idcount
+
+        id_count = self._idcount
         self._idcount += 1
-        self._idmap[workerid] = numid  # remains constant throughout lifetime
-        self._idmaprev[numid] = workerid
-        for a in state:
-            antenna = state[a]
+
+        self._idmap[workerid] = id_count  # remains constant throughout lifetime
+        self._idmaprev[id_count] = workerid
+
+        for antenna_name in state:
+            antenna = state[antenna_name]
             widgets = []
-            ele = getattr(view, a, None)
-            if ele is None:
+            element = getattr(view, antenna_name, None)
+            if element is None:
                 continue
-            if not hasattr(ele, "widget"):
-                raise Exception("Unfoldable: %s.%s has no associated widget in parameter tab" % (workerid, a))
-            e = ele.widget
-            on, off = e.show, e.hide
+
+            if not hasattr(element, "widget"):
+                raise Exception("Unfoldable: %s.%s has no associated widget in parameter tab" % (workerid, antenna_name))
+
+            widget = element.widget
+            on, off = widget.show, widget.hide
+
             widgets.append((off, on))  # expand / fold
+
             if antenna.foldable:
-                b = ele.buttons[1]  # Fold button
-                b.listen(partial(self.gui_folds, numid, a))
-                on, off = b.show, b.hide
+                fold_button = element.buttons[1]  # Fold button
+                fold_button.listen(partial(self.gui_folds, id_count, antenna_name))
+
+                on, off = fold_button.show, fold_button.hide
                 widgets.append((on, off))  # expand / fold
-            b = ele.buttons[0]  # Expand button
-            b.listen(partial(self.gui_expands, numid, a))
-            on, off = b.show, b.hide
+
+            fold_button = element.buttons[0]  # Expand button
+            fold_button.listen(partial(self.gui_expands, id_count, antenna_name))
+
+            on, off = fold_button.show, fold_button.hide
             widgets.append((off, on))  # expand / fold
-            self._widgets[workerid][a] = widgets
 
-            submodel = getattr(model, a, None)
-            self._submodels[workerid][a] = submodel
-            submodel._listen(partial(self.gui_sets_value, numid, a))
+            self._widgets[workerid][antenna_name] = widgets
 
-        currv = [v for v in self._values_to_set if v[0] == workerid]
+            sub_model = getattr(model, antenna_name, None)
+            self._submodels[workerid][antenna_name] = sub_model
+            sub_model._listen(partial(self.gui_sets_value, id_count, antenna_name))
+
+        current_values = [v for v in self._values_to_set if v[0] == workerid]
         self._values_to_set = [v for v in self._values_to_set if v[0] != workerid]
-        done = set()
-        for wid, member, value in currv:
-            done.add(member)
+        handled = set()
+
+        for worker_id, member, value in current_values:
+            handled.add(member)
             self._submodels[workerid][member]._set(value)
 
-        currv = [v for v in self._variables_to_set if v[0] == workerid]
+        current_values = [v for v in self._variables_to_set if v[0] == workerid]
         self._variables_to_set = [v for v in self._variables_to_set if v[0] != workerid]
-        for wid, member in currv:
-            if member in done: continue
+        for worker_id, member in current_values:
+            if member in handled:
+                continue
+
             value = self._submodels[workerid][member]._get()
             if value is not None:
                 self._parent().gui_sets_value(workerid, member, value)
@@ -129,6 +143,7 @@ class AntennaFoldState(object):
     def p_set_value(self, workerid, member, value):
         assert self._parent().states[workerid][member].fold == True, (workerid, member)
         init = self._parent()._init_widget.get(workerid, False)
+
         if value is None:
             if init:
                 value = self._submodels[workerid][member]._get()

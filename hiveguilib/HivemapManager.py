@@ -6,12 +6,13 @@ import spyder, Spyder
 
 
 class HivemapManager(object):
+    """Interface to .hivemap objects"""
+
     def __init__(self, mainwin, workermanager, workerinstancemanager, file_dialog):
         self._mainwin = mainwin
         self._wim = workerinstancemanager
         self._workermanager = workermanager
         self._file_dialog = file_dialog
-
         self._lastsave = None
 
         win = self._mainwin.h()
@@ -59,47 +60,56 @@ class HivemapManager(object):
         )
 
     def _load(self, hivemap):
-        for w in hivemap.workers:
-            x, y = w.position.x, w.position.y
+        for worker in hivemap.workers:
+            x, y = worker.position.x, worker.position.y
             metaparamvalues = None
-            if w.metaparameters is not None:
+            if worker.metaparameters is not None:
                 metaparamvalues = {}
-                for param in w.metaparameters:
+                for param in worker.metaparameters:
                     metaparamvalues[param.pname] = param.pvalue
+
             paramvalues = None
-            if w.parameters is not None:
+            if worker.parameters is not None:
                 paramvalues = {}
-                for param in w.parameters:
+                for param in worker.parameters:
                     paramvalues[param.pname] = param.pvalue
+
             try:
                 self._workermanager.instantiate(
-                    w.workerid, w.workertype, x, y, metaparamvalues, paramvalues
+                    worker.workerid, worker.workertype, x, y, metaparamvalues, paramvalues
                 )
+
             except KeyError:
-                print("Unknown worker:", w.workertype, w.workerid)
+                print("Unknown worker:", worker.workertype, worker.workerid)
                 continue
-            if w.blockvalues:
-                self._wim.worker_update_blockvalues(w.workerid, w.blockvalues)
+
+            if worker.blockvalues:
+                self._wim.worker_update_blockvalues(worker.workerid, worker.blockvalues)
+
         if hivemap.drones is not None:
-            for d in hivemap.drones:
-                x, y = d.position.x, d.position.y
-                parameters = d.parameters
+            for drone in hivemap.drones:
+                x, y = drone.position.x, drone.position.y
+                parameters = drone.parameters
                 try:
                     self._workermanager.create_drone(
-                        d.droneid, d.dronetype, x, y, parameters
+                        drone.droneid, drone.dronetype, x, y, parameters
                     )
+
                 except KeyError:
-                    print("Unknown drone:", d.dronetype, d.droneid)
+                    print("Unknown drone:", drone.dronetype, drone.droneid)
                     continue
-        for con in hivemap.connections:
-            con_id = self._workermanager.get_new_connection_id("con")
-            interpoints = [(ip.x, ip.y) for ip in con.interpoints]
+
+        for connection in hivemap.connections:
+            connection_id = self._workermanager.get_new_connection_id("con")
+            interpoints = [(ip.x, ip.y) for ip in connection.interpoints]
+
             self._wim.add_connection(
-                con_id,
-                (con.start.workerid, con.start.io),
-                (con.end.workerid, con.end.io),
+                connection_id,
+                (connection.start.workerid, connection.start.io),
+                (connection.end.workerid, connection.end.io),
                 interpoints,
             )
+
         hmio = hivemap.io
         if hmio is None: hmio = []
         for b in hmio:
@@ -127,9 +137,9 @@ class HivemapManager(object):
             self._workermanager.instantiate(
                 b.io_id, workertype, x, y
             )
-            con_id = self._workermanager.get_new_connection_id("con")
+            connection_id = self._workermanager.get_new_connection_id("con")
             self._wim.add_connection(
-                con_id,
+                connection_id,
                 source,
                 target,
             )
@@ -205,14 +215,14 @@ class HivemapManager(object):
     def load(self, hivemapfile):
         self.clear()
 
-        workermanager = self._workermanager
-        localdir = os.path.split(hivemapfile)[0]
-        workermanager.find_local_workers(localdir)
-        workermanager.build_workers(local=True)
+        worker_manager = self._workermanager
+        local_directory = os.path.split(hivemapfile)[0]
+        worker_manager.find_local_workers(local_directory)
+        worker_manager.build_workers(local=True)
 
         hivemap = Spyder.Hivemap.fromfile(hivemapfile)
         self._load(hivemap)
-        workermanager.sync_antennafoldstate()
+        worker_manager.sync_antennafoldstate()
 
     def save(self, hivemapfile, filesaver=None):
         workermanager = self._workermanager
@@ -230,11 +240,14 @@ class HivemapManager(object):
         # storing workers
         for workerid in sorted(workermanager.workerids()):
             node, mapping = self._wim.get_node(workerid)
-            if node.empty: continue
+            if node.empty:
+                continue
+
             workertype, params, metaparams = workermanager.get_parameters(workerid)
             if workertype.startswith("bees."):
                 bees[workerid] = node, workertype, [], []
                 continue
+
             elif workertype.startswith("<drone>:"):
                 droneid = workerid
                 dronetype = workertype[len("<drone>:"):]
@@ -419,11 +432,21 @@ class HivemapManager(object):
                 c.interpoints
             )
             connections.append(con)
-        if not len(io): io = None
-        if not len(drones): drones = None
-        if not len(hparameters): hparameters = None
-        if not len(hpyattributes): hpyattributes = None
-        if not len(hwasps): hwasps = None
+        if not io:
+            io = None
+
+        if not drones:
+            drones = None
+
+        if not hparameters:
+            hparameters = None
+
+        if not hpyattributes:
+            hpyattributes = None
+
+        if not hwasps:
+            hwasps = None
+
         hivemap = Spyder.Hivemap.empty()
         hivemap.workers = workers
         hivemap.connections = connections
@@ -435,11 +458,14 @@ class HivemapManager(object):
         hivemap.partbees = hparts
         hivemap.wasps = hwasps
         #hivemap.tofile(hivemapfile)
-        hm = str(hivemap)
+
+        hivemap_string = str(hivemap)
+
         if filesaver:
-            filesaver(hivemapfile, hm)
+            filesaver(hivemapfile, hivemap_string)
         else:
-            open(hivemapfile, "w").write(hm)
+            open(hivemapfile, "w").write(hivemap_string)
+
         self._lastsave = hivemapfile
 
     def menu_save_as(self):
@@ -449,10 +475,13 @@ class HivemapManager(object):
     def menu_save(self):
         if self._lastsave is None:
             return self.menu_save_as()
+
         self.save(self._lastsave)
 
     def menu_refresh(self):
-        if self._lastsave is None: return
+        if self._lastsave is None:
+            return
+
         self.save(self._lastsave)
         self.load(self._lastsave)
 

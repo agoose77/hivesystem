@@ -98,6 +98,7 @@ class AntennaFoldState(object):
         variable = self._nodecanvas().get_antenna_connected_variable(workerid, member)
         self._workermanager()._update_variable(variable, value)
 
+
     def fold(self, workerid, member):
         antenna = self.states[workerid][member]
         assert not antenna.fold

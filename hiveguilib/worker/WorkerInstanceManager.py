@@ -51,23 +51,25 @@ class WorkerInstance(object):
             raise KeyError(attribute)
         return ret
 
-    def check_output(self, attribute):
+    def check_output(self, attribute_name):
         if self.block is not None and self.block.io == "output":
-            if attribute in self.curr_blockvalues:
+            if attribute_name in self.curr_blockvalues:
                 return None  # OK
-        prof = self.profiles[self.curr_profile]
-        attribs, mapping = prof
-        at = mapping.outmap[attribute]
-        for a in attribs:
-            if a.name == at:
-                if a.outhook is not None:
+
+        profile = self.profiles[self.curr_profile]
+        attribs, mapping = profile
+        attribute_identifier = mapping.outmap[attribute_name]
+
+        for attribute in attribs:
+            if attribute.name == attribute_identifier:
+                if attribute.outhook is not None:
                     return None  # OK
                 else:
                     break
-        ret = self._get_morph(attribute)
-        if ret is None:
-            raise KeyError(attribute)
-        return ret
+        result = self._get_morph(attribute_name)
+        if result is None:
+            raise KeyError(attribute_name)
+        return result
 
     def update_blockvalues(self, blockvalues):
         self.curr_blockvalues = blockvalues
@@ -89,7 +91,8 @@ class WorkerInstanceManager(object):
     def add_workerinstance(self, workerid, workerinstance, x, y):
         assert workerid not in self._workerinstances, workerid
         prof = self.default_profile
-        if prof not in workerinstance.profiles: prof = "default"
+        if prof not in workerinstance.profiles:
+            prof = "default"
         attribs, mapping = workerinstance.profiles[prof]
         nodename = workerid_to_nodename(workerid)
         node = Node(nodename, (x, y), attribs, workerinstance.tooltip)
@@ -178,7 +181,8 @@ class WorkerInstanceManager(object):
         wi_end = self._workerinstances[end_id]
         morph = wi_end.check_antenna(end_attr)
 
-        if morph is not None: self.morph_worker(end_id, morph)
+        if morph is not None:
+            self.morph_worker(end_id, morph)
 
         do_map_start = True
         if wi_start.block is not None:

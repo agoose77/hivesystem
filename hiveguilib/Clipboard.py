@@ -48,15 +48,16 @@ class Clipboard(object):
         assert self._workermanager is not None
         wm = self._workermanager
         wd = []
-        print_data = ["Clipboard:"]
 
         for workerid in workerids:
             workerdesc = wm.get_worker_descriptor(workerid)
 
             if workerdesc is None:
                 continue
-            print_data.append(workerid)
-            wd.append(workerdesc)
+
+            worker_connections = wm.get_worker_connections(workerid)
+            worker_expanded_antennas = wm.get_expanded_antennas(workerid)
+            wd.append((workerdesc, worker_connections, worker_expanded_antennas))
 
         if wd:
             self._clipboard = "worker_descriptor", wd
@@ -71,12 +72,19 @@ class Clipboard(object):
 
         if worker_type != "worker_descriptor":
             return None
-        worker_id_mapping = {}
 
-        if len(worker_description) == 1:
-            workerdesc = worker_description[0]
+        worker_id_mapping = {}
+        wim = wm.get_wim()
+        new_worker_ids = []
+
+        workers = set()
+        wids = wm.workerids()
+
+        for workerdesc, worker_connections, worker_expanded_antennas in worker_description:
             workerid, workertype, x, y, metaparamvalues, paramvalues, profile, gp = workerdesc
-            if workerid in wm.workerids():
+            workers.add(workerid)
+
+            if workerid in wids:
                 old_worker_id = workerid
                 workerid = wm.get_new_workerid(workerid)
                 worker_id_mapping[old_worker_id] = workerid
@@ -91,56 +99,41 @@ class Clipboard(object):
 
             wm.instantiate(workerid, workertype, x, y, metaparamvalues, paramvalues, self._offset)
 
+            # Initial expansion of variables
+            for expanded_antenna_name in worker_expanded_antennas:
+                wm._antennafoldstate.expand(workerid, expanded_antenna_name)
+
             if profile != "default":
-                wim = wm.get_wim()
                 wim.morph_worker(workerid, profile)
-            return [workerid]
+            new_worker_ids.append(workerid)
 
-        else:
-            wim = wm.get_wim()
-            new_worker_ids = []
-
-            workers = set()
-            wids = wm.workerids()
-
-            for workerdesc in worker_description:
-                workerid, workertype, x, y, metaparamvalues, paramvalues, profile, gp = workerdesc
-                workers.add(workerid)
-
-                if workerid in wids:
-                    old_worker_id = workerid
-                    workerid = wm.get_new_workerid(workerid)
-                    worker_id_mapping[old_worker_id] = workerid
-
-                    if callable(pre_conversion):
-                        pre_conversion(old_worker_id, workerid)
-
-                else:
-                    # The new ID and the previous ID are the same
-                    if callable(pre_conversion):
-                        pre_conversion(workerid, workerid)
-
-                wm.instantiate(workerid, workertype, x, y, metaparamvalues, paramvalues, self._offset)
-                if profile != "default":
-                    wim.morph_worker(workerid, profile)
-                new_worker_ids.append(workerid)
-
-            for connection in list(wim.get_connections()):
-                if connection.start_node not in workers:
-                    continue
-                if connection.end_node not in workers:
-                    continue
-
+            # Restore old connections
+            for connection in worker_connections:
                 start = worker_id_mapping.get(connection.start_node, connection.start_node)
                 end = worker_id_mapping.get(connection.end_node, connection.end_node)
                 con_id = wm.get_new_connection_id("con")
+                # TODO handle this properly
+                try:
+                    wim.add_connection(con_id, (start, connection.start_attribute), (end, connection.end_attribute),
+                                       connection.interpoints)
+                except KeyError as e:
+                    print("CANNOT CONNECT", e, start, end)
+                    raise
+                    continue
 
-                wim.add_connection(con_id, (start, connection.start_attribute), (end, connection.end_attribute),
-                                   connection.interpoints)
-            if not new_worker_ids:
-                return None
+        # # Expand variables
+        # for workerdesc, worker_connections, worker_expanded_antennas in worker_description:
+        #     worker_id, workertype, x, y, metaparamvalues, paramvalues, profile, gp = workerdesc
+        #     worker_id = worker_id_mapping.get(worker_id, worker_id)
+        #
+        #     # TODO REMOVE HACK
+        #     for expanded_antenna_name in worker_expanded_antennas:
+        #         wm._antennafoldstate.expand(workerid, expanded_antenna_name)
 
-            return new_worker_ids
+        if not new_worker_ids:
+            return None
+
+        return new_worker_ids
 
     def nodecanvas_paste_nodes(self, pre_conversion=None):
         return self.paste_workers(pre_conversion)

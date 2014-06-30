@@ -251,6 +251,7 @@ class WorkerManager(object):
 
         self._wim.set_parameters(workerid, pvalues)
 
+        # can remove if spyder copying used
         if self._antennafoldstate is not None:
             self._antennafoldstate.sync(workerid, onload=False)
 
@@ -562,6 +563,31 @@ class WorkerManager(object):
         x, y = node.position
         desc = (workerid, workertype, x, y, metaparams, params, profile, gp)
         return desc
+
+    def get_worker_connections(self, workerid):
+        wim = self._wim
+        connections = []
+        for connection in wim.get_connections():
+            if connection.start_node == workerid or connection.end_node == workerid:
+                connections.append(connection)
+        return connections
+
+    def get_expanded_antennas(self, workerid):
+        state = self._antennafoldstate.states[workerid]
+        expanded_variables = set()
+
+        if state is None:
+            return expanded_variables
+
+        for antenna_name in state:
+            antenna = state[antenna_name]
+            if antenna.fold:
+                continue
+
+            expanded_variables.add(antenna_name)
+
+        return expanded_variables
+
 
     def workerids(self):
         return sorted(

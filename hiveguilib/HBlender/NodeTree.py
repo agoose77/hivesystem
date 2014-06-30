@@ -189,6 +189,7 @@ class HiveNodeTree:
 
         return removed_node_ids
 
+    @debugger
     def _check_links(self, deletions):
         """Poll the node tree and determine if any connections between Blender nodes were modified
 
@@ -220,6 +221,9 @@ class HiveNodeTree:
 
         changed_nodes = []
         for link in attempted_new_connections:
+            if not link.from_node.name in hcanvas._nodes and not link.to_node.name in hcanvas._nodes:
+                continue
+
             attempt_success = hcanvas.gui_adds_connection(link, False)
 
             if attempt_success:
@@ -230,7 +234,7 @@ class HiveNodeTree:
                 self.links.remove(link)
 
         for link in removed_connections:
-            if link.from_node.label in deletions or link.to_node.label in deletions:
+            if link.from_node.name in deletions or link.to_node.name in deletions:
                 continue
 
             attempt_success = hcanvas.gui_removes_connection(link)
@@ -248,6 +252,7 @@ class HiveNodeTree:
 
         hcanvas._links = {FakeLink.from_link(l) for l in self.links}
 
+    @debugger
     def _check_for_blender_copies(self):
         """Handle any Blender-clipboard pasted nodes (we need to register them into our internal model"""
         blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(self.name)
@@ -266,6 +271,7 @@ class HiveNodeTree:
             copied_nodes[source_node_id] = node
 
         canvas.h().on_copy_nodes(copied_nodes)
+        print([x.name for x in self.nodes], "ALL NODES")
 
     def _check_positions(self):
         """Handle any Blender nodes moved in the Blender UI"""
@@ -301,7 +307,7 @@ class HiveNodeTree:
         for node in self.nodes:
             id_ = node.name
 
-            if not id in blender_canvas._nodes:
+            if not id_ in blender_canvas._nodes:
                 continue
 
             if id_ not in selections:
@@ -353,8 +359,22 @@ class HiveNodeTree:
         if hcanvas._busy:
             return
 
+        self._update_clipboard()
+        self._check_for_blender_copies()
         deletions = self._check_deletions()
         self._check_links(deletions)
+
+    def scene_update(self):
+
+        bntm = BlendManager.blendmanager.get_nodetree_manager(self.name)
+        canvas = bntm.canvas
+        hcanvas = canvas.h()
+
+        if hcanvas._busy:
+            return
+
+        self._check_positions()
+        self._check_selection()
 
     def full_update(self):
         """We have been triggered from Node.draw_buttons, so we are in an unprivileged "draw" context.
@@ -363,10 +383,7 @@ class HiveNodeTree:
         self._check_positions()
         self._check_selection()
         """
-        BlendManager.blendmanager.schedule(self._update_clipboard)
-        BlendManager.blendmanager.schedule(self._check_for_blender_copies)
-        BlendManager.blendmanager.schedule(self._check_positions)
-        BlendManager.blendmanager.schedule(self._check_selection)
+        BlendManager.blendmanager.schedule(self.scene_update)
 
 from . import BlendManager
 

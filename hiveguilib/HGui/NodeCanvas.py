@@ -399,7 +399,6 @@ class NodeCanvas(HGui):
     def gui_selects(self, node_id_sequence):
         if self._busy:
             return
-
         for ob in self.observers_selection:
             ob(node_id_sequence)
         return True
@@ -559,6 +558,15 @@ class NodeCanvas(HGui):
 
         self.select([node_id])
         return True, value
+
+    def antenna_is_folded(self, worker_id, antennta):
+        try:
+            self.get_antenna_connected_variable(worker_id, antennta)
+        except AssertionError:
+            return False
+
+        else:
+            return True
 
     def get_antenna_connected_variable(self, worker_id, antenna):
         assert worker_id in self._folded_antennas, worker_id

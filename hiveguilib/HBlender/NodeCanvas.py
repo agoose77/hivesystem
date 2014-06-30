@@ -1,5 +1,6 @@
 from ..HUtil.Node import h_map_node
 from .NodeTree import FakeLink
+from .BlendNodeTreeManager import HiveMapNodeTreeManager, WorkerMapNodeTreeManager, SpyderMapNodeTreeManager
 from . import Node, NodeSocket, NodeTree, scalepos, unscalepos
 import logging
 import bpy
@@ -33,12 +34,11 @@ class NodeCanvas:
         self._busy_stack = []
         self.bntm = None
 
-        import logging
-        logging.nodecanvas = self
-
     @property
     def _busy(self):
         """Check the busy stack and determine if we're in the middle of an operation"""
+        import logging
+        logging.nodecanvas = self
         return bool(self._busy_stack)
 
     def push_busy(self, name):
@@ -110,19 +110,53 @@ class NodeCanvas:
         finally:
             self.pop_busy("_add")
 
+
+    def copy_to_spyder(self):
+        node_tree_manager = self.bntm()
+
+        if isinstance(node_tree_manager, HiveMapNodeTreeManager):
+            nam1 = "%s.hivemap" % node_tree_manager.name.replace(".", "_")
+            nam2 = "hivemaps/" + nam1
+            nam = nam1 if nam1 in bpy.data.texts else nam2
+            node_tree_manager.hivemapmanager.save(nam, self.filesaver)
+
+        elif isinstance(node_tree_manager, WorkerMapNodeTreeManager):
+            name = node_tree_manager.name
+            if name.endswith("-worker"): name = name[:-len("-worker")]
+            name = name.replace(".", "_")
+            nam1 = "%s.workermap" % name
+            nam2 = "workermaps/" + nam1
+            nam = nam1 if nam1 in bpy.data.texts else nam2
+            workermap = node_tree_manager.workermapmanager.save(nam, self.filesaver)
+            classname = name.split("/")[-1]
+            code = workergen(classname, workermap)
+            blockname = "workers/%s.py" % name
+            self.filesaver(blockname, code)
+
+        elif isinstance(node_tree_manager, SpyderMapNodeTreeManager):
+            name = node_tree_manager.name
+            if name.endswith("-spyder"): name = name[:-len("-spyder")]
+            name = name.replace(".", "_")
+            nam1 = "%s.spydermap" % name
+            nam2 = "spydermaps/" + nam1
+            nam = nam1 if nam1 in bpy.data.texts else nam2
+            node_tree_manager.spydermapmanager.save(nam, self.filesaver)
+
+
+
+
+
     def on_copy_nodes(self, copied_nodes):
         """Blender callback when new nodes are detected
 
         :param copied_nodes: optionally use these nodes instead of reading new nodes from graph
         """
-        self.push_busy("on_copy")
+        if not copied_nodes:
+            return
 
+        self.push_busy("on_copy")
         nodetree = self.bntm.get_nodetree()
         self.copy_pending_nodes()
-
-        if not copied_nodes:
-            self.pop_busy("on_copy")
-            return
 
         logging.debug("Found Blender copied nodes {}".format(copied_nodes.values()))
 
@@ -133,8 +167,16 @@ class NodeCanvas:
         logging.debug("Pasting copied node data and trying to merge")
         self._hgui().paste_clipboard(converter)
 
+        # Cleanup if the keyboard wasn't populated
+        nodetree = self.bntm.get_nodetree()
+        handled_nodes = self._during_conversion.values()
+        for blender_node in copied_nodes.values():
+            if not blender_node in handled_nodes:
+                nodetree.nodes.remove(blender_node)
+
         self._during_conversion.clear()
         self.pop_busy("on_copy")
+        print("DONE copying", self._nodes)
 
     def h_add_node(self, id_, hnode):
         """Create GUI node (from HGUI canvas
@@ -143,9 +185,11 @@ class NodeCanvas:
         :param hnode:
         """
         mapnode = h_map_node(hnode)
+        print("RUN ADD")
         pos = scalepos(mapnode.position)
         self._add_node(id_, mapnode.name, mapnode.attributes, pos, mapnode.tooltip)
         self._nodes[id_] = mapnode
+        print("DONE ADD", id_, "\n")
 
     def h_morph_node(self, id_, hnode, mapcon):
         mapnode = h_map_node(hnode)
@@ -367,7 +411,8 @@ class NodeCanvas:
         if self._hgui is not None:
 
             f = self._hgui().pushpull_connection
-            if force: f = nullfunc
+            if force:
+                f = nullfunc
             pollmodes = ["Manual", "Every tick", "On change"]
             funcs = []
             for pollmode in pollmodes:
@@ -410,6 +455,8 @@ class NodeCanvas:
         self.push_busy("remove_con")
         tree = self.bntm.get_nodetree()
         connection = self._connections.pop(id_)
+
+        print(connection.start_node,connection.end_node,"deleting")
         for link in tree.links:
             c = self.map_link(link)
             if c.start_node != connection.start_node:

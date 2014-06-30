@@ -6,18 +6,24 @@ from . import BlenderTextWidget
 
 
 class BlendNodeTreeManager:
-    def __init__(self, parent, name, typ):
+
+    tree_bl_idname = None
+
+    def __init__(self, parent, name):
         self.parent = parent
         self.name = name
-        assert typ in ("Hivemap", "Workermap", "Spydermap"), typ
-        self.typ = typ
 
-    def start(self):
-        if self.typ == "Hivemap": return self.start_hivemap()
-        if self.typ == "Workermap": return self.start_workermap()
-        if self.typ == "Spydermap": return self.start_spydermap()
+    def get_nodetree(self):
+        return bpy.data.node_groups[self.name]
 
-    def start_hivemap(self):
+
+class HiveMapNodeTreeManager(BlendNodeTreeManager):
+
+    tree_bl_idname = "Hivemap"
+
+    def __init__(self, parent, name):
+        super(). __init__(parent, name)
+
         self.mainWin = HGui.MainWindow()
         self.statusbar = HGui.StatusBar(self.mainWin)
         self.clipboard = Clipboard()
@@ -30,9 +36,11 @@ class BlendNodeTreeManager:
         self.workerinstancemanager = WorkerInstanceManager(self.canvas)
         try:
             currlevel = int(bpy.context.screen.hive_level)
-            if currlevel == 1: self.workerinstancemanager.default_profile = "simplified"
+            if currlevel == 1:
+                self.workerinstancemanager.default_profile = "simplified"
         except:
             pass
+
         self.controller_general.set_workerinstancemanager(self.workerinstancemanager)
         self.controller_block.set_workerinstancemanager(self.workerinstancemanager)
         self.pwins = {}
@@ -78,7 +86,14 @@ class BlendNodeTreeManager:
             self.mainWin, self.workermanager, self.workerinstancemanager, HGui.FileDialog
         )
 
-    def start_workermap(self):
+
+class WorkerMapNodeTreeManager(BlendNodeTreeManager):
+
+    tree_bl_idname = "Workermap"
+
+    def __init__(self, parent, name):
+        super(). __init__(parent, name)
+
         self.mainWin = HGui.MainWindow()
         self.statusbar = HGui.StatusBar(self.mainWin)
         self.clipboard = Clipboard()
@@ -119,7 +134,13 @@ class BlendNodeTreeManager:
             self.mainWin, self.workermanager, self.workerinstancemanager, HGui.FileDialog
         )
 
-    def start_spydermap(self):
+
+class SpyderMapNodeTreeManager(BlendNodeTreeManager):
+
+    tree_bl_idname = "Spydermap"
+
+    def __init__(self, parent, name):
+        super(). __init__(parent, name)
 
         self.mainWin = HGui.MainWindow()
         self.mainWin.h().nodetreemanager = self
@@ -165,7 +186,3 @@ class BlendNodeTreeManager:
         self.spydermapmanager._spyderhive_global_candidates = list(self.parent._workerfinder_global_spyderhives)
         self.spydermapmanager.find_spyderhive_candidates()
         self.workermanager.build_workers(local=False)
-
-    def get_nodetree(self):
-        return bpy.data.node_groups[self.name]
-    

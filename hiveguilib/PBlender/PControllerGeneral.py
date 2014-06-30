@@ -50,7 +50,7 @@ class PControllerGeneral(object):
                 instance = parent._wim().get_workerinstance(self._workerid)
             except KeyError:
                 return
-            if "simplified" in instance.profiles:
+            if "simplified" in instance.profiles:#
                 self.w_profile.options.append("simplified")
                 self.w_profile.option_names.append("Simplified")
 
