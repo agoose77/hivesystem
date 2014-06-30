@@ -161,42 +161,52 @@ class WorkerManager(object):
                     clash_offset=None
     ):
         assert workerid not in self._worker_parameters, workerid
-
         if workertype.startswith("<drone>:"):
-            wi = self._workerbuilder.get_droneinstance()
+            worker_instance = self._workerbuilder.get_droneinstance()
+
         elif workertype.find("#") > -1:
-            wi = self._workerbuilder.get_zeroinstance()
+            worker_instance = self._workerbuilder.get_zeroinstance()
+
         elif self._workerbuilder.has_worker(workertype):
-            wi = self._workerbuilder.get_workerinstance(workertype)
-            assert metaparamvalues is None \
-                   or len(metaparamvalues) == 0
+            worker_instance = self._workerbuilder.get_workerinstance(workertype)
+            assert metaparamvalues is None or len(metaparamvalues) == 0
+
         elif self._workerbuilder.has_metaworker(workertype):
             if metaparamvalues is None:
                 metaparamvalues = {}
-            tt = self._workerbuilder.build_worker_from_meta(
+
+            meta_worker_data = self._workerbuilder.build_worker_from_meta(
                 workertype, metaparamvalues
             )
-            self._worker_metaparameters[workerid] = [workertype, tt[0], tt[1], tt[2], tt[3]]
-            worker = tt[0]
-            wi = worker.primary_instance
+            self._worker_metaparameters[workerid] = [workertype, meta_worker_data[0], meta_worker_data[1], meta_worker_data[2], meta_worker_data[3]]
+            worker = meta_worker_data[0]
+            worker_instance = worker.primary_instance
 
             # check if we are using some type for the first time...
-            mparamnames, mparamtypelist, mparams = tt[1], tt[2], tt[3]
+            mparamnames, mparamtypelist, mparams = meta_worker_data[1], meta_worker_data[2], meta_worker_data[3]
             for mparamname, mparamtype in zip(mparamnames, mparamtypelist):
                 mparam = mparams.get(mparamname, None)
-                if mparam is None: continue
+                if mparam is None:
+                    continue
+
                 ok = False
                 if mparamtype == "type":
                     ok = True
+
                 elif isinstance(mparamtype, tuple):
                     if mparamtype[0] == "type":
                         ok = True
+
                     elif isinstance(mparamtype[0], tuple):
-                        if mparamtype[0][0] == "type": ok = True
-                if not ok: continue
-                t = mparam
-                if t not in self._used_typelist:
-                    self._used_typelist.add(t)
+                        if mparamtype[0][0] == "type":
+                            ok = True
+
+                if not ok:
+                    continue
+
+                type_ = mparam
+                if type_ not in self._used_typelist:
+                    self._used_typelist.add(type_)
                     self._update_typelist()
 
         else:
@@ -224,24 +234,24 @@ class WorkerManager(object):
                     break
                 else:
                     break
-        self._wim.add_workerinstance(workerid, wi, x, y)
+        self._wim.add_workerinstance(workerid, worker_instance, x, y)
 
         pvalues = {}
         if paramvalues is not None:
             arglist = []
-            for paramname in wi.paramnames:
+            for paramname in worker_instance.paramnames:
                 v = paramvalues.get(paramname, None)
                 arglist.append(v)
-            args = parse_paramtypelist(wi.paramtypelist, arglist)
-            for paramname, a in zip(wi.paramnames, args):
+            args = parse_paramtypelist(worker_instance.paramtypelist, arglist)
+            for paramname, a in zip(worker_instance.paramnames, args):
                 if a is not None: pvalues[paramname] = a
-        self._worker_parameters[workerid] = [workertype, wi.paramnames, wi.paramtypelist, pvalues, wi.guiparams]
+        self._worker_parameters[workerid] = [workertype, worker_instance.paramnames, worker_instance.paramtypelist, pvalues, worker_instance.guiparams]
         if self._antennafoldstate is not None:
             gp = {}
             pullantennas = []
-            if wi.guiparams is not None:
-                gp = wi.guiparams.get("guiparams", {})
-                antennas = wi.guiparams.get("antennas", {})
+            if worker_instance.guiparams is not None:
+                gp = worker_instance.guiparams.get("guiparams", {})
+                antennas = worker_instance.guiparams.get("antennas", {})
                 pullantennas = get_param_pullantennas(antennas)
             self._antennafoldstate.create_worker(
                 workerid,

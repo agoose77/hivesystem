@@ -104,21 +104,25 @@ class WorkerInstanceManager(object):
         self._canvas.select(workerids)
 
     def _morph_worker(self, workerid, attributes, maps):
-        wi = self._workerinstances[workerid]
-        if wi.block is not None:
-            if wi.block.io == "antenna":
+        worker_instance = self._workerinstances[workerid]
+        if worker_instance.block is not None:
+            if worker_instance.block.io == "antenna":
                 cmap = maps[0]
-            elif wi.block.io == "output":
+
+            elif worker_instance.block.io == "output":
                 cmap = maps[1]
+
             else:
-                raise Exception(wi.block.io)
-            if cmap is not None: cmap.update(wi.block.blockmap)
+                raise Exception(worker_instance.block.io)
+
+            if cmap is not None:
+                cmap.update(worker_instance.block.blockmap)
 
         nodename = workerid_to_nodename(workerid)
-        node0 = self._canvas.get_node(workerid)
-        x, y = node0.position
-        newnode = Node(nodename, (x, y), attributes)
-        self._canvas.morph_node(workerid, newnode, maps[0], maps[1])
+        original_node = self._canvas.get_node(workerid)
+        x, y = original_node.position
+        new_node = Node(nodename, (x, y), attributes)
+        self._canvas.morph_node(workerid, new_node, maps[0], maps[1])
 
     def morph_worker(self, workerid, morph):
         worker_instance = self._workerinstances[workerid]
@@ -152,23 +156,27 @@ class WorkerInstanceManager(object):
             self.set_parameters(workerid, self._workerparams[workerid])
 
     def worker_update_blockvalues(self, workerid, blockvalues):
-        wi = self._workerinstances[workerid]
-        assert wi.block is not None
-        block_attributes = wi.block.attributes
+        worker_instance = self._workerinstances[workerid]
+        assert worker_instance.block is not None
+        block_attributes = worker_instance.block.attributes
 
-        attributes = list(wi.profile()[0])
+        attributes = list(worker_instance.profile()[0])
         for blockvalue in blockvalues:
-            if not blockvalue: continue
+            if not blockvalue:
+                continue
+
             attribute = block_attributes[blockvalue]
             attributes.append(attribute)
 
-        wi.update_blockvalues(blockvalues)
+        worker_instance.update_blockvalues(blockvalues)
         self._morph_worker(workerid, attributes, (None, None))
 
     def get_blockvalues(self, workerid):
-        wi = self._workerinstances[workerid]
-        if wi.block is None: return None
-        return wi.curr_blockvalues
+        worker_instance = self._workerinstances[workerid]
+        if worker_instance.block is None:
+            return None
+
+        return worker_instance.curr_blockvalues
 
     def add_connection(self, id_, start, end, interpoints=[]):
         start_id, start_attr = start

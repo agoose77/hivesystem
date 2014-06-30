@@ -224,7 +224,7 @@ class HivemapManager(object):
         self._load(hivemap)
         worker_manager.sync_antennafoldstate()
 
-    def save(self, hivemapfile, filesaver=None):
+    def save(self, hivemapfile, filesaver=None, worker_ids=None):
         workermanager = self._workermanager
         workers = Spyder.WorkerArray()
         connections = Spyder.WorkerConnectionArray()
@@ -237,8 +237,12 @@ class HivemapManager(object):
         hwasps = Spyder.HivemapWaspArray()
         bees = {}
 
+        # Default to all worker ids
+        if worker_ids is None:
+            worker_ids = workermanager.workerids()
+
         # storing workers
-        for workerid in sorted(workermanager.workerids()):
+        for workerid in sorted(worker_ids):
             node, mapping = self._wim.get_node(workerid)
             if node.empty:
                 continue
@@ -250,32 +254,38 @@ class HivemapManager(object):
 
             elif workertype.startswith("<drone>:"):
                 droneid = workerid
-                dronetype = workertype[len("<drone>:"):]
+                dronetype = workertype.lstrip("<drone>:")
                 parameters = None
+
                 if params is not None:
                     parameters = []
-                    for n in range(5):
-                        p = params.get("arg%d" % (n + 1), "")
-                        parameters.append(p)
-                    if parameters == [""] * 5:
+                    for index in range(5):
+                        parameter = params.get("arg%d" % (index + 1), "")
+                        parameters.append(parameter)
+
+                    if not any(parameters):
                         parameters = None
+
                     else:
-                        pa = Spyder.StringArray()
-                        for n in range(5):
-                            x = Spyder.String(repr(parameters[n]))
-                            pa.append(x)
-                        parameters = pa
-                d = Spyder.Drone(
-                    droneid,
-                    dronetype,
-                    node.position,
-                )
-                d.parameters = parameters
-                drones.append(d)
+                        parameter_array = Spyder.StringArray()
+                        for index in range(5):
+                            parameter_string = Spyder.String(repr(parameters[index]))
+                            parameter_array.append(parameter_string)
+
+                        parameters = parameter_array
+
+                drone = Spyder.Drone(droneid, dronetype, node.position)
+                drone.parameters = parameters
+                drones.append(drone)
                 continue
+
             blockvalues = self._wim.get_blockvalues(workerid)
-            if params is not None: params = params.items()
-            if metaparams is not None: metaparams = metaparams.items()
+            if params is not None:
+                params = params.items()
+
+            if metaparams is not None:
+                metaparams = metaparams.items()
+
             w = Spyder.Worker(
                 workerid,
                 workertype,
@@ -288,150 +298,153 @@ class HivemapManager(object):
 
         #filtering connections for bees
         nconnections = []
-        for c in self._wim.get_connections():
-            if c.start_node in bees:
-                node, workertype, wcon_in, wcon_out = bees[c.start_node]
-                wcon_out.append((c.end_node, c.end_attribute))
-            elif c.end_node in bees:
-                node, workertype, wcon_in, wcon_out = bees[c.end_node]
-                wcon_in.append((c.start_node, c.start_attribute))
+        for connection in self._wim.get_connections():
+            if connection.start_node in bees:
+                node, workertype, wcon_in, wcon_out = bees[connection.start_node]
+                wcon_out.append((connection.end_node, connection.end_attribute))
+
+            elif connection.end_node in bees:
+                node, workertype, wcon_in, wcon_out = bees[connection.end_node]
+                wcon_in.append((connection.start_node, connection.start_attribute))
+
             else:
-                nconnections.append(c)
+                nconnections.append(connection)
 
         #saving bees
         for bee_id, bee in bees.items():
             node, workertype, wcon_in, wcon_out = bee
             if workertype.startswith("bees.io"):
                 if workertype in ("bees.io.push_antenna", "bees.io.pull_antenna"):
-                    assert len(wcon_in) == 0  #something wrong with the GUI if this happens
-                    if len(wcon_out) == 0:
+                    assert not wcon_in  #something wrong with the GUI if this happens
+                    if not wcon_out:
                         print("Warning: %s '%s' does not have any outgoing connections, bee is not saved!" % (
                         workertype, bee_id))
                         continue
+
                     elif len(wcon_out) > 1:
                         print("Warning: %s '%s' has multiple outgoing connections, selecting the first..." % (
                         workertype, bee_id))
+
                     mio = "antenna"
                     hook = "inhook"
                     targetcon = wcon_out[0]
                     mapattr = "_inmapr"
+
                 elif workertype in ("bees.io.push_output", "bees.io.pull_output"):
-                    assert len(wcon_out) == 0  #something wrong with the GUI if this happens
-                    if len(wcon_in) == 0:
+                    assert not wcon_out  #something wrong with the GUI if this happens
+                    if not wcon_in:
                         print("Warning: %s '%s' does not have any incoming connections, bee is not saved!" % (
                         workertype, bee_id))
                         continue
+
                     elif len(wcon_in) > 1:
                         print("Warning: %s '%s' has multiple incoming connections, selecting the first..." % (
                         workertype, bee_id))
+
                     mio = "output"
                     hook = "outhook"
                     targetcon = wcon_in[0]
                     mapattr = "_outmapr"
+
                 else:
                     raise Exception(workertype)
+
                 iomode = workertype[workertype.rindex(".") + 1:workertype.rindex("_")]
                 iotype = None
                 tnode, targetmapping = self._wim.get_node(targetcon[0])
-                for a in tnode.attributes:
-                    if a.name == targetcon[1]:
-                        iotype = getattr(a, hook).type
+                for attribute in tnode.attributes:
+                    if attribute.name == targetcon[1]:
+                        iotype = getattr(attribute, hook).type
                         break
+
                 assert iotype is not None
                 targetmap = getattr(targetmapping, mapattr)
                 targetio = targetcon[1]
+
                 try:
                     targetio = targetmap[targetio]
                 except KeyError:
                     pass
-                hio = Spyder.HivemapIO(
-                    bee_id,
-                    mio,
-                    targetcon[0],
-                    targetio,
-                    iomode,
-                    iotype,
-                    node.position,
-                )
-                io.append(hio)
+
+                hivemap_io = Spyder.HivemapIO(bee_id, mio, targetcon[0], targetio, iomode, iotype,  node.position)
+                io.append(hivemap_io)
+
             elif workertype == "bees.attribute":
                 params, metaparams = workermanager.get_parameters(bee_id)[1:3]
-                if params is None: params = {}
-                hatt = Spyder.HivemapAttribute(
-                    bee_id,
-                    metaparams.get("spydertype", ""),
-                    params.get("val", ""),
-                    position=node.position
-                )
-                hattributes.append(hatt)
+                if params is None:
+                    params = {}
+
+                attribute = Spyder.HivemapAttribute(bee_id, metaparams.get("spydertype", ""), params.get("val", ""),
+                                                    position=node.position)
+                hattributes.append(attribute)
+
             elif workertype == "bees.pyattribute":
                 params = workermanager.get_parameters(bee_id)[1]
-                if params is None: params = {}
-                cv = params.get("code_variable", "")
-                if cv == "": cv = None
-                hpyatt = Spyder.HivemapPyAttribute(
-                    bee_id,
-                    params.get("code", ""),
-                    cv,
-                    position=node.position
-                )
-                hpyattributes.append(hpyatt)
+                if params is None:
+                    params = {}
+
+                code_variable = params.get("code_variable", "")
+                if code_variable == "":
+                    code_variable = None
+
+                py_attribute = Spyder.HivemapPyAttribute(bee_id, params.get("code", ""), code_variable,
+                                                         position=node.position)
+                hpyattributes.append(py_attribute)
+
             elif workertype == "bees.parameter":
                 params = workermanager.get_parameters(bee_id)[1]
-                if params is None: params = {}
-                hpar = Spyder.HivemapParameter(
-                    bee_id,
-                    params.get("internal_name", ""),
-                    params.get("typename", ""),
-                    position=node.position
-                )
+                if params is None:
+                    params = {}
+
+                hpar = Spyder.HivemapParameter(bee_id, params.get("internal_name", ""), params.get("typename", ""),
+                                               position=node.position)
+
                 gui_defaultvalue = params.get("gui_defaultvalue", "")
                 if gui_defaultvalue != "":
                     hpar.gui_defaultvalue = gui_defaultvalue
+
                 hparameters.append(hpar)
+
             elif workertype == "bees.part":
                 params = workermanager.get_parameters(bee_id)[1]
-                if params is None: params = {}
-                hpart = Spyder.HivemapPartBee(
-                    bee_id,
-                    params.get("beename", ""),
-                    params.get("part", ""),
-                    position=node.position
-                )
+                if params is None:
+                    params = {}
+
+                hpart = Spyder.HivemapPartBee(bee_id, params.get("beename", ""), params.get("part", ""),
+                                              position=node.position)
                 hparts.append(hpart)
+
             elif workertype == "bees.wasp":
                 params = workermanager.get_parameters(bee_id)[1]
-                if params is None: params = {}
-                hwasp = Spyder.HivemapWasp(
-                    bee_id,
-                    params.get("injected", ""),
-                    params.get("target_name", ""),
-                    params.get("target_parameter", ""),
-                    params.get("sting", False),
-                    params.get("accumulate", False),
+                if params is None:
+                    params = {}
+
+                hwasp = Spyder.HivemapWasp(bee_id, params.get("injected", ""), params.get("target_name", ""),
+                    params.get("target_parameter", ""), params.get("sting", False), params.get("accumulate", False),
                     position=node.position
                 )
                 hwasps.append(hwasp)
+
             else:
                 raise Exception(workertype)
 
-        for c in nconnections:
-            start_node, start_mapping = self._wim.get_node(c.start_node)
-            end_node, end_mapping = self._wim.get_node(c.end_node)
+        for connection in nconnections:
+            start_node, start_mapping = self._wim.get_node(connection.start_node)
+            end_node, end_mapping = self._wim.get_node(connection.end_node)
             try:
-                start_attribute = start_mapping._outmapr[c.start_attribute]
+                start_attribute = start_mapping._outmapr[connection.start_attribute]
             except KeyError:
-                start_attribute = c.start_attribute
+                start_attribute = connection.start_attribute
+
             try:
-                end_attribute = end_mapping._inmapr[c.end_attribute]
+                end_attribute = end_mapping._inmapr[connection.end_attribute]
             except KeyError:
-                end_attribute = c.end_attribute
-            con = Spyder.WorkerConnection(
-                (c.start_node, start_attribute),
-                (c.end_node, end_attribute),
-                c.interpoints
-            )
-            connections.append(con)
+                end_attribute = connection.end_attribute
+
+            connection = Spyder.WorkerConnection((connection.start_node, start_attribute),
+                                                 (connection.end_node, end_attribute), connection.interpoints)
+            connections.append(connection)
+
         if not io:
             io = None
 
