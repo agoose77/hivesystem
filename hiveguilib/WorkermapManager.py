@@ -106,9 +106,7 @@ class WorkermapManager(object):
                 print("Unknown segment:", seg.segtype, segment_id.split(".")[-1])
                 continue
 
-        count = 0
         for connection in workermap.connections:
-            count += 1
             connection_id = self._workermanager.get_new_connection_id("con")
             interpoints = [(ip.x, ip.y) for ip in connection.interpoints]
 
@@ -152,20 +150,25 @@ class WorkermapManager(object):
             )
             segments.append(seg)
 
-        for c in self._wim.get_connections():
-            start_node, start_mapping = self._wim.get_node(c.start_node)
-            if start_mapping is None:
-                raise KeyError(c.start_node)
-            end_node, end_mapping = self._wim.get_node(c.end_node)
-            if end_mapping is None:
-                raise KeyError(c.end_node)
+        for connection in self._wim.get_connections():
 
-            start_attribute = start_mapping._outmapr[c.start_attribute]
-            end_attribute = end_mapping._inmapr[c.end_attribute]
+            # Only save wanted connections
+            if not (connection.start_node in worker_ids and connection.end_node in worker_ids):
+                continue
+
+            start_node, start_mapping = self._wim.get_node(connection.start_node)
+            if start_mapping is None:
+                raise KeyError(connection.start_node)
+            end_node, end_mapping = self._wim.get_node(connection.end_node)
+            if end_mapping is None:
+                raise KeyError(connection.end_node)
+
+            start_attribute = start_mapping._outmapr[connection.start_attribute]
+            end_attribute = end_mapping._inmapr[connection.end_attribute]
             con = Spyder.WorkerSegmentConnection(
-                (c.start_node, start_attribute),
-                (c.end_node, end_attribute),
-                c.interpoints
+                (connection.start_node, start_attribute),
+                (connection.end_node, end_attribute),
+                connection.interpoints
             )
             connections.append(con)
         workermap = Spyder.Workermap(segments, connections)
