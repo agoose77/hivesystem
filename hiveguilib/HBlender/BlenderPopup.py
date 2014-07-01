@@ -1,4 +1,5 @@
 import bpy
+from contextlib import contextmanager
 
 
 class BlenderPopupButton(bpy.types.Operator):
@@ -13,8 +14,8 @@ class BlenderPopupButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class BlenderPopupMenu(bpy.types.Menu):
-    bl_label = "Poll Mode"  # not really generic, but we use it only for this atm... and you can't change it dynamically
+class BlenderPopupMenu_(bpy.types.Menu):
+    bl_label = "<Hive Popup>"
     bl_idname = "NODE_MT_hive_popup_menu"
     bl_options = {'INTERNAL'}
 
@@ -28,12 +29,26 @@ class BlenderPopupMenu(bpy.types.Menu):
             op.text = option
 
 
+class BlenderPopupMenu:
+
+    @staticmethod
+    @contextmanager
+    def factory(title):
+        """Create a temporary popup menu class for displaying a custom title
+
+        :param title: title of menu
+        """
+        popup_idname = "{}_{}".format(BlenderPopupMenu_.bl_label, title.strip(" "))
+        custom_menu = type(popup_idname, (BlenderPopupMenu_,), {"bl_label": title, "bl_idname": popup_idname})
+        bpy.utils.register_class(custom_menu)
+        yield custom_menu
+        bpy.utils.unregister_class(custom_menu)
+
+
 def register():
-    bpy.utils.register_class(BlenderPopupMenu)
     bpy.utils.register_class(BlenderPopupButton)
 
 
 def unregister():
-    bpy.utils.unregister_class(BlenderPopupMenu)
     bpy.utils.unregister_class(BlenderPopupButton)
 

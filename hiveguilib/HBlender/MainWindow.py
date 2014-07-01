@@ -180,12 +180,13 @@ class MainWindow(Layout):
         from .BlendManager import blendmanager
 
         # The callbacks must have been associated previously by the HBlender NodeCanvas
-        assert blendmanager.popup_callbacks is not None \
-               and len(blendmanager.popup_callbacks) == len(options)
+        assert blendmanager.popup_callbacks is not None and len(blendmanager.popup_callbacks) == len(options)
         blendmanager.popup_options = options
 
-        BlenderPopupMenu.bl_title = title  #doesn't work...
-        menu = bpy.ops.wm.call_menu(name=BlenderPopupMenu.bl_idname)
+        # We can't set the title without creating a new class
+        with BlenderPopupMenu.factory(title) as popup_cls:
+            menu = bpy.ops.wm.call_menu(name=popup_cls.bl_idname)
+
         return None
 
     def supports_popup(self):
