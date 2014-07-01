@@ -4,6 +4,7 @@ import weakref
 
 
 class PWindow(object):
+
     def __init__(self, mainwindow, subwindowname, controller):
         self.subwindowname = subwindowname
         self._mainwindow = mainwindow
@@ -47,3 +48,14 @@ class PWindow(object):
          with the following values, without making changes to the global state
         """
         self._controller.update_paramvalues(*args, **kwargs)
+
+
+class PStaticWindow(PWindow):
+
+    def hide(self):
+        return
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.show()

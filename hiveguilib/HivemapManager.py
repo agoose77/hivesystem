@@ -248,7 +248,6 @@ class HivemapManager(object):
 
         hivemap = Spyder.Hivemap.fromfile(hivemapfile)
         self._load(hivemap)
-        worker_manager.sync_antennafoldstate()
 
     def save(self, hivemapfile, filesaver=None):
         # Default to all worker ids
@@ -256,6 +255,7 @@ class HivemapManager(object):
         hivemap = self._save(worker_ids)
 
         # Save to file
+        hivemap.validate()
         hivemap_string = str(hivemap)
 
         if filesaver:
@@ -291,7 +291,7 @@ class HivemapManager(object):
 
             elif workertype.startswith("<drone>:"):
                 droneid = workerid
-                dronetype = workertype.lstrip("<drone>:")
+                dronetype = workertype[len("<drone>:"):]
                 parameters = None
 
                 if params is not None:
@@ -504,6 +504,7 @@ class HivemapManager(object):
         hivemap.parameters = hparameters
         hivemap.attributes = hattributes
         hivemap.pyattributes = hpyattributes
+        hivemap.docstring = "TEST"
         hivemap.partbees = hparts
         hivemap.wasps = hwasps
         #hivemap.tofile(hivemapfile)

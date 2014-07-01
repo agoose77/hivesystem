@@ -4,6 +4,7 @@ from . import PGenerator
 
 
 class PManager(object):
+
     def __init__(self, pwins):
         self._pwins = pwins
         self._pwidgets = {}  # TODO: make sure this does not take too much memory! maximize to last 10-100 elements?
@@ -20,10 +21,8 @@ class PManager(object):
     def get_pwindow(self, pwindow):
         return self._pwins[pwindow]
 
-    def select_pwidget(self, id_, pwindow,
-                       paramnames, paramtypelist, paramvalues,
-                       update_callback, buttons=[], form_manipulators=[]
-    ):
+    def select_pwidget(self, id_, pwindow, paramnames, paramtypelist, paramvalues, update_callback, buttons=[],
+                       form_manipulators=[]):
         if len(paramnames) == 0:
             self._pwins[pwindow].deselect()
             return None, None

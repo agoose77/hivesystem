@@ -262,7 +262,9 @@ class WorkerManager(object):
 
     def _select(self, workerids):
         self._pmanager.deselect()
-        if workerids is None: return
+        if workerids is None:
+            return
+
         if len(workerids) == 1:
             workerid = workerids[0]
             pwin_general = self._pmanager.get_pwindow("general")
@@ -301,8 +303,8 @@ class WorkerManager(object):
         if self._antennafoldstate is not None:
             f = functools.partial(self._antennafoldstate.init_form, workerid)
             form_manipulators = form_manipulators + [f]
-        widget, controller = self._pmanager.select_pwidget(workerid, "params",
-                                                           params[1], params[2], params[3], up, [], form_manipulators
+        widget, controller = self._pmanager.select_pwidget(workerid, "params", params[1], params[2],
+                                                           params[3], up, [], form_manipulators
         )
         if widget is not None and self._antennafoldstate is not None:
             self._antennafoldstate.init_widget(workerid, widget, controller)
@@ -565,6 +567,9 @@ class WorkerManager(object):
         inst = self._wim.get_workerinstance(workerid)
         profile = inst.curr_profile
         gp = inst.guiparams
+        if gp is None:
+            gp = {}
+
         workertype, params, metaparams = self.get_parameters(workerid)
         x, y = node.position
         desc = (workerid, workertype, x, y, metaparams, params, profile, gp)
@@ -675,6 +680,7 @@ class WorkerManager(object):
         self._workerfinder_local = None
 
     def sync_antennafoldstate(self):
+        raise DeprecationWarning()
         if self._antennafoldstate is None:
             return
 

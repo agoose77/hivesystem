@@ -349,6 +349,8 @@ def _add_segment(seg, segments, allsegments, segids=None):
 
 def workergen(name, m):
     codestate = CodeState(name)
+    if m.docstring is not None:
+        codestate.classcode += "\"\"\"\n" + m.docstring + "\"\"\"\n"
 
     # Check for duplicate segids
     segids0 = set()

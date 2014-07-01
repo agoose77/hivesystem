@@ -6,7 +6,7 @@ class PGui(object):
         raise AttributeError("Abstract method PGui.p() must be re-implemented")
 
 
-from .PWindow import PWindow
+from .PWindow import PWindow, PStaticWindow
 from .PWidgetWindow import PWidgetWindow
 from .PWorkerCreator import PWorkerCreator
 from .PDroneCreator import PDroneCreator

@@ -27,6 +27,7 @@ Type WorkerSegmentConnection {
 Type Workermap {
   WorkerSegmentArray segments
   WorkerSegmentConnectionArray connections
+  *String docstring
   validate {
     segids = [seg.segid for seg in segments]
     for c in connections:

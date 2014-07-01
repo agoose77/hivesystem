@@ -19,6 +19,7 @@ def build_spydermap(sm, *args, **kwargs):
     shname = sh[lastdot + 1:]
     shdict = {}
     shmod = __import__(modname, shdict, shdict, [shname])
+
     parenthive = getattr(shmod, shname)
 
     hivedata = dict(zip(sm.names, sm.objectdata))

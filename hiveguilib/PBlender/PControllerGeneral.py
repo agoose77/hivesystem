@@ -1,6 +1,7 @@
 import weakref
 import logging
 from ..HBlender.BlenderWidgets import *
+from ..HBlender.BlenderTextWidget import BlenderTextWidget
 from ..PGui.profiletypes import profiletypes, profiles_worker
 
 

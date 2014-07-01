@@ -19,6 +19,8 @@ Type Spydermap {
   SpydermapWaspArray wasps = []
   *Coordinate2DArray coordinates
   *Coordinate2DArray paramcoordinates
+  *String docstring
+
   validate {
     assert len(names) == len(objectdata)
     _used_names = set()

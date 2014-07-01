@@ -4,6 +4,7 @@ import weakref
 
 
 class PWidgetWindow(object):
+
     def __init__(self, mainwindow, subwindowname):
         self.subwindowname = subwindowname
         self._mainwindow = mainwindow
@@ -28,4 +29,3 @@ class PWidgetWindow(object):
         self._widget = weakref.ref(widget)
         self._subwin.setWidget(widget)
         self._subwin.show()
-

@@ -422,7 +422,7 @@ class WorkerTemplate(object):
         self.forms = {}
         self.primary_instance = None
         self.tooltip = tooltip
-        self.guiparams = guiparams or {}
+        self.guiparams = guiparams
 
         for profile in self._builders:
             if profile == "simplified" and not support_simplified:
@@ -499,15 +499,23 @@ def make_form_manipulators(guiparams, manip):
     antennas = {}
     if guiparams is not None and "antennas" in guiparams:
         antennas = guiparams["antennas"]
+
     form_antennas = []
     for antenna_name in antennas:
         antenna = antennas[antenna_name]
-        if antenna[0] != "pull": continue
+        if antenna[0] != "pull":
+            continue
         form_antennas.append(antenna_name)
-    if manip is None and not len(form_antennas): return []
-    if not len(form_antennas): return [manip]
+
+    if manip is None and not len(form_antennas):
+        return []
+    if not len(form_antennas):
+        return [manip]
+
     m = partial(modify_antenna_forms, form_antennas, guiparams.get("guiparams", {}))
-    if manip is None: return [m]
+    if manip is None:
+        return [m]
+
     return [manip, m]
 
 
@@ -529,6 +537,7 @@ class WorkerBuilder(object):
         pullantennas = get_param_pullantennas(antennas)
         update_params_pullantennas(parameters, pullantennas)
         paramnames, paramtypelist = get_paramtypelist(workername, parameters)
+        # TODO finalise this
         return WorkerData(beename, antennas, outputs, ev, paramnames, paramtypelist, block, gui_params,
                           (worker.__doc__ or "").lstrip().rstrip())
 
@@ -593,7 +602,7 @@ class WorkerBuilder(object):
             return False
 
         self._workers[id_] = build_workertemplate(worker_data)
-        self._form_manipulators[id_] = None
+        self._form_manipulators[id_] = []
 
         return True
 

@@ -7,7 +7,8 @@ from . import level
 
 
 class BlenderParameterArea:
-    known = ('props-parameters', 'props-general', 'props-params', 'proptabs', 'props-metaparams', 'props-block')
+    known = ('props-docs', 'props-parameters', 'props-general', 'props-params', 'proptabs', 'props-metaparams',
+             'props-block')
 
     def __init__(self, parent):
         self.parent = parent
@@ -24,7 +25,8 @@ class BlenderParameterArea:
         for win in self._subwindows: win.show()
 
     def draw(self, context, layout):
-        for k in self.subwindows: assert k in self.known, k
+        for k in self.subwindows:
+            assert k in self.known, k
         for sub in ('props-general', 'props-params', 'props-metaparams', 'props-block'):
             if sub not in self.subwindows: continue
             self.subwindows[sub].draw(context, layout)
@@ -63,6 +65,7 @@ class BlenderToolArea:
 
 
 class BlenderParameterPanel:
+
     def __init__(self, name, parent):
         self.name = name
         self.title = name.lstrip("props").lstrip("-").capitalize()
@@ -107,6 +110,7 @@ class BlenderParameterPanel:
                         break
             if hide:
                 return
+
         l = layout.column()
         l.label(self.title)
         self.widget.draw(context, l)

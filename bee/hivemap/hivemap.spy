@@ -20,6 +20,7 @@ Type Worker {
   *WorkerParameterArray parameters
   *WorkerParameterArray metaparameters
   *StringArray blockvalues
+  *String docstring
 }
 
 Type WorkerConnector {
@@ -38,6 +39,7 @@ Type Drone {
   String dronetype
   Coordinate2D position = Coordinate2D(0,0)
   *StringArray parameters
+  *String docstring
 }
 
 Type HivemapParameter {
@@ -88,10 +90,11 @@ Type Hivemap {
   *HivemapIOArray io
   *DroneArray drones
   *HivemapParameterArray parameters
-  *HivemapAttributeArray attributes  
-  *HivemapPartBeeArray partbees  
+  *HivemapAttributeArray attributes
+  *HivemapPartBeeArray partbees
   *HivemapPyAttributeArray pyattributes
   *HivemapWaspArray wasps
+  *String docstring
 
   validate {
     workerids = [w.workerid for w in workers]

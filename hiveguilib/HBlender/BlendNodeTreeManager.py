@@ -44,6 +44,7 @@ class HiveMapNodeTreeManager(BlendNodeTreeManager):
         self.controller_general.set_workerinstancemanager(self.workerinstancemanager)
         self.controller_block.set_workerinstancemanager(self.workerinstancemanager)
         self.pwins = {}
+     #   self.pwins["docs"] = PGui.PStaticWindow(self.mainWin, "props-docs", self.controller_general)
         self.pwins["general"] = PGui.PWindow(self.mainWin, "props-general", self.controller_general)
         self.pwins["params"] = PGui.PWidgetWindow(self.mainWin, "props-params")
         self.pwins["metaparams"] = PGui.PWidgetWindow(self.mainWin, "props-metaparams")
@@ -120,10 +121,8 @@ class WorkerMapNodeTreeManager(BlendNodeTreeManager):
         self.pwc._tree.set_nodeitemmanager(self.parent.nodeitemmanager)
         self.pwc._tree.set_nodetreename(self.name)
 
-        self.workermanager = WorkerManager(
-            self.workerbuilder, self.workerinstancemanager, self.pmanager, self.pwc,
-            with_blocks=False
-        )
+        self.workermanager = WorkerManager(self.workerbuilder, self.workerinstancemanager, self.pmanager, self.pwc,
+                                           with_blocks=False)
         self.controller_general.set_workermanager(self.workermanager)
         self.clipboard.set_workermanager(self.workermanager)
 
@@ -171,20 +170,15 @@ class SpyderMapNodeTreeManager(BlendNodeTreeManager):
         self.pwc._tree.set_nodeitemmanager(self.parent.nodeitemmanager)
         self.pwc._tree.set_nodetreename(self.name)
 
-        self.workermanager = WorkerManager(
-            self.workerbuilder, self.workerinstancemanager, self.pmanager, self.pwc,
-            with_blocks=False
-        )
+        self.workermanager = WorkerManager(self.workerbuilder, self.workerinstancemanager, self.pmanager, self.pwc,
+                                           with_blocks=False)
         self.controller_general.set_workermanager(self.workermanager)
         self.clipboard.set_workermanager(self.workermanager)
 
         self.workermanager._workerfinder_global = self.parent._workerfinder_global_spydermap
         self.workermanager._workerfinder_local = self.parent._workerfinder_local_hivemap
-        self.spydermapmanager = SpydermapManager(
-            self.mainWin,
-            self.workermanager, self.workerinstancemanager, self.psh,
-            HGui.FileDialog
-        )
+        self.spydermapmanager = SpydermapManager(self.mainWin, self.workermanager, self.workerinstancemanager, self.psh,
+                                                 HGui.FileDialog)
         self.clipboard.set_mapmanager(self.spydermapmanager)
         self.spydermapmanager._spyderhive_global_candidates = list(self.parent._workerfinder_global_spyderhives)
         self.spydermapmanager.find_spyderhive_candidates()

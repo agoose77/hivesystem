@@ -435,15 +435,20 @@ def draw_hive_menu(self, context):
 
 
 def draw_hive_level(self, context):
-    if BlendManager.use_hive_get(context) and context.space_data.tree_type == "Hivemap":
-     #   self.layout.label("Hive Level")
+    if BlendManager.use_hive_get(context) and isinstance(context.space_data.edit_tree, HivemapNodeTree):
         self.layout.prop(context.screen, "hive_level", text="")
 
 
 def draw_spyderhive(self, context):
     blend_manager = BlendManager.blendmanager
-    if context.space_data.tree_type == "Spydermap" and context.space_data.edit_tree is not None:
+    if isinstance(context.space_data.edit_tree, SpydermapNodeTree):
         blend_manager.spyderhive_widget.draw(context, self.layout)
+
+
+def draw_docstring(self, context):
+    blend_manager = BlendManager.blendmanager
+    if isinstance(context.space_data.edit_tree, HiveNodeTree):
+        blend_manager.docstring_widget.draw(context, self.layout)
 
 
 def check_tab_control(self, context):
@@ -454,6 +459,9 @@ def check_tab_control(self, context):
     else:
         if not ChangeHiveLevel.can_invoke():
             ChangeHiveLevel.disable()
+
+
+header_draw_functions = draw_hive_menu, draw_hive_level, draw_spyderhive, check_tab_control, draw_docstring
 
 
 def register():
@@ -484,10 +492,8 @@ def register():
         update=BlendManager.change_hive_level
     )
 
-    bpy.types.NODE_HT_header.append(draw_hive_menu)
-    bpy.types.NODE_HT_header.append(draw_hive_level)
-    bpy.types.NODE_HT_header.append(draw_spyderhive)
-    bpy.types.NODE_HT_header.append(check_tab_control)
+    for function in header_draw_functions:
+        bpy.types.NODE_HT_header.append(function)
 
 
 def unregister():
@@ -498,10 +504,8 @@ def unregister():
     bpy.utils.unregister_class(HiveMapImport)
     bpy.utils.unregister_class(HiveToolsMenu)
 
-    bpy.types.NODE_HT_header.remove(draw_hive_level)
-    bpy.types.NODE_HT_header.remove(draw_spyderhive)
-    bpy.types.NODE_HT_header.remove(check_tab_control)
-    bpy.types.NODE_HT_header.remove(draw_hive_menu)
+    for function in header_draw_functions:
+        bpy.types.NODE_HT_header.remove(function)
 
 if __name__ == "__main__":
     unregister()

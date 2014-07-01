@@ -9,6 +9,7 @@ def same(id1, id2):
 
 
 class BlenderTextWidget(BlenderWidget):
+
     def __init__(self, parent, name, advanced=False):
         self.name = name
         self.value = None
@@ -44,7 +45,7 @@ class BlenderTextWidget(BlenderWidget):
         if self.value is None: return ""
         return str(self.value)
 
-    def draw2(self, context, layout):
+    def custom_draw(self, context, layout):
         if self.name is not None:
             layout = layout.row()
             layout.label(str(self.name))
@@ -61,7 +62,8 @@ class BlenderTextManager:
         self.clear()
 
     def check_area(self):
-        if self.area is None: return False
+        if self.area is None:
+            return False
         areas = bpy.context.screen.areas
         for area in areas:
             if same(area, self.area):
@@ -73,7 +75,8 @@ class BlenderTextManager:
 
     def find_area(self):
         # if a previously-claimed area is still there, use it
-        if self.check_area(): return
+        if self.check_area():
+            return
 
         #find a new area
         self.clear()
@@ -81,7 +84,8 @@ class BlenderTextManager:
         ar_text = []
         ar_other = []
         for area in areas:
-            if area.type == "NODE_EDITOR": continue
+            if area.type == "NODE_EDITOR":
+                continue
             ar = ar_text if area.type == "TEXT_EDITOR" else ar_other
             size = area.height * area.width
             ar.append((area, size))
@@ -103,7 +107,9 @@ class BlenderTextManager:
         self.find_area()
         self.setter = None
         block = bpy.data.texts.get(self.textblock)
-        if block is None: block = bpy.data.texts.new(self.textblock)
+        if block is None:
+            block = bpy.data.texts.new(self.textblock)
+
         block.from_string(str(value))
         self.space.text = block
         self.lastvalue = value

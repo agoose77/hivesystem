@@ -11,8 +11,9 @@ from .NodeTree import HiveNodeTree
 
 from bpy.app.handlers import persistent
 
-from . import BlenderTextWidget, BlenderPopup
+from .BlenderTextWidget import BlenderTextWidget, manager as text_widget_manager
 from .BlenderWidgets import BlenderOptionWidget
+from . import BlenderPopup
 
 
 @persistent
@@ -240,16 +241,19 @@ class BlendManager:
         self._workerfinder_global_spydermap = WorkerFinder(spyderbees, [self.hiveguidir])
 
     def _get_associated_textblocks(self, nodetreename, nodetreeclass):
-        name, c = nodetreename, nodetreeclass
+        name, tree_bl_idname = nodetreename, nodetreeclass
         nams = []
-        if c == "Hivemap":
+        if tree_bl_idname == "Hivemap":
             p = name.replace(".", "_")
             n0 = "%s.hivemap"
             nams.append((n0, p))
             nams.append(("hivemaps/" + n0, p))
-        elif c == "Workermap":
+
+        elif tree_bl_idname == "Workermap":
             names0 = [name]
-            if name.endswith("-worker"): names0.append(name[:-len("-worker")])
+            if name.endswith("-worker"):
+                names0.append(name[:-len("-worker")])
+
             for nam in names0:
                 p = nam.replace(".", "_")
                 n0 = "%s.workermap"
@@ -257,9 +261,11 @@ class BlendManager:
                 nams.append(("workermaps/" + n0, p))
                 n0 = "%s.py"
                 nams.append(("workers/" + n0, p))
-        elif c == "Spydermap":
+
+        elif tree_bl_idname == "Spydermap":
             names0 = [name]
-            if name.endswith("-spyder"): names0.append(name[:-len("-spyder")])
+            if name.endswith("-spyder"):
+                names0.append(name[:-len("-spyder")])
             for nam in names0:
                 p = nam.replace(".", "_")
                 n0 = "%s.spydermap"
@@ -323,18 +329,30 @@ class BlendManager:
 
     def check_hivemap_change(self):
         space = bpy.context.space_data
-        if space is None: return
-        if not hasattr(space, "tree_type"): return
-        if space.tree_type not in ("Hivemap", "Workermap", "Spydermap"): return
-        if space.edit_tree is None: return
+        if space is None:
+            return
+
+        if not hasattr(space, "tree_type"):
+            return
+
+        if space.tree_type not in ("Hivemap", "Workermap", "Spydermap"):
+            return
+
+        if space.edit_tree is None:
+            return
+
         nodetree = space.edit_tree.name
-        if nodetree != self.last_nodetree:
-            self.last_nodetree = nodetree
-            if nodetree in self.blend_nodetree_managers:
-                manager = self.blend_nodetree_managers[nodetree]
-                if space.tree_type == "Spydermap":
-                    spyderhive = manager.spydermapmanager._spyderhive
-                    manager.psh.update_spyderhive(spyderhive)
+        if nodetree == self.last_nodetree:
+            return
+
+        self.last_nodetree = nodetree
+        if not nodetree in self.blend_nodetree_managers:
+            return
+
+        manager = self.blend_nodetree_managers[nodetree]
+        if space.tree_type == "Spydermap":
+            spyderhive = manager.spydermapmanager._spyderhive
+            manager.psh.update_spyderhive(spyderhive)
 
     def blend_update(self, *args):
         import spyder
@@ -407,7 +425,6 @@ class BlendManager:
 
                             if isinstance(nodetree, HivemapNodeTree):
                                 node_tree_manager.hivemapmanager._load(map)
-                                node_tree_manager.workermanager.sync_antennafoldstate()
 
                             elif isinstance(nodetree, WorkermapNodeTree):
                                 node_tree_manager.workermapmanager._load(map)
@@ -460,17 +477,17 @@ class BlendManager:
 
                     elif tree_bl_idname == "Workermap":
                         if oldname.endswith("-worker"):
-                            oldname2 = oldname.rstrip("-worker")
+                            oldname2 = oldname[:-len("-worker")]
 
                         if newname.endswith("-worker"):
-                            newname2 = newname.rstrip("-worker")
+                            newname2 = newname[:-len("-worker")]
 
                     elif tree_bl_idname == "Spydermap":
                         if oldname.endswith("-spyder"):
-                            oldname2 = oldname.rstrip("-spyder")
+                            oldname2 = oldname[:-len("-spyder")]
 
                         if newname.endswith("-spyder"):
-                            newname2 = newname.rstrip("-spyder")
+                            newname2 = newname[:-len("-spyder")]
 
                 for block in blocks:
                     p, n = block
@@ -498,7 +515,7 @@ class BlendManager:
 
         self._restore_editors = None
 
-        BlenderTextWidget.manager.check_update()
+        text_widget_manager.check_update()
 
     def _sync_nodetree_to_text(self):
         """
@@ -519,7 +536,7 @@ class BlendManager:
             elif isinstance(nodetree_manager, WorkerMapNodeTreeManager):
                 name = nodetree_manager.name
                 if name.endswith("-worker"):
-                    name = name.rstrip("-worker")
+                    name = name[:-len("-worker")]
 
                 name = name.replace(".", "_")
                 file_name = "{}.workermap".format(name)
@@ -535,7 +552,7 @@ class BlendManager:
             elif isinstance(nodetree_manager, SpyderMapNodeTreeManager):
                 name = nodetree_manager.name
                 if name.endswith("-spyder"):
-                    name = name.rstrip("-spyder")
+                    name = name[:-len("-spyder")]
 
                 name = name.replace(".", "_")
                 file_name = "{}.spydermap".format(name)
@@ -587,12 +604,15 @@ class BlendManager:
                 text_block_name = text_block.name
 
                 extension_string = ".{}".format(extension)
+                extension_length = len(extension_string)
                 if text_block_name.endswith(extension_string):
-                    nodetree_name = text_block_name.rstrip(extension_string)
+                    nodetree_name = text_block_name[:-extension_length]
 
                     folder_string = "{}/".format(folder_name)
+                    folder_length = len(folder_string)
+
                     if nodetree_name.startswith(folder_string):
-                        nodetree_name = nodetree_name.lstrip(folder_string) + tree_suffix
+                        nodetree_name = nodetree_name[folder_length:] + tree_suffix
 
                     if nodetree_name not in bpy.data.node_groups:
                         nodetree = bpy.data.node_groups.new(nodetree_name, tree_manager_class.tree_bl_idname)
@@ -628,7 +648,6 @@ class BlendManager:
             hivemap = Spyder.Hivemap.fromdict(data)
 
             nodetree_manager.hivemapmanager._load(hivemap)
-            nodetree_manager.workermanager.sync_antennafoldstate()
 
         self.for_valid_texts("hivemap", "hivemaps", "", HiveMapNodeTreeManager, load_callback)
 
@@ -642,7 +661,6 @@ class BlendManager:
             data = spyder.core.parse(workermap_string)[1]
 
             workermap = Spyder.Workermap.fromdict(data)
-            nodetree_manager.workermapmanager._load(workermap)
 
         self.for_valid_texts("workermap", "workermaps", "-worker", WorkerMapNodeTreeManager, load_callback)
 
@@ -679,6 +697,8 @@ class BlendManager:
         logging.info("Hive loading hook: {}".format(bpy.data.texts))
 
         self.spyderhive_widget = BlenderOptionWidget(None, "", [])
+        self.docstring_widget = BlenderTextWidget(None, "Docstring")
+
         self.blend_nodetree_managers.clear()
         self.nodetrees = []
         self.activate()

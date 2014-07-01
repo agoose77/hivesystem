@@ -33,7 +33,9 @@ def build_hivemap(hm, *args, **kwargs):
     for worker in hm.workers:
         __workers_and_drones__[worker.workerid] = ("worker", worker)
         wt = worker.workertype
-        if wt in __makehivemap_workers__: continue
+        if wt in __makehivemap_workers__:
+            continue
+
         lastdot = wt.rindex(".")
         if wt.find(":") > -1:  # hivemapworker
             modname, filename = wt.split(":")
@@ -77,7 +79,8 @@ def build_hivemap(hm, *args, **kwargs):
         for drone in hm.drones:
             __workers_and_drones__[drone.droneid] = ("drone", drone)
             dt = drone.dronetype
-            if dt in __makehivemap_drones__: continue
+            if dt in __makehivemap_drones__:
+                continue
             lastdot = dt.rindex(".")
             modname = dt[:lastdot]
             dronename = dt[lastdot + 1:]
@@ -88,6 +91,8 @@ def build_hivemap(hm, *args, **kwargs):
 
     class maphive(frame):
         __makehivemap_worker = None
+        locals()['__doc__'] = hm.docstring
+
         if hm.attributes is not None:
             _attr = None
             for _attr in hm.attributes:

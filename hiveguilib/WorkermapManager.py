@@ -134,10 +134,16 @@ class WorkermapManager(object):
         segments, connections = [], []
         for segid in sorted(worker_ids):
             node, mapping = self._wim.get_node(segid)
-            if node.empty: continue
+            if node.empty:
+                continue
+
             segtype, params, metaparams = workermanager.get_parameters(segid)
-            if params is not None: params = params.items()
-            if metaparams is not None: metaparams = metaparams.items()
+            if params is not None:
+                params = params.items()
+
+            if metaparams is not None:
+                metaparams = metaparams.items()
+
             profile = self._wim.get_workerinstance(segid).curr_profile
 
             seg = Spyder.WorkerSegment(
@@ -159,6 +165,7 @@ class WorkermapManager(object):
             start_node, start_mapping = self._wim.get_node(connection.start_node)
             if start_mapping is None:
                 raise KeyError(connection.start_node)
+
             end_node, end_mapping = self._wim.get_node(connection.end_node)
             if end_mapping is None:
                 raise KeyError(connection.end_node)
@@ -172,6 +179,7 @@ class WorkermapManager(object):
             )
             connections.append(con)
         workermap = Spyder.Workermap(segments, connections)
+        #workermap.docstring =
         return workermap
 
     def save(self, workermapfile, filesaver=None):

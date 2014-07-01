@@ -56,6 +56,7 @@ class PControllerGeneral(PGui):
 
     def set_paramvalues(self, paramdict):
         if "workerid" in paramdict:
+            new_workerid = paramdict["workerid"]
             self._workermanager.rename_worker(new_workerid)
             self._controller_rename_worker(new_workerid)
 
@@ -68,11 +69,12 @@ class PControllerGeneral(PGui):
     def gui_renames_worker(self, new_workerid):
         new_workerid = str(new_workerid)
         mgr = self._workermanager()
-        ok = mgr.gui_renames_worker(self._workerid, new_workerid)
-        if not ok: return False
+        success = mgr.gui_renames_worker(self._workerid, new_workerid)
+        if not success:
+            return False
+
         self._workerid = new_workerid
         return True
 
     def p(self):
         return self._pControllerGeneral
-  

@@ -42,6 +42,7 @@ class BlenderEmptyWidget:
 
 
 class BlenderWidget:
+
     def __init__(self, parent):
         if parent is None:
             self.parent = lambda: None
@@ -52,12 +53,14 @@ class BlenderWidget:
     def draw(self, context, layout):
         if not self._visible:
             return
+
         if self.advanced:
             if not level.minlevel(context, 2):
                 return
-        self.draw2(context, layout)
 
-    def draw2(self, context, layout):
+        self.custom_draw(context, layout)
+
+    def custom_draw(self, context, layout):
         raise NotImplementedError
 
     def show(self):
@@ -74,28 +77,34 @@ class BlenderWidget:
 
 
 class BlenderLayoutWidget(BlenderWidget):
+
     def __init__(self, parent, name=None, buttons=[], advanced=False):
         self.name = name
         self.children = []
         self.pre_buttons = [w for w in buttons if w.layout == "before"]
         self.post_buttons = [w for w in buttons if w.layout == "after"]
         self.advanced = advanced
-        BlenderWidget.__init__(self, parent)
+
+        super().__init__(parent)
 
     def __getattr__(self, attr):
         raise NotImplementedError(attr)
 
     def _is_visible(self):
         visible = False
-        for w in self.pre_buttons + self.children + self.post_buttons:
-            if not w._visible: continue
-            if isinstance(w, BlenderLayoutWidget):
-                if not w._is_visible(): continue
+        for widget in self.pre_buttons + self.children + self.post_buttons:
+            if not widget._visible:
+                continue
+
+            if isinstance(widget, BlenderLayoutWidget):
+                if not widget._is_visible():
+                    continue
+
             visible = True
             break
         return visible
 
-    def draw2(self, context, layout):
+    def custom_draw(self, context, layout):
         if self.name is not None:
             layout = layout.row()
             layout.label(str(self.name))
@@ -137,7 +146,7 @@ class BlenderPlaceholderWidget(BlenderWidget):
     def get(self):
         return self.value
 
-    def draw2(self, context, layout):
+    def custom_draw(self, context, layout):
         txt = "Placeholder: name '%s', type '%s', value '%s'" % (self.name, self.typ, self.value)
         layout.label(txt)
 
@@ -148,9 +157,9 @@ class BlenderLabelWidget(BlenderWidget):
         self.text = text
         self.advanced = advanced
 
-        BlenderWidget.__init__(self, parent)
+        super().__init__(parent)
 
-    def draw2(self, context, layout):
+    def custom_draw(self, context, layout):
         for line in self.text.split("\n"):
             layout.label(line)
 
@@ -165,7 +174,7 @@ class BlenderButtonWidget(BlenderWidget):
         self._listeners = []
         self.advanced = advanced
 
-        BlenderWidget.__init__(self, parent)
+        super().__init__(parent)
 
     def listen(self, callback):
         self._listeners.append(callback)
@@ -177,7 +186,7 @@ class BlenderButtonWidget(BlenderWidget):
         for callback in self._listeners:
             callback()
 
-    def draw2(self, context, layout):
+    def custom_draw(self, context, layout):
         layout.operator(self.widget_id, self.txt)
 
 
@@ -190,7 +199,7 @@ class BlenderIntWidget(BlenderWidget):
         self._listeners = []
         self.advanced = advanced
 
-        BlenderWidget.__init__(self, parent)
+        super().__init__(parent)
 
     def listen(self, callback):
         self._listeners.append(callback)
@@ -219,7 +228,7 @@ class BlenderIntWidget(BlenderWidget):
 
         return self.value
 
-    def draw2(self, context, layout):
+    def custom_draw(self, context, layout):
         layout.prop(context.scene, self.widget_id, text=str(self.name))
 
 
@@ -232,7 +241,7 @@ class BlenderFloatWidget(BlenderWidget):
         self._listeners = []
         self.advanced = advanced
 
-        BlenderWidget.__init__(self, parent)
+        super().__init__(parent)
 
     def listen(self, callback):
         self._listeners.append(callback)
@@ -255,11 +264,12 @@ class BlenderFloatWidget(BlenderWidget):
         if self.value is None: return 0.0
         return self.value
 
-    def draw2(self, context, layout):
+    def custom_draw(self, context, layout):
         layout.prop(context.scene, self.widget_id, text=str(self.name))
 
 
 class BlenderStringWidget(BlenderWidget):
+
     def __init__(self, parent, name, advanced=False):
         self.name = name
         self.value = None
@@ -267,7 +277,7 @@ class BlenderStringWidget(BlenderWidget):
         self._listeners = []
         self.advanced = advanced
 
-        BlenderWidget.__init__(self, parent)
+        super().__init__(parent)
 
     def listen(self, callback):
         self._listeners.append(callback)
@@ -296,11 +306,12 @@ class BlenderStringWidget(BlenderWidget):
 
         return str(self.value)
 
-    def draw2(self, context, layout):
+    def custom_draw(self, context, layout):
         layout.prop(context.scene, self.widget_id, text=str(self.name))
 
 
 class BlenderBoolWidget(BlenderWidget):
+
     def __init__(self, parent, name, advanced=False):
         self.name = name
         self.value = None
@@ -308,7 +319,7 @@ class BlenderBoolWidget(BlenderWidget):
         self._listeners = []
         self.advanced = advanced
 
-        BlenderWidget.__init__(self, parent)
+        super().__init__(parent)
 
     def listen(self, callback):
         self._listeners.append(callback)
@@ -337,7 +348,7 @@ class BlenderBoolWidget(BlenderWidget):
 
         return self.value
 
-    def draw2(self, context, layout):
+    def custom_draw(self, context, layout):
         layout.prop(context.scene, self.widget_id, text=str(self.name))
 
 
@@ -350,8 +361,12 @@ class BlenderOptionWidget(BlenderWidget):
                  advanced_options=None):
         self.name = name
         self.value = None  # string!
-        if option_names is not None: assert len(option_names) == len(options)
-        if option_descriptions is not None: assert len(option_descriptions) == len(options)
+        if option_names is not None:
+            assert len(option_names) == len(options)
+
+        if option_descriptions is not None:
+            assert len(option_descriptions) == len(options)
+
         self.options = [str(o) for o in options]
         self.option_names = option_names
         self.option_descriptions = option_descriptions
@@ -372,7 +387,7 @@ class BlenderOptionWidget(BlenderWidget):
             for o in self.advanced_options:
                 assert o in self.options
 
-        BlenderWidget.__init__(self, parent)
+        super().__init__(parent)
 
     def listen(self, callback):
         self._listeners.append(callback)
@@ -441,5 +456,5 @@ class BlenderOptionWidget(BlenderWidget):
 
         return items + extra_items
 
-    def draw2(self, context, layout):
+    def custom_draw(self, context, layout):
         layout.prop(context.scene, self.widget_id, text=str(self.name))

@@ -2,6 +2,7 @@ import logging, bpy
 
 
 class PSpyderhive(object):
+
     def __init__(self, parent, parentwidget):
         self._parent = parent
         self.mainWin = parentwidget.parent
@@ -21,12 +22,14 @@ class PSpyderhive(object):
 
     def update(self, spyderhive):
         space = bpy.context.space_data
-        if space is None: return
+        if space is None:
+            return
+
         if space.tree_type == "Spydermap" and space.edit_tree is not None:
             if self.mainWin.nodetreemanager.name == space.edit_tree.name:
                 self._parent.gui_sets_spyderhive(spyderhive)
 
     def __del__(self):
+        from ..HBlender.BlendManager import blendmanager
         blendmanager.spyderhive_widget.unlisten(self.update)
-  
-  
+
