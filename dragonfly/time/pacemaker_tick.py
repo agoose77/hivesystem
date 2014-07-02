@@ -29,4 +29,7 @@ class pacemaker_tick(pacemaker_simple):
             self.time = t
             self.ticks += 1
             t = time.time()
+
+    def on_exit(self):
+        self.eventfunc(bee.event("stop"))
   

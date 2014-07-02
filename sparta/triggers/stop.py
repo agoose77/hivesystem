@@ -1,11 +1,10 @@
 import libcontext, bee
+from libcontext.pluginclasses import *
 from bee.segments import *
 
 
 class stop(bee.worker):
-    """
-    The stop trigger fires when the hive gets stopped
-    """
+    """The stop trigger fires when the hive gets stopped"""
 
     trig = output("push", "trigger")
     trigfunc = triggerfunc(trig)
@@ -16,4 +15,6 @@ class stop(bee.worker):
     }
 
     def place(self):
-        raise NotImplementedError("sparta.triggers.stop has not been implemented yet")
+        listener = plugin_single_required(("trigger", self.trigfunc, "stop"))
+        libcontext.plugin(("evin", "listener"), listener)
+

@@ -47,6 +47,9 @@ class pandaapp(bee.drone):
                 self.window.taskMgr.step()
                 self.on_tick()
                 self.pacemaker.tick()
+
+            self.pacemaker.on_exit()
+
         finally:
             self.cleanup()
 

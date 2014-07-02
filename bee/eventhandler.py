@@ -51,7 +51,8 @@ class eventhandler(drone):
 
         for mode, callback, pattern, priority in list(self.listeners):
             self.lock = True
-            if self.doexit():
+
+            if self.doexit() and event.match_head("stop") is None:
                 break
 
             if event.processed:

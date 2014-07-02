@@ -34,5 +34,3 @@ class toggle(bee.worker):
     @classmethod
     def form(cls, f):
         f.state.name = "Initial state"
-              
-      

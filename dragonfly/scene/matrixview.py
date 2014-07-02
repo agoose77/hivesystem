@@ -78,6 +78,7 @@ class matrixview_panda_relative(object):
         wrapmat.setPos(pos)
 
 class matrixview_blender_relative(object):
+
     def __init__(self, viewedmatrix, relativematrix):
         import mathutils
         self.viewedmatrix = viewedmatrix
@@ -86,6 +87,7 @@ class matrixview_blender_relative(object):
         self.relmat = r.localOrientation
         self.relmatinv    = self.relmat.inverted()
         self.relpos = r.localPosition
+
     def mat(self):
         from .matrix import matrix
         import mathutils
@@ -99,6 +101,7 @@ class matrixview_blender_relative(object):
         mat = matrix(viewmat, "Blender")
         mat.set_matrixview(self.commit)
         return mat
+
     def commit(self, viewmat):
         import mathutils
         wrapmat = self.viewedmatrix._wrapmatrix

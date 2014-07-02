@@ -29,6 +29,9 @@ class pacemaker_simple(bee.drone):
         self.time = t
         self.ticks += 1
 
+    def on_exit(self):
+        self.eventfunc(bee.event("stop"))
+
     def place(self):
         libcontext.socket(("evin", "event"), socket_single_required(self.set_eventfunc))
         libcontext.plugin("pacemaker", plugin_supplier(self))

@@ -83,6 +83,8 @@ class blenderapp(bee.drone):
                     last_time = time.time()
                     accumulator += tick_rate * (last_time - current_time)
 
+            self.pacemaker.on_exit()
+
         finally:
             self.cleanup()
             # ##for now, no difference between actors and entities
@@ -445,6 +447,7 @@ from ..time import pacemaker_simple
 
 
 class blenderpacemaker(pacemaker_simple):
+
     def send_input(self):
         self.eventfunc(bee.event("send_input"))
 
