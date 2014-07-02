@@ -372,15 +372,6 @@ class NodeCanvas:
         con_id = next(self._connection_generator)
         ret = True
         if self._hgui is not None:
-
-            f = self._hgui().pushpull_connection
-            if force:
-                f = nullfunc
-            pollmodes = ["Manual", "Every tick", "On change"]
-            funcs = []
-            for pollmode in pollmodes:
-                funcs.append(partial(f, connection, pollmode))
-            blendmanager.popup_callbacks = funcs
             ret = self._hgui().gui_adds_connection(connection, con_id, force)
         if ret or force:
             self._connections[con_id] = connection
@@ -438,7 +429,8 @@ class NodeCanvas:
         self.pop_busy("remove_con")
 
     def set_statusbar_message(self, message):
-        if self._statusbar is None: return
+        if self._statusbar is None:
+            return
         self._statusbar.setMessage(message)
 
     def clear_statusbar_message(self):

@@ -3,6 +3,7 @@ from .anyQt import QtGui, QtCore
 
 
 class PSpyderhive(object):
+
     def __init__(self, parent, parentwidget):
         self._parent = weakref.ref(parent)
         pw = parentwidget.wrapwidget()

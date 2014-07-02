@@ -38,8 +38,8 @@ def init(hmodule):
         def show(self):
             return self._hMainWindow.show()
 
-        def popup(self, title, options):
-            return self._hMainWindow.popup(title, options)
+        def popup(self, title, options, callback):
+            self._hMainWindow.popup(title, options, callback)
 
         def supports_popup(self):
             return self._hMainWindow.supports_popup()

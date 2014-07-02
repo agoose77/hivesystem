@@ -6,10 +6,8 @@ import spyder, Spyder
 
 
 class SpydermapManager(object):
-    def __init__(self, mainwin,
-                 workermanager, workerinstancemanager, pspyderhive,
-                 file_dialog
-    ):
+
+    def __init__(self, mainwin, workermanager, workerinstancemanager, pspyderhive, file_dialog):
         self._mainwin = mainwin
         self._wim = workerinstancemanager
         self._workermanager = workermanager

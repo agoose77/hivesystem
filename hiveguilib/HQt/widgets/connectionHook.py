@@ -212,6 +212,7 @@ class ConnectionHook(QtGui.QGraphicsItem):
         for conn in self.connections():
             conn.setActive(True)
             conn.update()
+
         canvas = self._parentNodeUi().scene()._hqt
         if canvas:
             if self._hoverText is None:

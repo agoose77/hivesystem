@@ -8,7 +8,7 @@ class Layout(object):
             parent = None
 
         elif name == "spyderhive":
-            parent = None
+            parent = "props"
 
         elif name == "proptabs":
             parent = "props"

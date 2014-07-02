@@ -169,7 +169,7 @@ class MainWindow(Layout):
     def show(self):
         for win in self._subwindows: win.show()
 
-    def popup(self, title, options):
+    def popup(self, title, options, callback):
         """
         Blender does not support blocking pop-ups
         Therefore, we must return None immediately (causing the operation to be rejected)
@@ -179,13 +179,10 @@ class MainWindow(Layout):
         from .BlenderPopup import BlenderPopupMenu
         from .BlendManager import blendmanager
 
-        # The callbacks must have been associated previously by the HBlender NodeCanvas
-        assert blendmanager.popup_callbacks is not None and len(blendmanager.popup_callbacks) == len(options)
-        blendmanager.popup_options = options
-
         # We can't set the title without creating a new class
         with BlenderPopupMenu.factory(title) as popup_cls:
-            menu = bpy.ops.wm.call_menu(name=popup_cls.bl_idname)
+            blendmanager.save_popup_data(popup_cls.bl_idname, options, callback)
+            bpy.ops.wm.call_menu(name=popup_cls.bl_idname)
 
         return None
 

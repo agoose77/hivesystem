@@ -179,13 +179,15 @@ class MainWindow(HQt, Layout):
 
         self._menus[menuname].addAction(action)
 
-    def popup(self, title, options):
+    def popup(self, title, options, callback):
         menu = QtGui.QMenu(title)
         for option in options:
             menu.addAction(option)
         result = menu.exec_(QtGui.QCursor.pos())
-        if not result: return None
-        return result.text()
+        if not result:
+            return None
+        option = result.text()
+        callback(option)
 
     def supports_popup(self):
         return True

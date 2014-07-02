@@ -78,7 +78,7 @@ class HivemapManager(object):
 
             worker_manager = self._workermanager
             worker_ids = worker_manager.workerids()
-
+            print(worker.workertype)
             # If an ID clash occurred
             worker_id = worker.workerid
 

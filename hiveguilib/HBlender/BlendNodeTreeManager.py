@@ -44,7 +44,7 @@ class HiveMapNodeTreeManager(BlendNodeTreeManager):
         self.controller_general.set_workerinstancemanager(self.workerinstancemanager)
         self.controller_block.set_workerinstancemanager(self.workerinstancemanager)
         self.pwins = {}
-     #   self.pwins["docs"] = PGui.PStaticWindow(self.mainWin, "props-docs", self.controller_general)
+
         self.pwins["general"] = PGui.PWindow(self.mainWin, "props-general", self.controller_general)
         self.pwins["params"] = PGui.PWidgetWindow(self.mainWin, "props-params")
         self.pwins["metaparams"] = PGui.PWidgetWindow(self.mainWin, "props-metaparams")

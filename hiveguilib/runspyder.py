@@ -53,7 +53,7 @@ def run(readmetxt=None):
     wfc = workermanager._workerfinderclass
     hiveguidir = os.path.split(__file__)[0]
 
-    workermanager.find_global_workers(currdir, hiveguidir, remove=False)  #just to find spyderhives
+    workermanager.find_global_worFkers(currdir, hiveguidir, remove=False)  #just to find spyderhives
 
     spydermapmanager = SpydermapManager(
         mainWin,

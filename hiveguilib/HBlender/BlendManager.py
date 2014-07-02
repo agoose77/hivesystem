@@ -12,7 +12,7 @@ from .NodeTree import HiveNodeTree
 from bpy.app.handlers import persistent
 
 from .BlenderTextWidget import BlenderTextWidget, manager as text_widget_manager
-from .BlenderWidgets import BlenderOptionWidget
+from .BlenderWidgets import BlenderOptionWidget, BlenderLabelWidget
 from . import BlenderPopup
 
 
@@ -143,11 +143,32 @@ class BlendManager:
         self._scheduled = []
         self._activated = False
 
-        self.popup_window = None
-        self.popup_options = None
-        self.popup_callbacks = None
+        self.popup_callbacks = {}
 
         self.last_nodetree = None
+
+    def get_popup_data(self, popup_id):
+        """Return the popup data for a given popup id
+
+        :param popup_id: ID of popup menu
+        """
+        return self.popup_callbacks[popup_id]
+
+    def save_popup_data(self, popup_id, options, callback):
+        """Store popup callback for popup menu
+
+        :param popup_id: ID of popup menu
+        :param callback: callback to invoke for menu
+        """
+        def wrapper(*args, **kwargs):
+            """Wrapper to prevent callback entering update loop"""
+            self._loading = True
+            callback(*args, **kwargs)
+            self._loading = False
+
+            self.popup_callbacks.pop(popup_id)
+
+        self.popup_callbacks[popup_id] = options, wrapper
 
     def popup_select(self, result):
         assert result in self.popup_options, result

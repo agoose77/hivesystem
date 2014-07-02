@@ -40,9 +40,7 @@ def viewupdate(m, con, *args):
     m._old_status = status
 
 
-def PGenerator(paramnames, paramtypelist, paramvalues,
-               update_callback, buttons=[], form_manipulators=[]
-):
+def PGenerator(paramnames, paramtypelist, paramvalues, update_callback, buttons=[], form_manipulators=[]):
     contains_reserved = False
     paramnames2 = paramnames
 

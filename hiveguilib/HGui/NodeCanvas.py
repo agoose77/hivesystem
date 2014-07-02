@@ -2,6 +2,7 @@ from __future__ import print_function, absolute_import
 
 from . import HGui, Connection, Node, Hook, Attribute
 import weakref
+from functools import partial
 from bee.types import typecompare as bee_typecompare
 
 
@@ -135,14 +136,14 @@ class NodeCanvas(HGui):
             #more than 1 connection to pull antenna
             if end_hook.mode == "pull":
                 is_single_connection = True
-                for connection in self._connections.values():
-                    if connection is connection:
+                for connection_ in self._connections.values():
+                    if connection is connection_:
                         continue
 
-                    if connection.end_node != connection.end_node:
+                    if connection.end_node != connection_.end_node:
                         continue
 
-                    if connection.end_attribute != connection.end_attribute:
+                    if connection.end_attribute != connection_.end_attribute:
                         continue
 
                     is_single_connection = False
@@ -173,11 +174,8 @@ class NodeCanvas(HGui):
         if self.workermanager is None:
             return False  # in case we are running WorkerGUI
 
-        result = self.mainWindow.popup("Poll mode", ["Manual", "Every tick", "On change"])
-        if result is None:
-            return False  # non-blocking popup
-
-        self.pushpull_connection(connection, result)  # or: blocking popup
+        create_pushpull = partial(self.pushpull_connection, connection)
+        self.mainWindow.popup("Poll mode", ["Manual", "Every tick", "On change"], create_pushpull)
         return False  # in any case, the old connection must go
 
     def pushpull_connection(self, connection, pollmode):

@@ -50,7 +50,7 @@ class hop_out(object):
             }
 
             def place(self):
-                raise NotImplementedError("sparta.assessors.hop_out has not been implemented yet")
+                raise NotImplementedError("sparta.assessors.hop_out is not designed for use outside of the Hive GUI")
 
         return hop_out
     

@@ -153,14 +153,20 @@ class BlenderPlaceholderWidget(BlenderWidget):
 
 class BlenderLabelWidget(BlenderWidget):
 
-    def __init__(self, parent, text, advanced=False):
+    def __init__(self, parent, text, advanced=False, multiple_lines=True):
         self.text = text
         self.advanced = advanced
+        self.multiple_lines = multiple_lines
 
         super().__init__(parent)
 
     def custom_draw(self, context, layout):
-        for line in self.text.split("\n"):
+        if self.multiple_lines:
+            text = self.text.split("\n")
+        else:
+            text = [self.text]
+
+        for line in text:
             layout.label(line)
 
 

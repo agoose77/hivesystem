@@ -435,7 +435,7 @@ def draw_hive_menu(self, context):
 
 
 def draw_hive_level(self, context):
-    if BlendManager.use_hive_get(context) and isinstance(context.space_data.edit_tree, HivemapNodeTree):
+    if BlendManager.use_hive_get(context) and context.space_data.tree_type == "Hivemap":
         self.layout.prop(context.screen, "hive_level", text="")
 
 
@@ -452,6 +452,7 @@ def draw_docstring(self, context):
 
 
 def check_tab_control(self, context):
+    """Determine if we can launch the Hive level modal operator keyboard listener"""
     if context.screen.use_hive:
         if ChangeHiveLevel.can_invoke():
             bpy.ops.node.change_hive_level("INVOKE_DEFAULT")

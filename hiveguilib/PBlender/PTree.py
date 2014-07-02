@@ -2,6 +2,7 @@ import logging
 
 
 class PTree(object):
+
     def __init__(self, parent=None, on_select=None):
         # In Blender, we are not really an independent widget;
         # instead, we re-direct all operations to the Blender NodeItemManager

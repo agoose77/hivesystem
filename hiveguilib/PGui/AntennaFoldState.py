@@ -2,6 +2,7 @@ import weakref
 
 
 class Antenna(object):
+
     def __init__(self, typ):
         self.typ = typ
         self.fold = False
@@ -12,6 +13,7 @@ class Antenna(object):
 
 
 class AntennaFoldState(object):
+
     def __init__(self, nodecanvas, workermanager):
         self._sync = {}
         self._init_form = {}
@@ -75,8 +77,6 @@ class AntennaFoldState(object):
         # If worker already initialised
         if workerid in self._init_widget:
             return
-
-        print("DOINIT", workerid)
 
         self._init_widget[workerid] = True
         self._pAntennaFoldState.init_widget(workerid, widget, controller)

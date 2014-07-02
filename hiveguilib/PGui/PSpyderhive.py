@@ -32,4 +32,3 @@ class PSpyderhive(PGui):
 
     def p(self):
         return self._pSpyderhive
-  
