@@ -1,3 +1,13 @@
+class KX_GameObject_HiveProxy(object):
+
+    def __init__(self, ori, pos):
+        self.localOrientation = ori
+        self.localPosition = pos
+
+    def __getattr__(self, attr):
+        raise AttributeError("KX_GameObject_HiveProxy only supports localOrientation, localPosition")
+
+
 class matrixview_panda_local(object):
     def __init__(self, viewedmatrix):
         self.viewedmatrix = viewedmatrix
@@ -67,14 +77,57 @@ class matrixview_panda_relative(object):
         wrapmat.setMat(mat)
         wrapmat.setPos(pos)
 
+class matrixview_blender_relative(object):
+    def __init__(self, viewedmatrix, relativematrix):
+        import mathutils
+        self.viewedmatrix = viewedmatrix
+        assert relativematrix is not None
+        r = relativematrix.get_proxy("Blender")
+        self.relmat = r.localOrientation
+        self.relmatinv    = self.relmat.inverted()
+        self.relpos = r.localPosition
+    def mat(self):
+        from .matrix import matrix
+        import mathutils
+        wrapmat = self.viewedmatrix._wrapmatrix
+        pos0 = wrapmat.localPosition
+        mat0 = wrapmat.localOrientation
+        vmat = mat0 * self.relmatinv
+        dpos = pos0 - self.relpos
+        dpos2 = self.relmatinv * dpos
+        viewmat = KX_GameObject_HiveProxy(vmat, dpos2)
+        mat = matrix(viewmat, "Blender")
+        mat.set_matrixview(self.commit)
+        return mat
+    def commit(self, viewmat):
+        import mathutils
+        wrapmat = self.viewedmatrix._wrapmatrix
+        oldpos = wrapmat.localPosition
+
+        mat = viewmat.localOrientation * self.relmat
+        pos0 = viewmat.localPosition
+        pos0a = self.relmat * pos0
+        pos = pos0a + self.relpos
+
+        #mat contains rotation and translation, so first set mat, then pos
+        wrapmat.localOrientation = mat
+        wrapmat.localPosition = pos
 
 def matrixview_panda(viewedmatrix, mode, secondmatrix=None):
-    if mode == "local": return matrixview_panda_local(viewedmatrix)
-    if mode == "relative": return matrixview_panda_relative(viewedmatrix, secondmatrix)
-    raise ValueError(mode)  # TODO: many
+    if mode == "local":
+        return matrixview_panda_local(viewedmatrix)
+    if mode == "relative":
+        return matrixview_panda_relative(viewedmatrix, secondmatrix)
+    raise ValueError(mode) #TODO: many
 
+def matrixview_blender(viewedmatrix, mode, secondmatrix=None):
+    if mode == "relative":
+        return matrixview_blender_relative(viewedmatrix, secondmatrix)
+    raise ValueError(mode) #TODO: many
 
 def matrixview(viewedmatrix, mode, secondmatrix=None):
-    if viewedmatrix._format == "NodePath": return matrixview_panda(viewedmatrix, mode, secondmatrix).mat()
-    raise ValueError(viewedmatrix._format)  # TODO: blender, spyder
-    
+    if viewedmatrix._format == "NodePath":
+        return matrixview_panda(viewedmatrix, mode, secondmatrix).mat()
+    if viewedmatrix._format == "Blender":
+        return matrixview_blender(viewedmatrix, mode, secondmatrix).mat()
+    raise ValueError(viewedmatrix._format) #TODO: spyder

@@ -15,7 +15,11 @@ class matrix(object):
     def get_proxy(self, format):
         assert format in self.formats
         # if format == self._format: return self._wrapmatrix
-        if (format, self._format) == ("NodePath", "NodePath"):
+        if (format, self._format) == ("Blender", "Blender"):
+            from .matrix_blender import blender_wraps_blender
+
+            proxy = blender_wraps_blender(self._wrapmatrix)
+        elif (format, self._format) == ("NodePath", "NodePath"):
             from .matrix_panda import nodepath_wraps_nodepath
 
             proxy = nodepath_wraps_nodepath(self._wrapmatrix)
@@ -55,7 +59,7 @@ class matrix(object):
         elif (format, self._format) == ("AxisSystem", "Blender"):
             from .matrix_spyder import blender_to_axissystem
 
-            return blender_to_axissystem(self._wrapmatrix.getMat())
+            return blender_to_axissystem(self._wrapmatrix)
         elif (format, self._format) == ("NodePath", "AxisSystem"):
             from .matrix_panda import axissystem_to_mat4
 
@@ -66,7 +70,7 @@ class matrix(object):
         elif (format, self._format) == ("NodePath", "Blender"):
             from .matrix_panda import blender_to_nodepath
 
-            return blender_to_nodepath(self._wrapmatrix.getMat())
+            return blender_to_nodepath(self._wrapmatrix)
         else:
             raise TypeError("Not implemented: %s to %s" % (self._format, format))
 

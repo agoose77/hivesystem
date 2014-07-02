@@ -1,3 +1,19 @@
+class blender_wraps_blender(object):
+    _matrixview = None
+    def __init__(self, wrapped):
+        self._wrapped = wrapped
+
+    def __getattr__(self, attr):
+        return getattr(self._wrapped, attr)
+
+    def set_matrixview(self, matrix_view):
+        self._matrixview = matrix_view
+
+    def commit(self):
+        if self._matrixview is not None:
+            self._matrixview(self._wrapped)
+
+
 def axissystem_to_blender(a, blenderobject):
     import mathutils
 

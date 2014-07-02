@@ -77,7 +77,7 @@ def read_conf(block):
         filepath = bpy.path.abspath("//" + block)
         if os.path.exists(filepath):
             opened_file = open(filepath)
-            contents = opened_file.splitlines()
+            contents = opened_file.readlines()
             opened_file.close()
 
             return contents

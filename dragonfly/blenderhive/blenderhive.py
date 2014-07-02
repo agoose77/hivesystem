@@ -25,6 +25,8 @@ class blenderapp(bee.drone):
         self._entities = {}
         self._entity_names = {}
         self._actorclasses = {}
+        self._relmatrices = {}
+        self._ref_entities = {}
         self._entity_classes = {}
         self._animationdict = {}
 
@@ -184,6 +186,11 @@ class blenderapp(bee.drone):
         entity = entity_dict.pop(entity_name)
         name_dict.pop(entity)
         entity.endObject()
+        if entity_name in self._ref_entities:
+            del self._ref_entities[entity_name]
+
+        if entity_name in self._relmatrices:
+            del self._relmatrices[entity_name]
 
     def get_entity_blender(self, entityname, entity_dict=None, camera=None):
         #TODO question this logic
@@ -211,6 +218,30 @@ class blenderapp(bee.drone):
     def get_entity_nodepath(self, entityname, entity_dict=None, camera=None):
         ent = self.get_entity(entityname, entity_dict, camera)
         return ent.get_proxy("NodePath")
+
+    def get_entity_view(self, view, entity_name, entity_dict=None, camera=None, format="Blender"):
+        from ..scene.matrix import matrix
+        from ..scene.matrixview import KX_GameObject_HiveProxy
+        ent = self.get_entity_blender(entity_name, entity_dict, camera)
+        entmat = matrix(ent, format)
+        secondmatrix = None
+
+        if view == "relative":
+            if entity_name not in self._relmatrices:
+                rel = KX_GameObject_HiveProxy(ent.localOrientation, ent.localPosition)
+                self._relmatrices[entity_name] = matrix(rel, "Blender")
+            secondmatrix = self._relmatrices[entity_name]
+
+        elif view == "reference":
+            try:
+                ref_entname = self._ref_entities[entity_name]
+                ref_ent = self.get_entity_blender(ref_entname,entity_dict)
+                secondmatrix = matrix(ref_ent, format)
+            except KeyError:
+                self._ref_entities[entity_name] = entity_name
+                secondmatrix = entmat
+
+        return entmat.get_view(view, secondmatrix)
 
     def entity_get_collisions(self, entity_name, entity_dict=None, camera=None):
         return [collision_info[1] for collision_info in self._collision_dict[entity_name]]
@@ -374,6 +405,12 @@ class blenderapp(bee.drone):
         libcontext.plugin(("get_entity", "Blender"), plugin_supplier(self.get_entity_blender))
         libcontext.plugin(("get_entity", "AxisSystem"), plugin_supplier(self.get_entity_axissystem))
         libcontext.plugin(("get_entity", "NodePath"), plugin_supplier(self.get_entity_nodepath))
+
+        for view in ("local", "relative", "reference"):
+            libcontext.plugin(("get_entity", "view", view), plugin_supplier(functools.partial(self.get_entity_view, view)))
+            libcontext.plugin(("get_entity", "view", view, "Blender"), plugin_supplier(functools.partial(self.get_entity_view, view)))
+            libcontext.plugin(("get_entity", "view", view, "NodePath"), plugin_supplier(functools.partial(self.get_entity_view, view, format="NodePath")))
+            libcontext.plugin(("get_entity", "view", view, "AxisSystem"), plugin_supplier(functools.partial(self.get_entity_view, view, format="AxisSystem")))
 
         libcontext.socket(("blender", "register_entityclass"), socket_container(self._register_entity_class))
         libcontext.plugin(("blender", "entityclass-register"), plugin_supplier(self._register_entity_class))
