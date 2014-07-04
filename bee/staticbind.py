@@ -16,116 +16,114 @@ from . import myobject, mytype
 def get_reg_bindhelper(fr, dicvalues):
     from .hivemodule import allreg
 
-    for d in dicvalues:
+    for value in dicvalues:
         try:
-            allreg.add(d)
+            allreg.add(value)
+
         except TypeError:  # cannot weakref everything
             pass
+
     ret = []
     if fr in reg_bindhelper.reg:
         for a in reg_bindhelper.reg[fr]:
-            if a in allreg: continue
+            if a in allreg:
+                continue
+
             allreg.add(a)
             ret.append(a)
+
         del reg_bindhelper.reg[fr]
+
     return ret
 
 
 class staticbindbuilder(bindbuilder):
-    def __new__(cls, name, bases, dic):
+
+    def __new__(cls, name, bases, cls_dict):
         if name == "staticbind_baseclass":
-            return mytype.__new__(cls, name, bases, dic)
-        rdic = {}
-        rbases = list(bases)
-        rbases.reverse()
+            return mytype.__new__(cls, name, bases, cls_dict)
+
+        inherited_class_dict = {}
 
         bindhelpers_nameless = []
-        for b in bases:
-            if hasattr(b, "__bindhelpers__"):
-                for h in b.__bindhelpers__:
-                    if h not in bindhelpers_nameless: bindhelpers_nameless.append(h)
+        for base_cls_ in bases:
+            if hasattr(base_cls_, "__bindhelpers__"):
+                for h in base_cls_.__bindhelpers__:
+                    if h not in bindhelpers_nameless:
+                        bindhelpers_nameless.append(h)
 
-        for b in rbases:
-            bdict = b.__dict__
-            if issubclass(b, bind_baseclass):
-                bdict = dict(bdict)
-                bdict.pop("bindname", None)
-            rdic.update(bdict)
-        oldbindparameters = {}
-        for k in rdic:
-            if isinstance(rdic[k], bindparameter): oldbindparameters[k] = rdic[k]
-        rdic.update(dic)
+        for base_cls_ in reversed(bases):
+            cls_dict_ = base_cls_.__dict__
 
-        fr = id(inspect.currentframe().f_back)
-        bindhelpers_nameless += get_reg_bindhelper(fr, rdic.values())
-        rdic["__bindhelpers__"] = bindhelpers_nameless
-        bindhelpers = []
-        rdkeys = rdic.keys()
-        for k in sorted(rdkeys):
-            a = rdic[k]
-            if isinstance(a, bindhelper): bindhelpers.append((k, a))
-        bindparameters = [h for h in bindhelpers if isinstance(h[1], bindparameter)]
+            if issubclass(base_cls_, bind_baseclass):
+                cls_dict_ = dict(cls_dict_)
+                cls_dict_.pop("bindname", None)
 
-        dicitems = [(k, dic[k]) for k in sorted(dic.keys())]
-        morebindparameters = [(h[0], bindparameter(h[1])) for h in dicitems if
-                              h not in bindparameters and h[0] in oldbindparameters]
-        bindparameters += morebindparameters
-        bindparameternames = set([h[0] for h in bindparameters])
+            inherited_class_dict.update(cls_dict_)
 
-        bindhelpers.sort(key=lambda n: n[0])
+        old_bind_parameters = {}
+        for key in inherited_class_dict:
+            if isinstance(inherited_class_dict[key], bindparameter):
+                old_bind_parameters[key] = inherited_class_dict[key]
 
-        bindantennas = [n for n in bindhelpers if isinstance(n[1], bindantenna)]
-        bindantennas = [n for n in bindantennas if n[0] != "bindname"]
-        if len(bindantennas):
-            raise TypeError("Static bind workers cannot take bindantennas: %s" % str(bindantennas))
+        inherited_class_dict.update(cls_dict)
 
-        bindhelpers += [((nr + 1), a) for nr, a in enumerate(bindhelpers_nameless)]
+        caller_frame = id(inspect.currentframe().f_back)
+        bindhelpers_nameless += get_reg_bindhelper(caller_frame, inherited_class_dict.values())
+        inherited_class_dict["__bindhelpers__"] = bindhelpers_nameless
+        bind_helpers = []
 
-        binders = [n[1] for n in bindhelpers if isinstance(n[1], binder)]
-        for b in binders: assert b.parametername in bindparameternames, b.parametername
+        for key in sorted(inherited_class_dict.keys()):
+            attribute = inherited_class_dict[key]
+            if isinstance(attribute, bindhelper):
+                bind_helpers.append((key, attribute))
 
-        prebinders = [n[1] for n in bindhelpers if isinstance(n[1], prebinder)]
-        if len(prebinders): raise Exception("Prebinders not implemented for static bind bees")
+        bind_parameters = [h for h in bind_helpers if isinstance(h[1], bindparameter)]
+
+        sorted_cls_dict = [(key, cls_dict[key]) for key in sorted(cls_dict.keys())]
+        inherited_bind_parameters = [(item[0], bindparameter(item[1])) for item in sorted_cls_dict if
+                                     item not in bind_parameters and item[0] in old_bind_parameters]
+
+        bind_parameters += inherited_bind_parameters
+        bind_parameter_names = set([h[0] for h in bind_parameters])
+
+        bind_helpers.sort(key=lambda n: n[0])
+
+        # Check for bindantennas
+        for helper_name, helper in bind_helpers:
+            if isinstance(helper, bindantenna) and helper_name != "bindname":
+                raise TypeError("Static bind workers cannot take bindantennas")
+
+        bind_helpers += [((index + 1), attribute) for index, attribute in enumerate(bindhelpers_nameless)]
+
+        binders = [n[1] for n in bind_helpers if isinstance(n[1], binder)]
+        for base_cls_ in binders:
+            assert base_cls_.parametername in bind_parameter_names, base_cls_.parametername
+
+        # Check for prebinders
+        for helper_name, helper in bind_helpers:
+            if isinstance(helper, prebinder):
+                raise Exception("Prebinders not implemented for static bind bees")
 
         def get_bindhiveworker(*args, **kwargs):
+
             class bindhiveworker(bindworker):
                 __beename__ = name + "-worker"
-                bindworkerhive = rdic["hive"]
+
+                bindworkerhive = inherited_class_dict["hive"]
                 bindname = antenna("pull", "id")
                 b_bindname = buffer("pull", "id")
                 trigger_bindname = triggerfunc(b_bindname)
                 connect(bindname, b_bindname)
 
-                class propclass(object):
-                    def __init__(self, value):
-                        self.value = value
+                parameter = None
+                for parameter in bind_parameters:
+                    locals()[parameter[0]] = parameter[1].value  #changes can only be made by subclassing
 
-                    def get(self, instance):
-                        try:
-                            ret = instance.value
-                            if isinstance(ret, tuple) and len(ret) == 2 and ret[-1] == "value":
-                                raise AttributeError
-                        except AttributeError:
-                            return self.value
-
-                    def set(self, instance, value):
-                        instance.value = value
-
-                # bindhive = None
-                #if rdic["hive"] != None:
-                #  class bindhive(rdic["hive"]): pass
-                #prop = propclass(bindhive)
-                #hive = property(prop.get, prop.set)
-                #del bindhive, prop
-                p = None
-                for p in bindparameters:
-                    locals()[p[0]] = p[1].value  #changes can only be made by subclassing
-                del p
+                del parameter
 
                 def do_bind(self):
-                    #if not hasattr(self, "hive") or self.hive is None:
-                    #  print(self, self.__dict__)
-                    #  raise ValueError('"hive" is not defined in bind class "%s"' % name)
+
                     class newhive(self.hive):
                         zzz_bindbridgedrone = bindbridge(self)
                         raiser = raiser()
@@ -136,11 +134,16 @@ class staticbindbuilder(bindbuilder):
                         libcontext.push(self._context.contextname)
                         hive.build(self.b_bindname)
                         hive.place()
+
                     finally:
                         libcontext.pop()
+
                     hive.close()
                     hive.init()
-                    for f in self.startupfunctions: f()
+
+                    for startup_function in self.startupfunctions:
+                        startup_function()
+
                     self.hives[self.b_bindname] = hive
 
                 pause = antenna("push", "trigger")
@@ -176,9 +179,10 @@ class staticbindbuilder(bindbuilder):
 
                 @modifier
                 def m_event(self):
+                    event = self.v_event
                     if self.v_running:
-                        for f in self.eventfuncs:
-                            f(self, v_event)
+                        for event_handler in self.eventfuncs:
+                            event_handler(self, event)
 
                 trigger(v_event, m_event)
 
@@ -191,25 +195,35 @@ class staticbindbuilder(bindbuilder):
                     self.eventfuncs = []
                     self.binderinstances = []
                     self.startupfunctions = []
-                    done = set()
-                    for b in binders:
-                        inst = b.getinstance()
-                        if inst != None:
-                            params = inst.parametername, inst.parametervalue, str(
-                                inst.binderdroneinstance.__beename__), tuple(inst.antennanames)
-                            if params in done: continue
-                            done.add(params)
-                            self.binderinstances.append(inst)
-                    for b in self.binderinstances:
-                        if getattr(self, b.parametername) != b.parametervalue: continue
-                        b.place()
-                    p = libcontext.pluginclasses.plugin_single_required(self.init)
-                    libcontext.plugin("startupfunction", p)
+
+                    handled_parameters = set()
+
+                    for binder in binders:
+                        inst = binder.getinstance()
+                        if inst is None:
+                            continue
+
+                        params = inst.parametername, inst.parametervalue, str(
+                            inst.binderdroneinstance.__beename__), tuple(inst.antennanames)
+                        if params in handled_parameters:
+                            continue
+
+                        handled_parameters.add(params)
+                        self.binderinstances.append(inst)
+
+                    for binder in self.binderinstances:
+                        if getattr(self, binder.parametername) != binder.parametervalue:
+                            continue
+
+                        binder.place()
+
+                    init_plugin = libcontext.pluginclasses.plugin_single_required(self.init)
+                    libcontext.plugin("startupfunction", init_plugin)
 
             return bindhiveworker(*args, **kwargs)
 
-        rdic["worker"] = staticmethod(lambda *args, **kwargs: get_bindhiveworker(*args, **kwargs))
-        return type.__new__(cls, name, (staticbind_baseclass,), rdic)
+        inherited_class_dict["worker"] = staticmethod(lambda *args, **kwargs: get_bindhiveworker(*args, **kwargs))
+        return type.__new__(cls, name, (staticbind_baseclass,), inherited_class_dict)
 
 
 from .segments._helpersegment import reg_helpersegment
@@ -224,6 +238,7 @@ if python3:
         __metaclass__ = staticbindbuilder
         hive = None  # make some prebinders that change self.hive if you need dynamic binding
         worker = None
+
 else:
     class staticbind_baseclass(myobject):
         __metaclass__ = staticbindbuilder
