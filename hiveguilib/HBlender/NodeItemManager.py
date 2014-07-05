@@ -70,6 +70,7 @@ class NodeItem:
     def _active(self, context):
         if context.space_data.edit_tree is None:
             return False
+
         if context.space_data.edit_tree.name not in self.manager._nodeitem_trees[self.fullkey]:
             return False
         if not level.active(context, tuple(self.fullkey.split("."))): return
@@ -98,12 +99,8 @@ class NodeItemMenu:
 
             return self.draw(struct.layout, context)
 
-        cls_dict = dict(
-            bl_space_type='NODE_EDITOR',
-            bl_label="<HiveMenu>",
-            draw=menudraw,
-            poll=self.poll,
-        )
+        cls_dict = dict(bl_space_type='NODE_EDITOR', bl_label="<HiveMenu>", draw=menudraw, poll=self.poll)
+
         name = self.name
         if self.fullname is not None:
             name = self.name + "_" + "_".join(self.fullname)
@@ -120,9 +117,13 @@ class NodeItemMenu:
             bpy.utils.register_class(self.panelclass)
 
     def _active(self, context):
-        if not level.active(context, self.fullname): return False
+        if not level.active(context, self.fullname):
+            return False
+
         for child in self.children:
-            if child._active(context): return True
+            if child._active(context):
+                return True
+
         return False
 
     def draw(self, layout, context):
@@ -149,35 +150,48 @@ class NodeItemManager:
         self._nodeitem_names = []
         self._nodeitem_trees = {}
 
-    def append(self, nodetreename, key):
-        # print("NodeItemManager ADD", nodetreename, key)
-        fullkey = ".".join(key)
-        if fullkey not in self._nodeitem_names:
-            self._nodeitem_names.append(fullkey)
-            self._nodeitem_trees[fullkey] = []
+    def append(self, node_tree_name, path):
+        full_path = ".".join(path)
 
-            item = NodeItem(self, key[-1], fullkey)
-            self._nodeitems[key] = item
+        if full_path not in self._nodeitem_names:
+            self._nodeitem_names.append(full_path)
+            self._nodeitem_trees[full_path] = []
+
+            item = NodeItem(self, path[-1], full_path)
+            self._nodeitems[path] = item
             child = item
-            for n in range(len(key) - 1, 0, -1):
-                partkey = key[:n]
-                if partkey not in self._nodeitems:
-                    k = key[n - 1]
-                    make_panel = (n == 1)
-                    menu = NodeItemMenu(k, partkey, make_panel)
-                    self._nodeitems[partkey] = menu
+
+            for key_index in range(len(path) - 1, 0, -1):
+                path_slice = path[:key_index]
+                if path_slice not in self._nodeitems:
+                    path_component = path[key_index - 1]
+                    make_panel = (key_index == 1)
+                    menu = NodeItemMenu(path_component, path_slice, make_panel)
+                    self._nodeitems[path_slice] = menu
+
                 else:
-                    menu = self._nodeitems[partkey]
+                    menu = self._nodeitems[path_slice]
+
                 if child not in menu.children:
                     menu.children.append(child)
+
                 child = menu
+
             if child not in self._nodeitem_objects.children:
                 self._nodeitem_objects.children.append(child)
-        self._nodeitem_trees[fullkey].append(nodetreename)
 
-    def remove(self, nodetreename, key):
-        print("NodeItemManager REMOVE", nodetreename, key)
+        self._nodeitem_trees[full_path].append(node_tree_name)
+
+    def remove(self, node_tree_name, key):
+        # TODO implement removal
         raise NotImplementedError
+
+    def rename(self, old_node_tree_name, new_node_tree_name):
+        for full_key, node_trees in self._nodeitem_trees.items():
+            if not old_node_tree_name in node_trees:
+                continue
+
+            node_trees[node_trees.index(old_node_tree_name)] = new_node_tree_name
 
     def draw_menu(self, struct, context):
         menu = self._nodeitem_objects

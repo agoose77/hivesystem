@@ -469,6 +469,7 @@ class BlendManager:
 
         node_tree_manager = self.blend_nodetree_managers.pop(old_name)
         node_tree_manager.name = new_name
+        self.nodeitemmanager.rename(old_name, new_name)
         self.blend_nodetree_managers[new_name] = node_tree_manager
 
         new_name_underscores = new_name.replace(".", "_")
