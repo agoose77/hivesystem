@@ -49,23 +49,20 @@ def game_post(dummy):
 def get_nodetree_spaces():
     nodetree_editors = {}
 
-    for screen in bpy.data.screens:
-        for area in screen.areas:
-            for space in area.spaces:
-                if space.type != 'NODE_EDITOR':
-                    continue
+    for screen, area, space in ((s, a, sp) for s in bpy.data.screens for a in s.areas for sp in a.spaces
+                                if sp.type == "NODE_EDITOR"):
+        node_tree = space.edit_tree
+        if not isinstance(node_tree, HiveNodeTree):
+            continue
 
-                node_tree = space.edit_tree
-                if not isinstance(node_tree, HiveNodeTree):
-                    continue
+        name = node_tree.name
+        BlendManager._clear_nodetree(node_tree)
 
-                name = node_tree.name
-                BlendManager._clear_nodetree(node_tree)
+        if name not in nodetree_editors:
+            nodetree_editors[name] = []
 
-                if name not in nodetree_editors:
-                    nodetree_editors[name] = []
+        nodetree_editors[name].append(space)
 
-                nodetree_editors[name].append(space)
     return nodetree_editors
 
 
@@ -263,12 +260,12 @@ class BlendManager:
 
     def _get_associated_textblocks(self, nodetreename, nodetreeclass):
         name, tree_bl_idname = nodetreename, nodetreeclass
-        nams = []
+        path_and_names = []
         if tree_bl_idname == "Hivemap":
-            p = name.replace(".", "_")
-            n0 = "%s.hivemap"
-            nams.append((n0, p))
-            nams.append(("hivemaps/" + n0, p))
+            underscore_name = name.replace(".", "_")
+            name_formatter = "%s.hivemap"
+            path_and_names.append((name_formatter, underscore_name))
+            path_and_names.append(("hivemaps/" + name_formatter, underscore_name))
 
         elif tree_bl_idname == "Workermap":
             names0 = [name]
@@ -276,25 +273,25 @@ class BlendManager:
                 names0.append(name[:-len("-worker")])
 
             for nam in names0:
-                p = nam.replace(".", "_")
-                n0 = "%s.workermap"
-                nams.append((n0, p))
-                nams.append(("workermaps/" + n0, p))
-                n0 = "%s.py"
-                nams.append(("workers/" + n0, p))
+                underscore_name = nam.replace(".", "_")
+                name_formatter = "%s.workermap"
+                path_and_names.append((name_formatter, underscore_name))
+                path_and_names.append(("workermaps/" + name_formatter, underscore_name))
+                name_formatter = "%s.py"
+                path_and_names.append(("workers/" + name_formatter, underscore_name))
 
         elif tree_bl_idname == "Spydermap":
             names0 = [name]
             if name.endswith("-spyder"):
                 names0.append(name[:-len("-spyder")])
             for nam in names0:
-                p = nam.replace(".", "_")
-                n0 = "%s.spydermap"
-                nams.append((n0, p))
-                nams.append(("spydermaps/" + n0, p))
+                underscore_name = nam.replace(".", "_")
+                name_formatter = "%s.spydermap"
+                path_and_names.append((name_formatter, underscore_name))
+                path_and_names.append(("spydermaps/" + name_formatter, underscore_name))
 
         ret = []
-        for nam in nams:
+        for nam in path_and_names:
             if nam[0] % nam[1] in bpy.data.texts:
                 ret.append(nam)
         return ret
@@ -365,9 +362,174 @@ class BlendManager:
             spyderhive = manager.spydermapmanager._spyderhive
             manager.psh.update_spyderhive(spyderhive)
 
-    def blend_update(self, *args):
-        import spyder
+    def on_added_node_trees(self, node_tree_names, hive_node_groups):
+        """Handle added node groups
+
+        :param node_tree_names: currently managed node tree names
+        :param hive_node_groups: existing hive node groups
+        """
+
         import Spyder
+        from .NodeTree import HivemapNodeTree, WorkermapNodeTree, SpydermapNodeTree
+
+        for node_tree_name, node_tree in hive_node_groups.items():
+            try:
+                tree_name = tree_text_name = str(node_tree_name)
+
+                if tree_text_name in node_tree_names:
+                    continue
+
+                if isinstance(node_tree, HivemapNodeTree):
+                    manager_class = HiveMapNodeTreeManager
+                    file_name = tree_text_name.replace(".", "_") + ".hivemap"
+                    tree_text_name = "hivemaps/" + file_name
+
+                    if tree_text_name not in bpy.data.texts and file_name not in bpy.data.texts:
+                        map_object = Spyder.Hivemap([], [])
+                        map_string = str(map_object)
+                        bpy.data.texts.new(tree_text_name)
+                        bpy.data.texts[tree_text_name].from_string(map_string)
+
+                    elif tree_text_name in bpy.data.texts:
+                        map_object = Spyder.Hivemap(bpy.data.texts[tree_text_name].as_string())
+
+                    else:
+                        map_object = Spyder.Hivemap(bpy.data.texts[file_name].as_string())
+
+                elif isinstance(node_tree, WorkermapNodeTree):
+                    manager_class = WorkerMapNodeTreeManager
+                    tree_text_name = "workermaps/" + tree_text_name.replace(".", "_") + ".workermap"
+                    if not tree_text_name in bpy.data.texts:
+                        map_object = Spyder.Workermap([], [])
+                        map_string = str(map_object)
+                        bpy.data.texts.new(tree_text_name)
+                        bpy.data.texts[tree_text_name].from_string(map_string)
+
+                    else:
+                        map_object = Spyder.Workermap(bpy.data.texts[tree_text_name].as_string())
+
+                elif isinstance(node_tree, SpydermapNodeTree):
+                    manager_class = SpyderMapNodeTreeManager
+                    tree_text_name = "spydermaps/" + tree_text_name.replace(".", "_") + ".spydermap"
+                    if not tree_text_name in bpy.data.texts:
+                        map_object = Spyder.Spydermap("bee.spyderhive.spyderframe", [], [])
+                        map_string = str(map_object)
+                        bpy.data.texts.new(tree_text_name)
+                        bpy.data.texts[tree_text_name].from_string(map_string)
+
+                    else:
+                        map_object = Spyder.Spydermap(bpy.data.texts[tree_text_name].as_string())
+
+                else:
+                    raise TypeError(node_tree)
+
+                node_tree_manager = manager_class(self, tree_name)
+                self.blend_nodetree_managers[tree_name] = node_tree_manager
+
+                if isinstance(node_tree, HivemapNodeTree):
+                    node_tree_manager.hivemapmanager._load(map_object)
+
+                elif isinstance(node_tree, WorkermapNodeTree):
+                    node_tree_manager.workermapmanager._load(map_object)
+
+                elif isinstance(node_tree, SpydermapNodeTree):
+                    node_tree_manager.spydermapmanager._load(map_object)
+
+            finally:
+                if tree_name not in node_tree_names:
+                    self.nodetrees.append((tree_name, manager_class.tree_bl_idname))
+
+    def on_rename_node_trees(self, node_tree_names, hive_node_groups):
+        """Handle renamed node groups
+
+        :param node_tree_names: currently managed node tree names
+        :param hive_node_groups: existing hive node groups
+        """
+        # Rename NodeTree
+        #TODO?: Check if instances of this map exist... warn? forbid? delete? rename?
+        old_name = new_name = None
+        done = set()
+
+        for name, tree_bl_idname_ in list(self.nodetrees):
+            if name in hive_node_groups:
+                done.add(name)
+
+            else:
+                # we can't know how to rename more than one NodeTree!
+                # TODO check node tree contents to find renamed trees
+                assert old_name is None
+                old_name = name
+                tree_bl_idname = tree_bl_idname_
+
+        for name in hive_node_groups:
+            if name not in done:
+                assert new_name is None
+                new_name = name
+                break
+
+        node_tree_manager = self.blend_nodetree_managers.pop(old_name)
+        node_tree_manager.name = new_name
+        self.blend_nodetree_managers[new_name] = node_tree_manager
+
+        new_name_underscores = new_name.replace(".", "_")
+        stripped_new_name_underscores = new_name_underscores
+
+        old_name_underscores = old_name.replace(".", "_")
+        stripped_old_name_underscores = old_name_underscores
+
+        blocks = self._get_associated_textblocks(old_name, tree_bl_idname)
+
+        self.nodetrees = []
+
+      #  for node_tree in node_tree_names:
+        if tree_bl_idname == "Hivemap":
+            pass
+
+        elif tree_bl_idname == "Workermap":
+            if old_name.endswith("-worker"):
+                stripped_old_name_underscores = old_name[:-len("-worker")]
+
+            if new_name.endswith("-worker"):
+                stripped_new_name_underscores = new_name[:-len("-worker")]
+
+        elif tree_bl_idname == "Spydermap":
+            if old_name.endswith("-spyder"):
+                stripped_old_name_underscores = old_name[:-len("-spyder")]
+
+            if new_name.endswith("-spyder"):
+                stripped_new_name_underscores = new_name[:-len("-spyder")]
+
+        for block in blocks:
+            path, name = block
+            if name == old_name_underscores:
+                new_file_name = new_name_underscores
+
+            elif name == stripped_old_name_underscores:
+                new_file_name = stripped_new_name_underscores
+
+            else:
+                raise ValueError(name)
+
+            text1 = path % name
+            text2 = path % new_file_name
+            self._rename_text(text1, text2)
+
+        self.nodetrees = [(node_tree_name, node_tree.bl_idname) for node_tree_name, node_tree
+                          in hive_node_groups.items()]
+
+    def on_deleted_node_trees(self, node_tree_names, hive_node_groups):
+        """Handle deleted node groups
+
+        :param node_tree_names: currently managed node tree names
+        :param hive_node_groups: existing hive node groups
+        """
+        remove_node_tree = self._remove_nodetree
+
+        for name in set(node_tree_names).difference(hive_node_groups):
+            remove_node_tree(name)
+
+    def blend_update(self, *args):
+        """Handle blend file updates"""
         from .NodeTree import HiveNodeTree, HivemapNodeTree, WorkermapNodeTree, SpydermapNodeTree
 
         if self._loading:
@@ -376,154 +538,30 @@ class BlendManager:
         self._do_schedule()
         self.check_hivemap_change()
 
+        node_tree_names = [name for name, _ in self.nodetrees]
         hive_node_groups = {node_tree.name: node_tree for node_tree in bpy.data.node_groups
                             if isinstance(node_tree, HiveNodeTree) if node_tree.users}
-        nodetrees = [name for name, _ in self.nodetrees]
 
-        if set(hive_node_groups) != set(nodetrees):
-            if len(nodetrees) < len(hive_node_groups):
-                for node_tree_name, node_tree in hive_node_groups.items():
-                    try:
-                        tree_name = tree_text_name = str(node_tree_name)
+        if set(hive_node_groups) != set(node_tree_names):
 
-                        if tree_text_name not in nodetrees:
-                            if isinstance(node_tree, HivemapNodeTree):
-                                manager_class = HiveMapNodeTreeManager
-                                file_name = tree_text_name.replace(".", "_") + ".hivemap"
-                                tree_text_name = "hivemaps/" + file_name
+            if len(node_tree_names) < len(hive_node_groups):
+                # Handle added node trees
+                self.on_added_node_trees(node_tree_names, hive_node_groups)
 
-                                if tree_text_name not in bpy.data.texts and file_name not in bpy.data.texts:
-                                    map = Spyder.Hivemap([], [])
-                                    map_string = str(map)
-                                    bpy.data.texts.new(tree_text_name)
-                                    bpy.data.texts[tree_text_name].from_string(map_string)
+            elif len(node_tree_names) > len(hive_node_groups):
+                # Handle deleted node trees
+                self.on_deleted_node_trees(node_tree_names, hive_node_groups)
 
-                                elif tree_text_name in bpy.data.texts:
-                                    map = Spyder.Hivemap(bpy.data.texts[tree_text_name].as_string())
-
-                                else:
-                                    map = Spyder.Hivemap(bpy.data.texts[file_name].as_string())
-
-                            elif isinstance(node_tree, WorkermapNodeTree):
-                                manager_class = WorkerMapNodeTreeManager
-                                tree_text_name = "workermaps/" + tree_text_name.replace(".", "_") + ".workermap"
-                                if not tree_text_name in bpy.data.texts:
-                                    map = Spyder.Workermap([], [])
-                                    map_string = str(map)
-                                    bpy.data.texts.new(tree_text_name)
-                                    bpy.data.texts[tree_text_name].from_string(map_string)
-
-                                else:
-                                    map = Spyder.Workermap(bpy.data.texts[tree_text_name].as_string())
-
-                            elif isinstance(node_tree, SpydermapNodeTree):
-                                manager_class = SpyderMapNodeTreeManager
-                                tree_text_name = "spydermaps/" + tree_text_name.replace(".", "_") + ".spydermap"
-                                if not tree_text_name in bpy.data.texts:
-                                    map = Spyder.Spydermap("bee.spyderhive.spyderframe", [], [])
-                                    map_string = str(map)
-                                    bpy.data.texts.new(tree_text_name)
-                                    bpy.data.texts[tree_text_name].from_string(map_string)
-
-                                else:
-                                    map = Spyder.Spydermap(bpy.data.texts[tree_text_name].as_string())
-
-                            else:
-                                raise TypeError(node_tree)
-
-                            node_tree_manager = manager_class(self, tree_name)
-                            self.blend_nodetree_managers[tree_name] = node_tree_manager
-
-                            if isinstance(node_tree, HivemapNodeTree):
-                                node_tree_manager.hivemapmanager._load(map)
-
-                            elif isinstance(node_tree, WorkermapNodeTree):
-                                node_tree_manager.workermapmanager._load(map)
-
-                            elif isinstance(node_tree, SpydermapNodeTree):
-                                node_tree_manager.spydermapmanager._load(map)
-
-                    finally:
-                        if tree_name not in nodetrees:
-                            self.nodetrees.append((tree_name, manager_class.tree_bl_idname))
-
-            elif len(nodetrees) > len(hive_node_groups):
-                # Not normally triggered, somehow....
-                for name, tree_bl_idname in list(self.nodetrees):
-                    if name in hive_node_groups:
-                        continue
-
-                    self._remove_nodetree(name)
             else:
-                # Rename NodeTree
-                #TODO?: Check if instances of this map exist... warn? forbid? delete? rename?
-                oldname, newname = None, None
-                done = set()
-                for name, tree_bl_idname_ in list(self.nodetrees):
-                    if name in hive_node_groups:
-                        done.add(name)
+                self.on_rename_node_trees(node_tree_names, hive_node_groups)
 
-                    else:
-                        # TODO check node tree contents to find renamed trees
-                        assert oldname is None  #we can't know how to rename more than one NodeTree!
-                        oldname = name
-                        tree_bl_idname = tree_bl_idname_
-
-                for name in hive_node_groups:
-                    if name not in done:
-                        assert newname is None
-                        newname = name
-                        break
-
-                node_tree_manager = self.blend_nodetree_managers.pop(oldname)
-                node_tree_manager.name = newname
-                self.blend_nodetree_managers[newname] = node_tree_manager
-                stripped_old_name, stripped_new_name = oldname, newname
-                blocks = self._get_associated_textblocks(oldname, tree_bl_idname)
-
-                self.nodetrees = []
-
-                if tree_bl_idname == "Hivemap":
-                    pass
-
-                elif tree_bl_idname == "Workermap":
-                    if oldname.endswith("-worker"):
-                        stripped_old_name = oldname[:-len("-worker")]
-
-                    if newname.endswith("-worker"):
-                        stripped_new_name = newname[:-len("-worker")]
-
-                elif tree_bl_idname == "Spydermap":
-                    if oldname.endswith("-spyder"):
-                        stripped_old_name = oldname[:-len("-spyder")]
-
-                    if newname.endswith("-spyder"):
-                        stripped_new_name = newname[:-len("-spyder")]
-
-                for block in blocks:
-                    p, n = block
-                    if n == oldname:
-                        nn = newname
-                    elif n == stripped_old_name:
-                        nn = stripped_new_name
-                    else:
-                        raise ValueError(n)
-
-                    text1 = p % n
-                    text2 = p % nn
-                    self._rename_text(text1, text2)
-
-                self.nodetrees = [(node_tree_name, node_tree.bl_idname) for node_tree_name, node_tree
-                                  in hive_node_groups.items()]
 
         if self._restore_editors is not None:
-            for tname in self._restore_editors:
-                if tname not in nodetrees:
-                    continue
+            for tree_name in set(node_tree_names).intersection(self._restore_editors):
+                node_tree = bpy.data.node_groups[tree_name]
 
-                nodetree = bpy.data.node_groups[tname]
-                for editor in self._restore_editors[tname]:
-                    editor.path.push(nodetree)
+                for editor in self._restore_editors[tree_name]:
+                    editor.path.push(node_tree)
 
         self._restore_editors = None
 
