@@ -189,7 +189,6 @@ class HiveNodeTree:
 
         return removed_node_ids
 
-    @debugger
     def _check_links(self, deletions):
         """Poll the node tree and determine if any connections between Blender nodes were modified
 
@@ -203,9 +202,13 @@ class HiveNodeTree:
 
         # Links in editor that don't exist in the HIVE internal model
         hive_links = {(l.from_node, l.from_socket, l.to_node, l.to_socket) for l in hcanvas._links}
+
         for link in list(self.links):
             pair = link.from_node, link.from_socket, link.to_node, link.to_socket
+
             if pair in hive_links:
+                if not link.use_socket_color:
+                    self.links.remove(link)
                 continue
 
             attempted_new_connections.append(link)
@@ -225,7 +228,7 @@ class HiveNodeTree:
                 continue
 
             attempt_success = hcanvas.gui_adds_connection(link, False)
-
+            print("Trying to add", attempt_success)
             if attempt_success:
                 changed_nodes.append(link.from_node)
                 changed_nodes.append(link.to_node)
@@ -252,7 +255,6 @@ class HiveNodeTree:
 
         hcanvas._links = {FakeLink.from_link(l) for l in self.links}
 
-    @debugger
     def _check_for_blender_copies(self):
         """Handle any Blender-clipboard pasted nodes (we need to register them into our internal model"""
         blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(self.name)
@@ -271,7 +273,6 @@ class HiveNodeTree:
             copied_nodes[source_node_id] = node
 
         canvas.h().on_copy_nodes(copied_nodes)
-        print([x.name for x in self.nodes], "ALL NODES")
 
     def _check_positions(self):
         """Handle any Blender nodes moved in the Blender UI"""

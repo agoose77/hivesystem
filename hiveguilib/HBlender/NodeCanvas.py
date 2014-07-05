@@ -365,18 +365,17 @@ class NodeCanvas:
         self.pop_busy("h_add")
 
     def gui_adds_connection(self, link, force):
-        from .BlendManager import blendmanager
-        from functools import partial
-
         connection = self.map_link(link)
         con_id = next(self._connection_generator)
         ret = True
         if self._hgui is not None:
             ret = self._hgui().gui_adds_connection(connection, con_id, force)
+
         if ret or force:
             self._connections[con_id] = connection
             link.use_socket_color = True
             link.dashed = (link.from_socket._shape == "DIAMOND")
+
         if force and not ret:
             # connection.setColor(disallowed_connection_color) #TODO
             link.use_socket_color = False
@@ -410,7 +409,6 @@ class NodeCanvas:
         tree = self.bntm.get_nodetree()
         connection = self._connections.pop(id_)
 
-        print(connection.start_node,connection.end_node,"deleting")
         for link in tree.links:
             c = self.map_link(link)
             if c.start_node != connection.start_node:
@@ -426,6 +424,7 @@ class NodeCanvas:
                 continue
 
             tree.links.remove(link)
+
         self.pop_busy("remove_con")
 
     def set_statusbar_message(self, message):
