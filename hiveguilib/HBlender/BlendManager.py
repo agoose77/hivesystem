@@ -120,9 +120,6 @@ def bpy_lister(block):
     return ret
 
 
-DELETED_MARKER = "<DELETED>"
-
-
 class BlendManager:
     """
     Singleton class, maintains hooks and spawns a BlendNodeTreeManager for every nodetree-hivemap pair
@@ -646,9 +643,6 @@ class BlendManager:
         """
         for text_block in bpy.data.texts:
 
-            if text_block.as_string() == DELETED_MARKER:
-                continue
-
             try:
                 text_block_name = text_block.name
 
@@ -941,7 +935,7 @@ def enable_hive(scene, import_data):
     for block, content in data:
         if block in bpy.data.texts:
             old_content = bpy.data.texts[block].as_string()
-            if old_content != content and old_content != "<DELETED>":
+            if old_content != content:
                 raise Exception("Cannot enable Hive system: Blender text block '%s' already exists" % block)
 
     main = [block for block, content in data if block.find("/") == -1 and block.endswith(".py")]
@@ -974,12 +968,8 @@ def disable_hive(scene):
         if block in bpy.data.texts:
             old_content = bpy.data.texts[block].as_string()
 
-            if old_content == content or old_content == "<DELETED>":
-                try:
-                    bpy.data.texts[block].remove()
-
-                except:
-                    bpy.data.texts[block].from_string("<DELETED>")
+            if old_content == content:
+                bpy.data.texts.remove(bpy.data.texts[block])
 
     del scene["__main__"]
 
