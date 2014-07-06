@@ -412,8 +412,7 @@ class WorkerManager(object):
         # all set, there should be no exceptions now
         already_existed = workerid in self._worker_parameters
         if already_existed:  #re-instantiation, delete the old worker
-            #TODO: re-form connections of the old worker, and restore parameters, if we can
-
+            #Re-form connections of the old worker, and restore parameters, if we can
             all_connections = self._wim.get_connections()
             worker_connections = []
             for connection in all_connections:

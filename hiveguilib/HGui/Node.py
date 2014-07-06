@@ -1,5 +1,6 @@
 from __future__ import print_function, absolute_import
 
+# TODO named tuple these things!
 
 class Connection(object):
     def __init__(self,
@@ -7,25 +8,30 @@ class Connection(object):
                  start_attribute,
                  end_node,  #id!
                  end_attribute,
-                 interpoints,
-    ):
+                 interpoints):
         self.start_node = start_node
         self.start_attribute = start_attribute
         self.end_node = end_node
         self.end_attribute = end_attribute
         self.interpoints = interpoints
 
+    def __eq__(self, other):
+        assert isinstance(other, self.__class__)
+        return self.to_tuple() == other.to_tuple()
+
+    def __hash__(self):
+        return hash(self.to_tuple())
+
     def __str__(self):
-        s = """Connection (
-  "%s", "%s",
-  "%s", "%s",
-  [%s],
-)""" % (
+        output_string = """Connection (\n\t"%s", "%s", \n\t"%s", "%s",\n\t[%s]\n)""" % (
             self.start_node, self.start_attribute,
             self.end_node, self.end_attribute,
             ", ".join(["(%d,%d)" % (x, y) for x, y in self.interpoints])
         )
-        return s
+        return output_string
+
+    def to_tuple(self):
+        return self.start_node, self.start_attribute, self.end_node, self.end_attribute, self.interpoints
 
 
 class Hook(object):

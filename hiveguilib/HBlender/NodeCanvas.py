@@ -328,7 +328,6 @@ class NodeCanvas:
                 sel = [n for n in self._selection if self._selection[n]]
                 selected_ids = [id_ for id_, n in self._nodes.items() if n.name in sel]
                 #self._hgui().gui_selects(selected_ids)
-                #TODO RENAMING fix
         self.pop_busy("rename")
 
     def h_add_connection(self, id_, connection, valid):
@@ -352,16 +351,10 @@ class NodeCanvas:
             pass
 
         self._connections[id_] = connection
-        self._links = {FakeLink.from_link(l) for l in tree.links}
 
-        # Work around for existing UI connections
+        # Adding a new link goes slowly ...
         fake_link_ = FakeLink.from_link(link)
-        for link_ in self._links:
-            if link_ == fake_link_:
-                break
-
-        else:
-            self._links.add(fake_link_)  # adding a new link goes slowly...
+        self._links.add(fake_link_)
 
         start.check_update()
         end.check_update()
@@ -370,20 +363,20 @@ class NodeCanvas:
     def gui_adds_connection(self, link, force):
         connection = self.map_link(link)
         con_id = next(self._connection_generator)
-        ret = True
+        success = True
         if self._hgui is not None:
-            ret = self._hgui().gui_adds_connection(connection, con_id, force)
+            success = self._hgui().gui_adds_connection(connection, con_id, force)
 
-        if ret or force:
+        if success or force:
             self._connections[con_id] = connection
             link.use_socket_color = True
             link.dashed = (link.from_socket._shape == "DIAMOND")
 
-        if force and not ret:
+        if force and not success:
             # connection.setColor(disallowed_connection_color) #TODO
             link.use_socket_color = False
 
-        return ret
+        return success
 
     def gui_removes_connection(self, link):
         if self._hgui is None:
@@ -415,19 +408,8 @@ class NodeCanvas:
 
         for link in tree.links:
             c = self.map_link(link)
-            if c.start_node != connection.start_node:
-                continue
-
-            if c.end_node != connection.end_node:
-                continue
-
-            if c.start_attribute != connection.start_attribute:
-                continue
-
-            if c.end_attribute != connection.end_attribute:
-                continue
-
-            tree.links.remove(link)
+            if c == connection:
+                tree.links.remove(link)
 
         self.pop_busy("remove_con")
 
@@ -466,17 +448,10 @@ class NodeCanvas:
         self._change_attribute(id_, attribute, hidden=True)
 
     def find_connection(self, connection):
-        #TODO implement __eq__ on connections?
         for connection_id, connection_ in self._connections.items():
-            if connection_.start_node != connection.start_node:
-                continue
-            if connection_.end_node != connection.end_node:
-                continue
-            if connection_.start_attribute != connection.start_attribute:
-                continue
-            if connection_.end_attribute != connection.end_attribute:
-                continue
-            return connection_id
+            print(connection_, connection)
+            if connection_ == connection:
+                return connection_id
         raise KeyError
 
     def map_link(self, link):

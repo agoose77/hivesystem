@@ -185,6 +185,8 @@ def debugger(func):
 class HiveNodeTree:
     """Base class for HIVE node tree"""
 
+    registered_name = bpy.props.StringProperty()
+
     def _check_deletions(self):
         """Poll the node tree and determine if any Blender nodes were deleted"""
         bntm = BlendManager.blendmanager.get_nodetree_manager(self.name)
