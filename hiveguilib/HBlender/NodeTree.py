@@ -301,15 +301,6 @@ class HiveNodeTree:
                 positions[name] = position = copy.copy(node.location)
                 hcanvas.gui_moves_node(name, position)
 
-    def _update_clipboard(self):
-        """Copy any pending nodes into the clipboard
-
-        Workaround for single-copy operations overwriting clipboard for multiple copies
-        """
-        blend_nodetree_manager = BlendManager.blendmanager.get_nodetree_manager(self.name)
-        canvas = blend_nodetree_manager.canvas
-        canvas.h().copy_pending_nodes()
-
     def _check_selection(self):
         """Handle any Blender nodes selected in the Blender UI"""
         bntm = BlendManager.blendmanager.get_nodetree_manager(self.name)
@@ -374,7 +365,6 @@ class HiveNodeTree:
         if hcanvas._busy:
             return
 
-        self._update_clipboard()
         self._check_for_blender_copies()
         deletions = self._check_deletions()
         self._check_links(deletions)
@@ -398,6 +388,7 @@ class HiveNodeTree:
         self._check_positions()
         self._check_selection()
         """
+
         BlendManager.blendmanager.schedule(self.scene_update)
 
 from . import BlendManager
@@ -445,12 +436,11 @@ class SpydermapNodeTree(bpy.types.NodeTree, HiveNodeTree):
 
 
 def draw_hive_menu(self, context):
-    if context.space_data.tree_type == "Hivemap":
-        self.layout.menu("NODE_MT_hive_menu")
+    self.layout.menu("NODE_MT_hive_menu")
 
 
 def draw_hive_level(self, context):
-    if BlendManager.use_hive_get(context) and context.space_data.tree_type == "Hivemap":
+    if BlendManager.use_hive_get(context):
         self.layout.prop(context.screen, "hive_level", text="")
 
 
@@ -462,19 +452,18 @@ def draw_spyderhive(self, context):
 
 def draw_docstring(self, context):
     blend_manager = BlendManager.blendmanager
-    if isinstance(context.space_data.edit_tree, HiveNodeTree):
-        blend_manager.docstring_widget.draw(context, self.layout)
+    #if isinstance(context.space_data.edit_tree, HiveNodeTree):
+       # blend_manager.docstring_widget.draw(context, self.layout)
 
 
 def check_tab_control(self, context):
-    """Determine if we can launch the Hive level modal operator keyboard listener"""
+    """Determine if the Hive level modal operator keyboard listener should be running"""
     if context.screen.use_hive:
         if ChangeHiveLevel.can_invoke():
             bpy.ops.node.change_hive_level("INVOKE_DEFAULT")
 
-    else:
-        if not ChangeHiveLevel.can_invoke():
-            ChangeHiveLevel.disable()
+    elif not ChangeHiveLevel.can_invoke():
+        ChangeHiveLevel.disable()
 
 
 header_draw_functions = draw_hive_menu, draw_hive_level, draw_spyderhive, check_tab_control, draw_docstring
@@ -522,6 +511,7 @@ def unregister():
 
     for function in header_draw_functions:
         bpy.types.NODE_HT_header.remove(function)
+
 
 if __name__ == "__main__":
     unregister()

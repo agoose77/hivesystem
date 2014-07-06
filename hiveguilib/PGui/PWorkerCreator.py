@@ -37,6 +37,7 @@ class PWorkerCreator(object):
             key = tuple(key0a) + (key1a,)
             self._hivemapworkers[key] = workername
             self._hivemapworkers_rev[workername] = key
+
         elif workername.find("#") > -1:  # spydermapworker
             key0, key1 = workername.split("#")
             key0a = key0.split(".")
@@ -44,17 +45,22 @@ class PWorkerCreator(object):
             key = tuple(key0a) + (key1a,)
             self._spydermapworkers[key] = workername
             self._spydermapworkers_rev[workername] = key
+
         else:
             key = tuple(workername.split("."))
+
         self._tree.append(key)
 
     def remove(self, workername):
         if workername in self._hivemapworkers_rev:
             key = self._hivemapworkers_rev.pop(workername)
             self._hivemapworkers.pop(key)
+
         elif workername in self._spydermapworkers_rev:
             key = self._spydermapworkers_rev.pop(workername)
             self._spydermapworkers.pop(key)
+
         else:
             key = tuple(workername.split("."))
+
         self._tree.remove(key)

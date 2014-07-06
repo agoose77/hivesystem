@@ -27,7 +27,6 @@ class NodeCanvas:
         self._connections = {}
         self._selection = {}  # dict of node names (RNA Node labels), set by NodeTree
         self._positions = {}  # dict, set by NodeTree
-        self._during_conversion = {}
         self._pending_copy = set()
         self._labels = []
         self._links = set()
@@ -117,7 +116,7 @@ class NodeCanvas:
         self.push_busy("on_copy")
 
         # Ensure no pending copy operations
-        self.copy_pending_nodes()
+        self.perform_pending_copy_operations()
 
         # Cleanup Blender nodes
         logging.debug("Found Blender copied nodes {}".format(copied_nodes.values()))
@@ -129,12 +128,16 @@ class NodeCanvas:
 
         # Load in hivemap
         hivemap = self._hgui()._clipboard().get_clipboard_value()
-        logging.debug("Loading clipboard: {}".format(hivemap))
 
-        self._hgui().paste_clipboard()
-        logging.debug("Pasted clipboard")
+        if hivemap is None:
+            logging.debug("Clipboard was empty!".format(hivemap))
 
-        self._during_conversion.clear()
+        else:
+            logging.debug("Loading clipboard: {}".format(hivemap))
+
+            self._hgui().paste_clipboard()
+            logging.debug("Pasted clipboard")
+
         self.pop_busy("on_copy")
 
     def h_add_node(self, id_, hnode):
@@ -184,62 +187,61 @@ class NodeCanvas:
         change = True
         while change:
             change = False
-            for a in node.inputs:
-                if a.identifier not in matched_inputs:
-                    node.inputs.remove(a)
+            for antenna in node.inputs:
+                if antenna.identifier not in matched_inputs:
+                    node.inputs.remove(antenna)
                     change = True
 
         change = True
         while change:
             change = False
-            for a in node.outputs:
-                if a.identifier not in matched_outputs:
-                    node.outputs.remove(a)
+            for antenna in node.outputs:
+                if antenna.identifier not in matched_outputs:
+                    node.outputs.remove(antenna)
                     change = True
 
         #Create new sockets that didn't exist before
-        for a in mapnode.attributes:
-            label = a.name
-            if a.label is not None:
-                label = a.label
+        for antenna in mapnode.attributes:
+            label = antenna.name
+            if antenna.label is not None:
+                label = antenna.label
 
-            if a.outhook:
-                if a.name in accounted_outputs:
+            if antenna.outhook:
+                if antenna.name in accounted_outputs:
                     continue
 
-                h = a.outhook
-                if a.inhook:
-                    socktype = NodeSocket.socketclasses[h.shape, h.color, True]  #complementary socket
+                in_hook = antenna.outhook
+                if antenna.inhook:
+                    socket_type = NodeSocket.socketclasses[in_hook.shape, in_hook.color, True]  #complementary socket
                 else:
-                    socktype = NodeSocket.socketclasses[h.shape, h.color]
+                    socket_type = NodeSocket.socketclasses[in_hook.shape, in_hook.color]
 
-                sock = node.outputs.new(socktype.bl_idname, a.name)
-                sock.name = label
-                sock.link_limit = 99
+                socket = node.outputs.new(socket_type.bl_idname, antenna.name)
+                socket.name = label
+                socket.link_limit = 99
 
-            if a.inhook:
-                if a.name in accounted_inputs:
+            if antenna.inhook:
+                if antenna.name in accounted_inputs:
                     continue
 
-                h = a.inhook
-                socktype = NodeSocket.socketclasses[h.shape, h.color]
-                sock = node.inputs.new(socktype.bl_idname, a.name)
-                sock.name = label
-                sock.link_limit = 99
+                in_hook = antenna.inhook
+                socket_type = NodeSocket.socketclasses[in_hook.shape, in_hook.color]
+                socket = node.inputs.new(socket_type.bl_idname, antenna.name)
+                socket.name = label
+                socket.link_limit = 99
 
         #Assign the correct rows
-        inputpos = 0
-        outputpos = 0
+        inputs = iter(node.inputs)
+        outputs = iter(node.outputs)
 
-        for anr, a in enumerate(mapnode.attributes):
-            if a.inhook:
-                sock = node.inputs[inputpos]
-                sock.row = anr + 1
-                inputpos += 1
-            if a.outhook:
-                sock = node.outputs[outputpos]
-                sock.row = anr + 1
-                outputpos += 1
+        for index, antenna in enumerate(mapnode.attributes):
+            if antenna.inhook:
+                socket = next(inputs)
+                socket.row = index + 1
+
+            if antenna.outhook:
+                socket = next(outputs)
+                socket.row = index + 1
 
         self.pop_busy("morph")
 
@@ -266,23 +268,40 @@ class NodeCanvas:
                     break
 
     def is_pending_copy(self, blender_node):
+        """Determine if a blender node is marked for copying
+
+        :param blender_node: Blender node instance
+        """
         return blender_node.name in self._pending_copy
 
     def mark_pending_copy(self, blender_node):
+        """Store worker ID for pending copy
+
+        :param blender_node: Blender node requesting copy
+        """
+        # Use Blender label this is called from a copy
         node_id = blender_node.label
         self._pending_copy.add(node_id)
 
-    def copy_pending_nodes(self):
+        from .BlendManager import blendmanager
+        blendmanager.schedule(self.perform_pending_copy_operations)
+
+    def perform_pending_copy_operations(self):
+        """Read the worker IDs from the copy buffer and perform a clipboard copy operation"""
         if not self._pending_copy:
             return
 
         try:
             self._hgui().copy_clipboard(self._pending_copy)
-        except Exception as err:
-            print(err)
+
+        except Exception:
+            logging.exception("Couldn't write clipboard")
+
+        else:
+            hivemap = self._hgui()._clipboard().get_clipboard_value()
+            logging.debug("Written clipboard: {}".format(hivemap))
 
         finally:
-            print("written clipboard", self._pending_copy)
             self._pending_copy.clear()
 
     def remove_node(self, id_):

@@ -107,14 +107,25 @@ class NodeItemMenu:
 
         self.name = name
         self.menuclass = type(name, (bpy.types.Menu,), cls_dict)
-        bpy.utils.register_class(self.menuclass)
 
         if make_panel:
             type_name = name.replace("NODE_MT_", "NODE_PT_")
             cls_dict = dict(bl_space_type='NODE_EDITOR', bl_label=title, bl_region_type='TOOLS',
                             bl_options={'DEFAULT_CLOSED'}, poll=self._active, draw=menudraw)
             self.panelclass = type(type_name, (bpy.types.Panel,), cls_dict)
+
+        else:
+            self.panelclass = None
+
+    def register(self):
+        if self.panelclass is not None:
             bpy.utils.register_class(self.panelclass)
+        bpy.utils.register_class(self.menuclass)
+
+    def unregister(self):
+        if self.panelclass is not None:
+            bpy.utils.unregister_class(self.panelclass)
+        bpy.utils.unregister_class(self.menuclass)
 
     def _active(self, context):
         if not level.active(context, self.fullname):
@@ -144,6 +155,7 @@ class NodeItemMenu:
 
 
 class NodeItemManager:
+
     def __init__(self):
         self._nodeitem_objects = NodeItemMenu(None, None)
         self._nodeitems = {}
@@ -167,6 +179,8 @@ class NodeItemManager:
                     path_component = path[key_index - 1]
                     make_panel = (key_index == 1)
                     menu = NodeItemMenu(path_component, path_slice, make_panel)
+                    menu.register()
+
                     self._nodeitems[path_slice] = menu
 
                 else:
@@ -183,7 +197,7 @@ class NodeItemManager:
         self._nodeitem_trees[full_path].append(node_tree_name)
 
     def remove(self, node_tree_name, key):
-        # TODO implement removal
+        # TODO implement nodeitem remove
         raise NotImplementedError
 
     def rename(self, old_node_tree_name, new_node_tree_name):

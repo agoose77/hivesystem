@@ -141,6 +141,10 @@ class BlendManager:
 
         self.last_nodetree = None
 
+    @staticmethod
+    def get_escaped_name(name):
+        return name.replace(".", "_")
+
     def get_popup_data(self, popup_id):
         """Return the popup data for a given popup id
 
@@ -182,12 +186,16 @@ class BlendManager:
         bpy.app.handlers.save_pre.append(save)
         bpy.app.handlers.load_pre.append(loadblock)
         bpy.app.handlers.load_post.append(load)
+
+        # for vanilla Blender, then you can run BGE just once...
         try:
             bpy.app.handlers.game_pre.append(game_pre)
             bpy.app.handlers.game_post.append(game_post)
-        except AttributeError:  # for vanilla Blender, then you can run BGE just once...
+        except AttributeError:
             pass
+
         self.nodeitemmanager.register()
+
         Node.register()
         NodeSocket.register()
         BlenderPopup.register()
@@ -197,12 +205,17 @@ class BlendManager:
         bpy.app.handlers.save_pre.remove(save)
         bpy.app.handlers.load_pre.remove(loadblock)
         bpy.app.handlers.load_post.remove(load)
+
         try:
             bpy.app.handlers.game_pre.remove(game_pre)
             bpy.app.handlers.game_post.remove(game_post)
-        except AttributeError:  # for vanilla Blender, then you can run BGE just once...
+
+        # for vanilla Blender, then you can run BGE just once...
+        except AttributeError:
             pass
+
         self.nodeitemmanager.unregister()
+
         Node.unregister()
         NodeSocket.unregister()
         BlenderPopup.unregister()
@@ -259,7 +272,7 @@ class BlendManager:
         name, tree_bl_idname = nodetreename, nodetreeclass
         path_and_names = []
         if tree_bl_idname == "Hivemap":
-            underscore_name = name.replace(".", "_")
+            underscore_name = self.get_escaped_name(name)
             name_formatter = "%s.hivemap"
             path_and_names.append((name_formatter, underscore_name))
             path_and_names.append(("hivemaps/" + name_formatter, underscore_name))
@@ -270,7 +283,7 @@ class BlendManager:
                 names0.append(name[:-len("-worker")])
 
             for nam in names0:
-                underscore_name = nam.replace(".", "_")
+                underscore_name = self.get_escaped_name(nam)
                 name_formatter = "%s.workermap"
                 path_and_names.append((name_formatter, underscore_name))
                 path_and_names.append(("workermaps/" + name_formatter, underscore_name))
@@ -282,7 +295,7 @@ class BlendManager:
             if name.endswith("-spyder"):
                 names0.append(name[:-len("-spyder")])
             for nam in names0:
-                underscore_name = nam.replace(".", "_")
+                underscore_name = self.get_escaped_name(nam)
                 name_formatter = "%s.spydermap"
                 path_and_names.append((name_formatter, underscore_name))
                 path_and_names.append(("spydermaps/" + name_formatter, underscore_name))
@@ -312,7 +325,9 @@ class BlendManager:
     def _remove_nodetree(self, name):
         node_tree = bpy.data.node_groups[name]
         bpy.data.node_groups.remove(node_tree)
-        print("REMOVE",name)
+        import logging
+        logging.info("Removing node tree {}".format(name))
+
         # Find nodetree
         for index, (nodetree_name, nodetree_bl_idname) in enumerate(self.nodetrees):
             if nodetree_name == name:
@@ -373,12 +388,13 @@ class BlendManager:
             node_tree = node_trees[node_tree_name]
             tree_name = tree_text_name = str(node_tree_name)
 
+            escaped_name = self.get_escaped_name(tree_text_name)
             node_tree.registered_name = tree_name
 
             try:
                 if isinstance(node_tree, HivemapNodeTree):
                     manager_class = HiveMapNodeTreeManager
-                    file_name = tree_text_name.replace(".", "_") + ".hivemap"
+                    file_name = escaped_name + ".hivemap"
                     tree_text_name = "hivemaps/" + file_name
 
                     if tree_text_name not in bpy.data.texts and file_name not in bpy.data.texts:
@@ -395,7 +411,7 @@ class BlendManager:
 
                 elif isinstance(node_tree, WorkermapNodeTree):
                     manager_class = WorkerMapNodeTreeManager
-                    tree_text_name = "workermaps/" + tree_text_name.replace(".", "_") + ".workermap"
+                    tree_text_name = "workermaps/" + escaped_name + ".workermap"
                     if not tree_text_name in bpy.data.texts:
                         map_object = Spyder.Workermap([], [])
                         map_string = str(map_object)
@@ -407,7 +423,7 @@ class BlendManager:
 
                 elif isinstance(node_tree, SpydermapNodeTree):
                     manager_class = SpyderMapNodeTreeManager
-                    tree_text_name = "spydermaps/" + tree_text_name.replace(".", "_") + ".spydermap"
+                    tree_text_name = "spydermaps/" + escaped_name + ".spydermap"
                     if not tree_text_name in bpy.data.texts:
                         map_object = Spyder.Spydermap("bee.spyderhive.spyderframe", [], [])
                         map_string = str(map_object)
@@ -422,6 +438,9 @@ class BlendManager:
 
                 node_tree_manager = manager_class(self, tree_name)
                 self.blend_nodetree_managers[tree_name] = node_tree_manager
+
+                import logging
+                logging.info("Adding node tree {}".format(tree_name))
 
                 if isinstance(node_tree, HivemapNodeTree):
                     node_tree_manager.hivemapmanager._load(map_object)
@@ -459,10 +478,10 @@ class BlendManager:
             self.nodeitemmanager.rename(old_name, new_name)
             self.blend_nodetree_managers[new_name] = node_tree_manager
 
-            new_name_underscores = new_name.replace(".", "_")
+            new_name_underscores = self.get_escaped_name(new_name)
             stripped_new_name_underscores = new_name_underscores
 
-            old_name_underscores = old_name.replace(".", "_")
+            old_name_underscores = self.get_escaped_name(old_name)
             stripped_old_name_underscores = old_name_underscores
 
             blocks = self._get_associated_textblocks(old_name, tree_bl_idname)
@@ -498,6 +517,10 @@ class BlendManager:
 
                 text1 = path % new_name
                 text2 = path % new_file_name
+
+                import logging
+                logging.info("Renaming node tree {}".format(new_name))
+
                 self._rename_text(text1, text2)
 
         hive_node_groups = {node_tree.name: node_tree for node_tree in bpy.data.node_groups
@@ -550,10 +573,8 @@ class BlendManager:
         if self._restore_editors is not None:
             for tree_name in set(node_tree_names).intersection(self._restore_editors):
                 node_tree = bpy.data.node_groups[tree_name]
-                # TODO: Work out why we have this
                 # TODO: Find reason why synchronise sometimes doubles things up
                 # TODO: look into enabling backups
-                # TODO: Make hive options available for all editors
                 # TODO: determine if workermaps are loadable
                 # TODO: save antenna fold state
                 #for editor in self._restore_editors[tree_name]:
@@ -562,6 +583,36 @@ class BlendManager:
         self._restore_editors = None
 
         text_widget_manager.check_update()
+
+    def get_textblock_name(self, nodetree_manager):
+        name = nodetree_manager.name
+        escaped_name = self.get_escaped_name(name)
+
+        if isinstance(nodetree_manager, HiveMapNodeTreeManager):
+            file_name = "%s.hivemap" % escaped_name
+            file_folder = "hivemaps/" + file_name
+            full_name = file_name if file_name in bpy.data.texts else file_folder
+
+        elif isinstance(nodetree_manager, WorkerMapNodeTreeManager):
+            if name.endswith("-worker"):
+                name = name[:-len("-worker")]
+
+            file_name = "{}.workermap".format(escaped_name)
+            file_folder = "workermaps/{}".format(file_name)
+            full_name = file_name if file_name in bpy.data.texts else file_folder
+
+        elif isinstance(nodetree_manager, SpyderMapNodeTreeManager):
+            if name.endswith("-spyder"):
+                name = name[:-len("-spyder")]
+
+            file_name = "{}.spydermap".format(escaped_name)
+            file_folder = "spydermaps/{}".format(file_name)
+            full_name = file_name if file_name in bpy.data.texts else file_folder
+
+        else:
+            raise TypeError("NodeTree manager type unrecognised")
+
+        return full_name
 
     def _sync_nodetree_to_text(self):
         """
@@ -572,39 +623,23 @@ class BlendManager:
         from ..workergen import workergen
 
         for nodetree_manager in self.blend_nodetree_managers.values():
-            if isinstance(nodetree_manager, HiveMapNodeTreeManager):
-                file_name = "%s.hivemap" % nodetree_manager.name.replace(".", "_")
-                file_folder = "hivemaps/" + file_name
-                full_name = file_name if file_name in bpy.data.texts else file_folder
+            name = nodetree_manager.name
+            escaped_name = self.get_escaped_name(name)
 
-                nodetree_manager.hivemapmanager.save(full_name, self.filesaver)
+            file_name = self.get_textblock_name(nodetree_manager)
+
+            if isinstance(nodetree_manager, HiveMapNodeTreeManager):
+                nodetree_manager.hivemapmanager.save(file_name, self.filesaver)
 
             elif isinstance(nodetree_manager, WorkerMapNodeTreeManager):
-                name = nodetree_manager.name
-                if name.endswith("-worker"):
-                    name = name[:-len("-worker")]
-
-                name = name.replace(".", "_")
-                file_name = "{}.workermap".format(name)
-                file_folder = "workermaps/{}".format(file_name)
-                full_name = file_name if file_name in bpy.data.texts else file_folder
-
-                workermap = nodetree_manager.workermapmanager.save(full_name, self.filesaver)
-                classname = name.split("/")[-1]
+                workermap = nodetree_manager.workermapmanager.save(file_name, self.filesaver)
+                classname = escaped_name.split("/")[-1]
                 code = workergen(classname, workermap)
-                blockname = "workers/{}.py".format(name)
+                blockname = "workers/{}.py".format(escaped_name)
                 self.filesaver(blockname, code)
 
             elif isinstance(nodetree_manager, SpyderMapNodeTreeManager):
-                name = nodetree_manager.name
-                if name.endswith("-spyder"):
-                    name = name[:-len("-spyder")]
-
-                name = name.replace(".", "_")
-                file_name = "{}.spydermap".format(name)
-                file_folder = "spydermaps/{}".format(file_name)
-                full_name = file_name if file_name in bpy.data.texts else file_folder
-                nodetree_manager.spydermapmanager.save(full_name, self.filesaver)
+                nodetree_manager.spydermapmanager.save(file_name, self.filesaver)
 
         if self._workerfinder_local_hivemap:
             local_modules = self._workerfinder_local_hivemap._done_mods
@@ -671,7 +706,9 @@ class BlendManager:
                     else:
                         nodetree = None
 
+                    import logging
                     if nodetree is None:
+                        logging.info("Creating new node tree (group)")
                         nodetree = bpy.data.node_groups.new(nodetree_name, tree_manager_class.tree_bl_idname)
                         # Allow checks for renaming
                         nodetree.registered_name = nodetree_name
@@ -682,6 +719,7 @@ class BlendManager:
                             continue
 
                         space.node_tree = nodetree
+                        logging.info("Loading space to preserve users")
                         break
 
                     nodetree_name = nodetree.name
@@ -689,6 +727,7 @@ class BlendManager:
                         nodetree_manager = tree_manager_class(self, nodetree_name)
                         self.nodetrees.append((nodetree_name, tree_manager_class.tree_bl_idname))
                         self.blend_nodetree_managers[nodetree_name] = nodetree_manager
+                        logging.info("Creating new node tree manager")
 
                     nodetree_manager = self.blend_nodetree_managers[nodetree_name]
                     text_block = bpy.data.texts[text_block_name]
@@ -710,8 +749,8 @@ class BlendManager:
 
             hivemap_string = text_block.as_string()
             data = spyder.core.parse(hivemap_string)[1]
+
             hivemap = Spyder.Hivemap.fromdict(data)
-            print("load")
             nodetree_manager.hivemapmanager._load(hivemap)
 
         self.for_valid_texts("hivemap", "hivemaps", "", HiveMapNodeTreeManager, load_callback)
@@ -726,6 +765,7 @@ class BlendManager:
             data = spyder.core.parse(workermap_string)[1]
 
             workermap = Spyder.Workermap.fromdict(data)
+            nodetree_manager.workermapmanager._load(workermap)
 
         self.for_valid_texts("workermap", "workermaps", "-worker", WorkerMapNodeTreeManager, load_callback)
 
@@ -733,8 +773,8 @@ class BlendManager:
         """Load spydermaps from text blocks"""
 
         def load_callback(nodetree_manager, text_block):
-            import spyder
             import Spyder
+
             spydermap = Spyder.Spydermap.fromfile("//{}".format(text_block.name))
             nodetree_manager.spydermapmanager._load(spydermap)
 
@@ -762,7 +802,7 @@ class BlendManager:
         logging.info("Hive loading hook: {}".format(bpy.data.texts))
 
         self.spyderhive_widget = BlenderOptionWidget(None, "", [])
-        self.docstring_widget = BlenderTextWidget(None, "Docstring")
+        # self.docstring_widget = BlenderTextWidget(None, "Docstring")
 
         self.blend_nodetree_managers.clear()
         self.nodetrees = []
@@ -936,7 +976,8 @@ def enable_hive(scene, import_data):
         if block in bpy.data.texts:
             old_content = bpy.data.texts[block].as_string()
             if old_content != content:
-                raise Exception("Cannot enable Hive system: Blender text block '%s' already exists" % block)
+                import logging
+                logging.debug("Enabling Hive system: Blender text block '%s' already exists" % block)
 
     main = [block for block, content in data if block.find("/") == -1 and block.endswith(".py")]
 
@@ -949,8 +990,7 @@ def enable_hive(scene, import_data):
     for block, content in data:
         if block not in bpy.data.texts:
             bpy.data.texts.new(block)
-
-        bpy.data.texts[block].from_string(content)
+            bpy.data.texts[block].from_string(content)
 
     scene["__main__"] = main[0]
 
@@ -972,7 +1012,6 @@ def disable_hive(scene):
                 bpy.data.texts.remove(bpy.data.texts[block])
 
     del scene["__main__"]
-
 
 def use_hive_get(context):
     if context.scene is None:

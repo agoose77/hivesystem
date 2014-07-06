@@ -1,14 +1,17 @@
 import bpy
 
-
 class SynchroniseDataOperator(bpy.types.Operator):
-    """Tooltip"""
+    """Synchronise the text blocks and Node trees.
+
+    First save all node trees to text, then reload all text files.
+    """
     bl_idname = "hive.synchronise_data"
     bl_label = "Synchronise NodeTrees and TextBlocks"
 
     @classmethod
     def poll(cls, context):
-        return True
+        from . import BlendManager
+        return BlendManager.use_hive_get(context)
 
     def execute(self, context):
         from . import BlendManager

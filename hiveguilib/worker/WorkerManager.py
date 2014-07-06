@@ -621,7 +621,6 @@ class WorkerManager(object):
 
         return expanded_variables
 
-
     def workerids(self):
         return sorted(
             list(
