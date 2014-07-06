@@ -137,10 +137,13 @@ class AntennaFoldState(object):
         self._widgets[newid] = w
         s = self._submodels.pop(workerid)
         self._submodels[newid] = s
+
         numid = self._idmap.pop(workerid)
         self._idmaprev[numid] = newid
+        self._idmap[newid] = numid
 
     def p_set_value(self, workerid, member, value):
+        print("SET", workerid)
         assert self._parent().states[workerid][member].fold == True, (workerid, member)
         init = self._parent()._init_widget.get(workerid, False)
 
@@ -153,6 +156,12 @@ class AntennaFoldState(object):
                 self._variables_to_set.append((workerid, member))
         else:
             if init:
+                m = self._submodels[workerid][member]
+                for l in m._listeners:
+                    if not hasattr(l, "args"):
+                        continue
+
+                    print(l.args, l)
                 self._submodels[workerid][member]._set(value)
             else:
                 self._values_to_set.append((workerid, member, value))

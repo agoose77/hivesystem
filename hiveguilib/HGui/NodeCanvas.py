@@ -331,7 +331,7 @@ class NodeCanvas(HGui):
         else:
             if old_id in self._folded_antennas:
                 antennas = self._folded_antennas.pop(old_id)
-                self._folded_antennas[new_id] = old_id
+                self._folded_antennas[new_id] = antennas
 
             self._hNodeCanvas.rename_node(old_id, new_id, new_name)
 

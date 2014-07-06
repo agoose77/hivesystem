@@ -379,6 +379,7 @@ class NodeCanvas:
         if force and not ret:
             # connection.setColor(disallowed_connection_color) #TODO
             link.use_socket_color = False
+
         return ret
 
     def gui_removes_connection(self, link):

@@ -5,18 +5,15 @@ Manages the finding and building of worker templates
  and the instantiation of workers and worker parameters
 """
 import os, functools
-from . import WorkerFinder
+from . import WorkerFinder, PersistentIDManager
 from ..params import parse_paramtypelist, get_param_pullantennas
 
 
 class WorkerManager(object):
     _workerfinderclass = WorkerFinder
 
-    def __init__(self,
-                 workerbuilder, workerinstancemanager, pmanager,
-                 pworkercreator, pdronecreator=None,
-                 with_blocks=True
-    ):
+    def __init__(self, workerbuilder, workerinstancemanager, pmanager, pworkercreator, pdronecreator=None,
+                 with_blocks=True):
         self._workerbuilder = workerbuilder
         self._wim = workerinstancemanager
         self._wim.observers_selection.append(self.gui_selects)
@@ -32,6 +29,7 @@ class WorkerManager(object):
         self._typelist_listeners = []
         self._used_typelist = set()
         self._with_blocks = with_blocks
+        self._persistent_id_manager = PersistentIDManager()
 
     def set_antennafoldstate(self, antennafoldstate):
         self._antennafoldstate = antennafoldstate
@@ -260,6 +258,8 @@ class WorkerManager(object):
         if self._antennafoldstate is not None:
             self._antennafoldstate.sync(workerid, onload=True)
 
+        self._persistent_id_manager.create_persistent_id(workerid)
+
     def _select(self, workerids):
         self._pmanager.deselect()
         if workerids is None:
@@ -292,20 +292,34 @@ class WorkerManager(object):
         if wi.guiparams is not None:
             pullantennas = get_param_pullantennas(wi.guiparams.get("antennas", {}))
             pullantennas = [p[0] for p in pullantennas]
+
         pureparams = [p for p in params[1] if p not in pullantennas]
         up = functools.partial(
             self._update_worker_parameters, workerid, pureparams
         )
+
+        # Unchanging persistent ID
+        mvc_id = self._persistent_id_manager.get_persistent_id(workerid)
+
+        def update_function(parameters):
+            _worker_id = self._persistent_id_manager.get_temporary_id(mvc_id)
+            self._update_worker_parameters(_worker_id, pureparams, parameters)
+
+        def form_function(form):
+            _worker_id = self._persistent_id_manager.get_temporary_id(mvc_id)
+            self._antennafoldstate.init_form(_worker_id, form)
+
         metaparams = None
         if workerid in self._worker_metaparameters:
             metaparams = self._worker_metaparameters[workerid][4]
+
         form_manipulators = self._workerbuilder.get_form_manipulators(workertype, metaparams)
         if self._antennafoldstate is not None:
-            f = functools.partial(self._antennafoldstate.init_form, workerid)
-            form_manipulators = form_manipulators + [f]
-        widget, controller = self._pmanager.select_pwidget(workerid, "params", params[1], params[2],
-                                                           params[3], up, [], form_manipulators
-        )
+            form_manipulators = form_manipulators + [form_function]
+
+        widget, controller = self._pmanager.select_pwidget(workerid, "params", params[1], params[2],  params[3],
+                                                           update_function, [], form_manipulators)
+
         if widget is not None and self._antennafoldstate is not None:
             self._antennafoldstate.init_widget(workerid, widget, controller)
 
@@ -505,18 +519,25 @@ class WorkerManager(object):
             if old_workerid in dic:
                 if new_workerid in dic:
                     return False
+
         for dic in (self._worker_parameters, self._worker_metaparameters):
             if old_workerid in dic:
                 params = dic.pop(old_workerid)
                 dic[new_workerid] = params
+
+        # Update the persistent ID
+        self._persistent_id_manager.change_temporary_with_temporary_id(old_workerid, new_workerid)
+
         return True
 
     def rename_worker(self, old_workerid, new_workerid):
         ok = self._rename_worker(old_workerid, new_workerid)
         if not ok:
             raise ValueError("workerid already exists: '%s'" % new_workerid)
+
         self._pmanager.rename_pwidget(old_workerid, new_workerid)
         self._wim.rename_workerinstance(old_workerid, new_workerid)
+
         if self._antennafoldstate is not None:
             self._antennafoldstate.rename_worker(old_workerid, new_workerid)
 
@@ -527,7 +548,9 @@ class WorkerManager(object):
         ok = self._rename_worker(old_workerid, new_workerid)
         if not ok:
             return False
+
         self._wim.rename_workerinstance(old_workerid, new_workerid)
+
         if self._antennafoldstate is not None:
             self._antennafoldstate.rename_worker(old_workerid, new_workerid)
         return True

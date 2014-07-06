@@ -4,6 +4,7 @@ import weakref
 
 
 class PWorkerCreator(object):
+
     def __init__(self, mainwindow, clipboard, title="workers"):
         self._mainwindow = mainwindow
         self._clipboard = clipboard

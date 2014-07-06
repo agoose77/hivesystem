@@ -29,4 +29,3 @@ class PTree(object):
         # logging.debug("PTree.widget, what to do?")
         return self
     
-    

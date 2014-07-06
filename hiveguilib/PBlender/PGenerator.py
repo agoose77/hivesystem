@@ -55,12 +55,14 @@ def PGenerator(paramnames, paramtypelist, paramvalues, update_callback, buttons=
     for subform in form._members.values():
         if subform.arraycount:
             subform.length = 10
+
     for buttonname, buttoncallback in buttons:
         form.add_button(buttonname, "before")
 
     for form_manipulator in form_manipulators:
         ret = form_manipulator(form)
-        if ret is not None: form = ret
+        if ret is not None:
+            form = ret
 
     m = model(typetree)
     v = blenderview(form)
@@ -74,11 +76,13 @@ def PGenerator(paramnames, paramtypelist, paramvalues, update_callback, buttons=
     if not len(paramvalues):
         #if there are no current param values, load the form defaults into the model
         con._sync_from_view()
+
     else:
         #else, set the current values into the model
         for pname, pvalue in paramvalues.items():
             pname2 = pname
-            if pname in reserved: pname2 = pname + "_"
+            if pname in reserved:
+                pname2 = pname + "_"
             if pvalue is not None:
                 getattr(m, pname2)._set(pvalue)
 
@@ -91,7 +95,9 @@ def PGenerator(paramnames, paramtypelist, paramvalues, update_callback, buttons=
         v.buttons[buttonindex].listen(cb)
 
     up = update_callback
-    if contains_reserved: up = functools.partial(remap_reserved, update_callback)
+    if contains_reserved:
+        up = functools.partial(remap_reserved, update_callback)
+
     m._listen(up)
 
     con._sync_from_view()
