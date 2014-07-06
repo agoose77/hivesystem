@@ -4,6 +4,7 @@ import logging
 import copy
 
 from . import level
+from . import Operators
 
 
 def tag_redraw_area(tree_name):
@@ -126,8 +127,7 @@ class HiveToolsMenu(bpy.types.Menu):
         layout = self.layout
 
         layout.prop(context.screen, "use_hive")
-        layout.operator("wm.open_mainfile", text="Import map")
-        layout.operator("wm.open_mainfile", text="Export map")
+        layout.operator("hive.synchronise_data", text="Synchronise")
 
 
 class HiveMapImport(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
@@ -152,6 +152,17 @@ class FakeLink:
         self.from_socket = from_socket
         self.to_node = to_node
         self.to_socket = to_socket
+
+    def __hash__(self):
+        return hash(self.to_tuple())
+
+    def __eq__(self, other):
+        assert isinstance(other, self.__class__)
+        logging.debug("Using __eq__ of FakeLink")
+        return self.to_tuple() == other.to_tuple()
+
+    def to_tuple(self):
+        return self.from_node, self.from_socket, self.to_node, self.to_socket
 
     @classmethod
     def from_link(cls, link):
@@ -240,6 +251,7 @@ class HiveNodeTree:
             if link.from_node.name in deletions or link.to_node.name in deletions:
                 continue
 
+            print(removed_connections)
             attempt_success = hcanvas.gui_removes_connection(link)
 
             if attempt_success:

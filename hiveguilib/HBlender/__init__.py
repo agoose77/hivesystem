@@ -21,6 +21,5 @@ from .MainWindow import MainWindow
 from .NodeCanvas import NodeCanvas
 from .StatusBar import StatusBar
 
-
 def FileDialog(mode):
     raise NotImplementedError

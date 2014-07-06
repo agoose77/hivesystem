@@ -315,7 +315,7 @@ class BlendManager:
     def _remove_nodetree(self, name):
         node_tree = bpy.data.node_groups[name]
         bpy.data.node_groups.remove(node_tree)
-
+        print("REMOVE",name)
         # Find nodetree
         for index, (nodetree_name, nodetree_bl_idname) in enumerate(self.nodetrees):
             if nodetree_name == name:
@@ -556,7 +556,6 @@ class BlendManager:
             else:
                 self.on_rename_node_trees(node_tree_names, hive_node_groups)
 
-
         if self._restore_editors is not None:
             for tree_name in set(node_tree_names).intersection(self._restore_editors):
                 node_tree = bpy.data.node_groups[tree_name]
@@ -665,10 +664,30 @@ class BlendManager:
                     if nodetree_name.startswith(folder_string):
                         nodetree_name = nodetree_name[folder_length:] + tree_suffix
 
-                    if nodetree_name not in bpy.data.node_groups:
-                        nodetree = bpy.data.node_groups.new(nodetree_name, tree_manager_class.tree_bl_idname)
+                    # Find existing nodetree
+                    for nodetree in bpy.data.node_groups:
+                        node_group_name = nodetree.name
+
+                        if node_group_name == nodetree_name:
+                            break
+
+                        node_group_name = node_group_name.replace(".", "_")
+                        if node_group_name == nodetree_name:
+                            break
+
                     else:
-                        nodetree = bpy.data.node_groups[nodetree_name]
+                        nodetree = None
+
+                    if nodetree is None:
+                        nodetree = bpy.data.node_groups.new(nodetree_name, tree_manager_class.tree_bl_idname)
+
+                    # Ensure we load users
+                    for space in (sp for s in bpy.data.screens for a in s.areas for sp in a.spaces if sp.type == "NODE_EDITOR"):
+                        if space.tree_type != tree_manager_class.tree_bl_idname:
+                            continue
+
+                        space.node_tree = nodetree
+                        break
 
                     nodetree_name = nodetree.name
                     if nodetree_name not in self.blend_nodetree_managers:
@@ -697,7 +716,7 @@ class BlendManager:
             hivemap_string = text_block.as_string()
             data = spyder.core.parse(hivemap_string)[1]
             hivemap = Spyder.Hivemap.fromdict(data)
-
+            print("load")
             nodetree_manager.hivemapmanager._load(hivemap)
 
         self.for_valid_texts("hivemap", "hivemaps", "", HiveMapNodeTreeManager, load_callback)

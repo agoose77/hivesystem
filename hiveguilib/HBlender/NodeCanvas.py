@@ -94,13 +94,8 @@ class NodeCanvas:
             self._labels.append(name)
             node_tree = self.bntm.get_nodetree()
 
-            # Don't create Blender node if it already exists due to copy+paste
-            if id_ in self._during_conversion:
-                node = self._during_conversion[id_]
-
-            else:
-                node_class = self.get_nodeclass()
-                node = node_tree.nodes.new(node_class.bl_idname)
+            node_class = self.get_nodeclass()
+            node = node_tree.nodes.new(node_class.bl_idname)
 
             node.location = position
             node.set_attributes(attributes)
@@ -358,8 +353,16 @@ class NodeCanvas:
 
         self._connections[id_] = connection
         self._links = {FakeLink.from_link(l) for l in tree.links}
-        fl = FakeLink.from_link(link)
-        self._links.add(fl)  # adding a new link goes slowly...
+
+        # Work around for existing UI connections
+        fake_link_ = FakeLink.from_link(link)
+        for link_ in self._links:
+            if link_ == fake_link_:
+                break
+
+        else:
+            self._links.add(fake_link_)  # adding a new link goes slowly...
+
         start.check_update()
         end.check_update()
         self.pop_busy("h_add")
