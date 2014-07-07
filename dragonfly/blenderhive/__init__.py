@@ -4,7 +4,7 @@ _pattern = _os.path.split(__file__)[0] + _os.sep + "*.py"
 _pyfiles = _glob.glob(_pattern);
 _pyfiles.sort()
 
-from .blenderhive import blenderapp, blenderhive
+#from .blenderhive import blenderapp, blenderhive
 
 for _f in _pyfiles:
     _name = _os.path.split(_f)[1][:-3]

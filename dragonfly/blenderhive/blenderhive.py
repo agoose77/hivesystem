@@ -207,6 +207,12 @@ class blenderapp(bee.drone):
 
         return entity_dict[entityname]
 
+    def get_entity_names(self, entity_dict=None):
+        if entity_dict is None:
+            entity_dict = self._entities
+
+        return list(entity_dict.keys())
+
     def get_entity(self, entityname, entity_dict=None, camera=None):
         from ..scene.matrix import matrix
 
@@ -418,6 +424,8 @@ class blenderapp(bee.drone):
         libcontext.plugin(("blender", "entityclass-register"), plugin_supplier(self._register_entity_class))
         libcontext.plugin(("blender", "get_entityclass"), plugin_supplier(self.get_entity_class))
         libcontext.plugin(("spawn", "entity"), plugin_supplier(self.spawn_entity))
+
+        libcontext.plugin("get_entity_names", plugin_supplier(self.get_entity_names))
 
         libcontext.plugin(("entity", "parent_to"), plugin_supplier(self.entity_parent_to))
         libcontext.plugin(("entity", "unparent"), plugin_supplier(self.entity_unparent))

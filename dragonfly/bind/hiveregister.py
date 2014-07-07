@@ -2,6 +2,7 @@ import bee, libcontext
 
 
 class hiveregister(bee.drone):
+
     def __init__(self):
         self.hives = {}
 
@@ -14,4 +15,6 @@ class hiveregister(bee.drone):
     def place(self):
         p = libcontext.pluginclasses.plugin_supplier(self.get_hive)
         libcontext.plugin("get_hive", p)
-    
+
+        p = libcontext.pluginclasses.plugin_supplier(self.register_hive)
+        libcontext.plugin("register_hive", p)

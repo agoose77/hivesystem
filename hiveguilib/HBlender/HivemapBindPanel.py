@@ -23,42 +23,39 @@ def remove_property(obj, name):
     bpy.ops.object.game_property_remove(index=prop_index)
 
 
-@bpy.app.handlers.persistent
-def game_pre(dummy):
-    scene = bpy.context.scene
+def get_or_create_property(obj, name, type_="STRING"):
+    try:
+        prop = get_property(obj, name)
 
-    for obj in scene.objects:
-        if not obj.hive_nodetree:
-            continue
+    except KeyError:
+        prop = create_property(obj, name, type_)
 
-        blend_manager = BlendManager.blendmanager
-        try:
-            nodetree_manager = blend_manager.get_nodetree_manager(obj.hive_nodetree)
-
-        except KeyError:
-            logging.warning("Couldn't find nodetree for {} called {}".format(obj.name, obj.hive_nodetree))
-            continue
-
-        textblock_name = blend_manager.get_textblock_name(nodetree_manager)
-
-        hivemap_prop = create_property(obj, "hivemap")
-        hivemap_prop.value = textblock_name
-        hivemap_prop.show_debug = 1
+    return prop
 
 
-@bpy.app.handlers.persistent
-def game_post(dummy):
-    scene = bpy.context.scene
+def ui_hivemap_set(obj, context):
+    nodetree_name = obj.hive_nodetree
 
-    for obj in scene.objects:
-        if not obj.hive_nodetree:
-            continue
-
+    if not nodetree_name:
         try:
             remove_property(obj, "hivemap")
+        finally:
+            return
 
-        except KeyError:
-            continue
+    blend_manager = BlendManager.blendmanager
+
+    try:
+        nodetree_manager = blend_manager.get_nodetree_manager(nodetree_name)
+
+    except KeyError:
+        logging.warning("Couldn't find nodetree for {} called {}".format(obj.name, nodetree_name))
+        return
+
+    textblock_name = blend_manager.get_textblock_name(nodetree_manager)
+
+    hivemap_prop = get_or_create_property(obj, "hivemap")
+    hivemap_prop.value = textblock_name
+    hivemap_prop.show_debug = 1
 
 
 class HivemapSelectionPanel(bpy.types.Panel):
@@ -70,23 +67,8 @@ class HivemapSelectionPanel(bpy.types.Panel):
     @classmethod
     def on_registered(cls):
         # Template list settings
-        bpy.types.Object.hive_nodetree = bpy.props.StringProperty("", description="NodeTree to bind to")
-        try:
-            bpy.app.handlers.game_pre.append(game_pre)
-            bpy.app.handlers.game_post.append(game_post)
-
-        except AttributeError:
-            pass
-
-
-    @classmethod
-    def on_unregistered(cls):
-        try:
-            bpy.app.handlers.game_pre.remove(game_pre)
-            bpy.app.handlers.game_post.remove(game_post)
-
-        except AttributeError:
-            pass
+        bpy.types.Object.hive_nodetree = bpy.props.StringProperty("", description="NodeTree to bind to",
+                                                                  update=ui_hivemap_set)
 
     def draw(self, context):
         layout = self.layout
