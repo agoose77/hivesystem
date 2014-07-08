@@ -46,24 +46,12 @@ def game_post(dummy):
     blendmanager.game_post()
 
 
-def get_nodetree_spaces():
-    nodetree_editors = {}
-
-    for screen, area, space in ((s, a, sp) for s in bpy.data.screens for a in s.areas for sp in a.spaces
-                                if sp.type == "NODE_EDITOR"):
-        node_tree = space.edit_tree
+def clear_hive_node_trees():
+    for node_tree in bpy.data.node_groups:
         if not isinstance(node_tree, HiveNodeTree):
             continue
 
-        name = node_tree.name
         BlendManager._clear_nodetree(node_tree)
-
-        if name not in nodetree_editors:
-            nodetree_editors[name] = []
-
-        nodetree_editors[name].append(space)
-
-    return nodetree_editors
 
 
 def read_conf(block):
@@ -570,18 +558,6 @@ class BlendManager:
                                  if bpy.data.node_groups[name].registered_name != name]
                 self.on_renamed_node_trees(renamed_nodes)
 
-        if self._restore_editors is not None:
-            for tree_name in set(node_tree_names).intersection(self._restore_editors):
-                node_tree = bpy.data.node_groups[tree_name]
-                # TODO: Find reason why synchronise sometimes doubles things up
-                # TODO: look into enabling backups
-                # TODO: determine if workermaps are loadable
-                # TODO: save antenna fold state
-                #for editor in self._restore_editors[tree_name]:
-               #     editor.path.push(node_tree)
-
-        self._restore_editors = None
-
         text_widget_manager.check_update()
 
     def get_textblock_name(self, nodetree_manager):
@@ -662,7 +638,8 @@ class BlendManager:
         #Does not detect if custom workers and Spyder models have changed
         #TODO: error detection => uneditable state?
         """
-        self._restore_editors = get_nodetree_spaces()
+        clear_hive_node_trees()
+
         self._load_hivemaps()
         self._load_workermaps()
         self._load_spydermaps()
