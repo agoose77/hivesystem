@@ -2,7 +2,7 @@ from .BlenderWidgets import BlenderDummyWidget, BlenderWrapWidget, BlenderEmptyW
 import weakref
 from .Layout import Layout
 import logging
-from . import Node, NodeTree
+from . import Node, NodeTrees
 from . import level
 
 

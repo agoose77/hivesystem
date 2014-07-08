@@ -59,10 +59,41 @@ The mod_property actuator modifies a named property
                 connect(identifier, identifier_buffer)
                 trigger(trig, identifier_buffer)
 
+                @modifier
+                def modify_property_value(self):
+                    entity_name = self.identifier_buffer
+                    property_name = self.property_name_buffer
+                    modifier_value = self.modifier_value_buffer
+                    property_value = self.get_property(entity_name, property_name)
+
+                    operation = self.get_operation()
+                    result = operation(property_value, modifier_value)
+
+                    self.set_property(entity_name, property_name, result)
+
+                def set_get_property_for(self, get_property_for):
+                    self.get_property_for = get_property_for
+
+                def set_set_property_for(self, set_property_for):
+                    self.set_property_for = set_property_for
+
             else:
-                @property
-                def identifier_buffer(self):
-                    return self.get_entity().entityname
+                @modifier
+                def modify_property_value(self):
+                    property_name = self.property_name_buffer
+                    modifier_value = self.modifier_value_buffer
+                    property_value = self.get_property(property_name)
+
+                    operation = self.get_operation()
+                    result = operation(property_value, modifier_value)
+
+                    self.set_property(property_name, result)
+
+                def set_get_property(self, get_property):
+                    self.get_property = get_property
+
+                def set_set_property(self, set_property):
+                    self.set_property = set_property
 
             # Name the inputs and outputs
             guiparams = {
@@ -81,17 +112,6 @@ The mod_property actuator modifies a named property
                 f.mode.optiontitles = "Add", "Subtract", "Multiply", "Divide"
                 f.mode.default = "add"
 
-            @modifier
-            def modify_property_value(self):
-                identifier = self.identifier_buffer
-                property_name = self.property_name_buffer
-                modifier_value = self.modifier_value_buffer
-                property_value = self.get_property(identifier, property_name)
-
-                operation = self.get_operation()
-                result = operation(property_value, modifier_value)
-                self.set_property(identifier, property_name, result)
-
             trigger(trig, modify_property_value)
 
             def get_operation(self):
@@ -108,20 +128,15 @@ The mod_property actuator modifies a named property
 
                 return operator.truediv
 
-            def set_get_property(self, get_property):
-                self.get_property = get_property
-
-            def set_set_property(self, set_property):
-                self.set_property = set_property
-
-            def set_get_entity(self, get_entity):
-                self.get_entity = get_entity
-
             def place(self):
                 if idmode == "bound":
-                    libcontext.socket("entity", socket_single_required(self.set_get_entity))
+                    libcontext.socket(("entity", "bound", "property", "set"),
+                                      socket_single_required(self.set_set_property))
+                    libcontext.socket(("entity", "bound", "property", "get"),
+                                      socket_single_required(self.set_get_property))
 
-                libcontext.socket(("entity", "set_property"), socket_single_required(self.set_set_property))
-                libcontext.socket(("entity", "get_property"), socket_single_required(self.set_get_property))
+                else:
+                    libcontext.socket(("entity", "property", "set"), socket_single_required(self.set_set_property_for))
+                    libcontext.socket(("entity", "property", "get"), socket_single_required(self.set_get_property_for))
 
         return mod_property

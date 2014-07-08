@@ -24,6 +24,7 @@ class AntennaFoldState(object):
         self.states = {}
 
     def create_worker(self, workerid, antennas, guiparams):
+        print("CREATE WORKER", antennas, workerid)
         state = {}
         for antenna_name, typ in antennas:
             antenna = Antenna(typ)
@@ -142,6 +143,11 @@ class AntennaFoldState(object):
         """
         state = self.states[workerid]
         if state is None:
+            return
+
+        if workerid in self._sync:
+            return
+        if workerid in self._init_widget:
             return
 
         assert workerid not in self._sync, workerid

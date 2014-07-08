@@ -10,9 +10,12 @@ def register(currdir):
     HGui.init(HBlender)
     PGui.init(PBlender)
 
-    from .HBlender import BlendManager, NodeTree, HivemapBindPanel
+    from .HBlender import BlendManager, NodeTrees, Menus, Operators, HivemapBindPanel
 
-    NodeTree.register()
+    NodeTrees.register()
+    Operators.register()
+    Menus.register()
+
     hiveguidir = os.path.split(__file__)[0]
     BlendManager.initialize(currdir, hiveguidir)
     BlendManager.blendmanager.register()
@@ -20,8 +23,10 @@ def register(currdir):
 
 
 def unregister():
-    from .HBlender import BlendManager, NodeTree, HivemapBindPanel
+    from .HBlender import BlendManager, NodeTrees, Menus, Operators, HivemapBindPanel
 
-    BlendManager.unregister()
-    NodeTree.unregister()
+    BlendManager.blendmanager.unregister()
+    NodeTrees.unregister()
+    Operators.unregister()
+    Menus.unregister()
     HivemapBindPanel.unregister()

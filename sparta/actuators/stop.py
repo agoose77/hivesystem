@@ -5,9 +5,8 @@ from libcontext.pluginclasses import *
 
 
 class stop(bee.worker):
-    """
-Stops the current hive. If "delobj" is True, delete any object bound to the hive.
-In case of the top-level hive, this quits the game    
+    """Stops the current hive. If "delobj" is True, delete any object bound to the hive.
+    In case of the top-level hive, this quits the game.
     """
     # Inputs and outputs
     trig = antenna("push", "trigger")

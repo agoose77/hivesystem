@@ -1,5 +1,6 @@
 import bpy
 
+
 class SynchroniseDataOperator(bpy.types.Operator):
     """Synchronise the text blocks and Node trees.
 
@@ -11,7 +12,7 @@ class SynchroniseDataOperator(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         from . import BlendManager
-        return BlendManager.use_hive_get(context)
+        return BlendManager.use_hive_get(context.scene)
 
     def execute(self, context):
         from . import BlendManager
@@ -24,12 +25,105 @@ class SynchroniseDataOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class ChangeHiveLevel(bpy.types.Operator):
+    """Handles keyboard events to change HIVE level with TAB / SHIFT TAB"""
+
+    _running = []
+
+    bl_idname = "node.change_hive_level"
+    bl_label = "Change the HIVE system level"
+
+    @classmethod
+    def check_valid(cls):
+        invalid = []
+        for registered in cls._running:
+            try:
+                registered.as_pointer
+            except ReferenceError:
+                invalid.append(registered)
+
+        for registered in invalid:
+            cls._running.remove(registered)
+
+    @classmethod
+    def can_invoke(cls):
+        cls.check_valid()
+        return not cls._running
+
+    @classmethod
+    def disable(cls):
+        cls.check_valid()
+        for registered in cls._running:
+            registered.invalid = True
+        cls._running.clear()
+
+    def invoke(self, context, event):
+        if not ChangeHiveLevel.can_invoke():
+            return {"CANCELLED"}
+
+        ChangeHiveLevel._running.append(self)
+
+        self.held = False
+        self.invalid = False
+
+        return self.execute(context)
+
+    def execute(self, context):
+        context.window_manager.modal_handler_add(self)
+        return {'RUNNING_MODAL'}
+
+    @staticmethod
+    def is_node_editor(context, event):
+        """Determine if the event occurred within the node editor
+
+        :param context: event context
+        :param event: event instance
+        """
+        node_editor = next((x for x in context.window.screen.areas.values() if x.type == "NODE_EDITOR"), None)
+        if node_editor is None:
+            return False
+
+        return node_editor.x <= event.mouse_x <= (node_editor.x + node_editor.width) and \
+               node_editor.y <= event.mouse_y <= (node_editor.y + node_editor.height)
+
+    def modal(self, context, event):
+        if self.invalid:
+            return {"CANCELLED"}
+
+        if event.value == "RELEASE":
+            self.held = False
+            return {"PASS_THROUGH"}
+
+        elif event.value != 'PRESS' or self.held or not self.is_node_editor(context, event):
+            return {"PASS_THROUGH"}
+
+        if not event.type == "TAB":
+            return {"PASS_THROUGH"}
+
+        direction = (-2 * event.shift) + 1
+
+        hive_levels = [int(x[0]) for x in bpy.types.Scene.hive_level[1]["items"]]
+        hive_level = int(context.scene.hive_level) + direction
+
+        # Clamp level
+        if hive_level < hive_levels[0]:
+            hive_level = hive_levels[-1]
+
+        elif hive_level > hive_levels[-1]:
+            hive_level = hive_levels[0]
+
+        context.scene.hive_level = str(hive_level)
+
+        self.held = True
+
+        return {"PASS_THROUGH"}
+
+
 def register():
     bpy.utils.register_class(SynchroniseDataOperator)
+    bpy.utils.register_class(ChangeHiveLevel)
 
 
 def unregister():
     bpy.utils.unregister_class(SynchroniseDataOperator)
-
-
-register()
+    bpy.utils.unregister_class(ChangeHiveLevel)

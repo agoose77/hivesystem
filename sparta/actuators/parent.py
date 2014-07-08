@@ -34,7 +34,6 @@ class parent(object):
                 identifier_buffer = buffer("pull", ("str", "identifier"))
                 connect(identifier, identifier_buffer)
 
-
             trig = antenna("push", "trigger")
             parent = antenna("pull", ("str", "identifier"))
             parent_buffer = buffer("pull", ("str", "identifier"))
@@ -51,28 +50,30 @@ class parent(object):
             if idmode == "bound":
                 @modifier
                 def m_parent(self):
-                    self.parent_func(self.entity.entityname, self.parent_buffer)
+                    self.parent_set(self.parent_buffer)
 
-                def set_entity(self, entity):
-                    self.entity = entity
+                def set_parent_set(self, parent_set):
+                    self.parent_set = parent_set
+
 
             elif idmode == "unbound":
                 @modifier
                 def m_parent(self):
-                    self.parent_func(self.identifier_buffer, self.parent_buffer)
+                    self.parent_set_for(self.identifier_buffer, self.parent_buffer)
+
+                def set_parent_set_for(self, parent_set_for):
+                    self.parent_set_for = parent_set_for
 
                 trigger(trig, identifier_buffer)
 
             trigger(trig, m_parent)
 
-            def set_entity_parent_to(self, parent_func):
-                self.parent_func = parent_func
-
             def place(self):
                 if idmode == "bound":
-                    libcontext.socket("entity", socket_single_required(self.set_entity))
+                    libcontext.socket(("entity", "bound", "parent", "set"),
+                                      socket_single_required(self.set_parent_set))
 
-                socket_info = libcontext.socketclasses.socket_single_required(self.set_entity_parent_to)
-                libcontext.socket(("entity", "parent_to"), socket_info)
+                else:
+                    libcontext.socket(("entity", "parent", "set"), socket_single_required(self.set_parent_set_for))
 
         return parent

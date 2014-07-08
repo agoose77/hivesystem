@@ -35,7 +35,7 @@ class HiveMapNodeTreeManager(BlendNodeTreeManager):
         self.workerbuilder = WorkerBuilder()
         self.workerinstancemanager = WorkerInstanceManager(self.canvas)
         try:
-            currlevel = int(bpy.context.screen.hive_level)
+            currlevel = int(bpy.context.scene.hive_level)
             if currlevel == 1:
                 self.workerinstancemanager.default_profile = "simplified"
         except:

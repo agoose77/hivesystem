@@ -1,7 +1,7 @@
 from ..HUtil.Node import h_map_node
-from .NodeTree import FakeLink
+from .NodeTrees import FakeLink
 from .BlendNodeTreeManager import HiveMapNodeTreeManager, WorkerMapNodeTreeManager, SpyderMapNodeTreeManager
-from . import Node, NodeSocket, NodeTree, scalepos, unscalepos
+from . import Node, NodeSocket, NodeTrees, scalepos, unscalepos
 import logging
 import bpy
 
@@ -75,13 +75,13 @@ class NodeCanvas:
 
     def get_nodeclass(self):
         tree = self.bntm.get_nodetree()
-        if isinstance(tree, NodeTree.HivemapNodeTree):
+        if isinstance(tree, NodeTrees.HivemapNodeTree):
             return Node.HivemapNode
 
-        if isinstance(tree, NodeTree.SpydermapNodeTree):
+        if isinstance(tree, NodeTrees.SpydermapNodeTree):
             return Node.SpydermapNode
 
-        if isinstance(tree, NodeTree.WorkermapNodeTree):
+        if isinstance(tree, NodeTrees.WorkermapNodeTree):
             return Node.WorkermapNode
 
         raise ValueError(tree.bl_idname)

@@ -7,7 +7,7 @@ from . import Node, NodeSocket
 from .BlendNodeTreeManager import HiveMapNodeTreeManager, WorkerMapNodeTreeManager, SpyderMapNodeTreeManager
 
 from .NodeItemManager import NodeItemManager
-from .NodeTree import HiveNodeTree
+from .NodeTrees import HiveNodeTree
 
 from bpy.app.handlers import persistent
 
@@ -221,7 +221,7 @@ class BlendManager:
         found = self._workerfinder_global_hivemap._found_workers
 
         self._workerfinder_local_hivemap = None
-        if use_hive_get(bpy.context):
+        if use_hive_get(bpy.context.scene):
             self._workerfinder_local_hivemap = WorkerFinder( \
                 locationmodules, syspath, found, lister=bpy_lister, opener=bpy_opener
             )
@@ -369,7 +369,7 @@ class BlendManager:
         """
 
         import Spyder
-        from .NodeTree import HivemapNodeTree, WorkermapNodeTree, SpydermapNodeTree
+        from .NodeTrees import HivemapNodeTree, WorkermapNodeTree, SpydermapNodeTree
 
         node_trees = bpy.data.node_groups
         for node_tree_name in added_node_tree_names:
@@ -528,7 +528,7 @@ class BlendManager:
 
     def blend_update(self, *args):
         """Handle blend file updates"""
-        from .NodeTree import HiveNodeTree, HivemapNodeTree, WorkermapNodeTree, SpydermapNodeTree
+        from .NodeTrees import HiveNodeTree, HivemapNodeTree, WorkermapNodeTree, SpydermapNodeTree
 
         if self._loading:
             return
@@ -768,8 +768,8 @@ class BlendManager:
     def save_last_hive_level(self):
         """Save the current value of the hive level"""
         global _last_hive_level
-        if bpy.context.screen is not None:
-            hive_level = getattr(bpy.context.screen, "hive_level", None)
+        if bpy.context is not None:
+            hive_level = getattr(bpy.context, "hive_level", None)
             if hive_level is not None:
                 hive_level = int(hive_level)
             _last_hive_level = hive_level
@@ -990,37 +990,38 @@ def disable_hive(scene):
 
     del scene["__main__"]
 
-def use_hive_get(context):
-    if context.scene is None:
+
+def use_hive_get(scene):
+    if scene is None:
         return False
 
-    if "__main__" in context.scene and context.scene["__main__"]:
+    if "__main__" in scene and scene["__main__"]:
         return 1
 
     else:
         return 0
 
 
-def use_hive_set(context, value):
+def use_hive_set(scene, value):
     global _last_hive_level
 
     if blendmanager is None:
         return
 
-    if context.scene is None:
+    if scene is None:
         return
 
-    current = use_hive_get(context)
+    current = use_hive_get(scene)
     if value == current:
         return
 
     if value:
         data = get_defaultproject_data()
-        enable_hive(context.scene, data)
+        enable_hive(scene, data)
         _last_hive_level = 1
 
     else:
-        disable_hive(context.scene)
+        disable_hive(scene)
 
 
 _last_hive_level = None

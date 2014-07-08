@@ -490,8 +490,10 @@ class NodeCanvas(HGui):
         variable_id = None
         value = None
         connection_id = None
+
         for connection_id_ in self._connection_ids:
             connection = self._connections[connection_id_]
+
             if not (connection.end_node == node_id and connection.end_attribute == antenna):
                 continue
 
@@ -523,6 +525,7 @@ class NodeCanvas(HGui):
                         value = worker_descriptor[5]["value"]
 
                     variable_node.position = 0, 0
+
             break
 
         if not can_be_folded or (variable_id is None and called_on_load):

@@ -105,7 +105,9 @@ class bindbuilder(mytype):
 
             def place(self):
                 for binder in self.bindobject.binderinstances:
-                    if getattr(self.bindobject, binder.parametername) != binder.parametervalue: continue
+                    if getattr(self.bindobject, binder.parametername) != binder.parametervalue:
+                        continue
+
                     values = {}
                     for antennaname in binder.antennanames:
                         values[antennaname] = self.bindobject.bindantennavalues[antennaname]

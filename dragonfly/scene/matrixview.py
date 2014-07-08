@@ -85,7 +85,7 @@ class matrixview_blender_relative(object):
         assert relativematrix is not None
         r = relativematrix.get_proxy("Blender")
         self.relmat = r.localOrientation
-        self.relmatinv    = self.relmat.inverted()
+        self.relmatinv = self.relmat.inverted()
         self.relpos = r.localPosition
 
     def mat(self):

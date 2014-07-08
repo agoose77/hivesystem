@@ -23,4 +23,4 @@ class parent(bee.worker):
 
     def place(self):
         s = libcontext.socketclasses.socket_single_required(self.set_entity_parent_to)
-        libcontext.socket(("entity", "parent_to"), s)
+        libcontext.socket(("entity", "parent", "set"), s)

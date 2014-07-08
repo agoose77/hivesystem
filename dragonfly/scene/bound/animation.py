@@ -32,4 +32,3 @@ class animation(worker):
 
     def place(self):
         libcontext.socket("actor", socket_single_required(self.set_actor))
-    

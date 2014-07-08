@@ -43,22 +43,33 @@ class get_property(object):
             property_value_variable = variable(type_)
             connect(property_value_variable, property_value)
 
-            pretrigger(property_value_variable, property_name_buffer)
+            trigger_property_name = triggerfunc(property_name_buffer)
 
             if idmode == "unbound":
                 identifier = antenna("pull", ("str", "identifier"))
                 identifier_buffer = buffer("pull", ("str", "identifier"))
                 connect(identifier, identifier_buffer)
-                pretrigger(property_value_variable, identifier_buffer)
+                trigger_identifier_buffer = triggerfunc(identifier_buffer)
+
+                @modifier
+                def get_property_value(self):
+                    self.trigger_property_name()
+                    self.trigger_identifier_buffer()
+                    self.property_value_variable = self.get_property_for(self.identifier_buffer,
+                                                                         self.property_name_buffer)
+
+                def set_get_property_for(self, get_property_for):
+                    self.get_property_for = get_property_for
 
             else:
-                @property
-                def identifier_buffer(self):
-                    return self.get_entity().entityname
+                @modifier
+                def get_property_value(self):
+                    self.trigger_property_name()
+                    self.property_value_variable = self.get_property(self.property_name_buffer)
 
-            @modifier
-            def get_property_value(self):
-                self.property_value_variable = self.get_property(self.identifier_buffer, self.property_name_buffer)
+                def set_get_property(self, get_property):
+                    self.get_property = get_property
+
             pretrigger(property_value_variable, get_property_value)
 
             # Name the inputs and outputs
@@ -69,16 +80,11 @@ class get_property(object):
                 "_memberorder": ["identifier", "property_name", "property_value"],
             }
 
-            def set_get_property(self, get_property):
-                self.get_property = get_property
-
-            def set_get_entity(self, get_entity):
-                self.get_entity = get_entity
-
             def place(self):
                 if idmode == "bound":
-                    libcontext.socket("entity", socket_single_required(self.set_get_entity))
+                    libcontext.socket(("entity", "bound", "property", "get"), socket_single_required(self.set_get_property))
 
-                libcontext.socket(("entity", "get_property"), socket_single_required(self.set_get_property))
+                else:
+                    libcontext.socket(("entity", "property", "get"), socket_single_required(self.set_get_property_for))
 
         return get_property

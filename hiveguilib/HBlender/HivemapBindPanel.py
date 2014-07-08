@@ -2,6 +2,7 @@ import bpy
 import logging
 
 from . import BlendManager
+from .NodeTrees import HivemapNodeTree
 
 
 def get_property(obj, name):
@@ -58,6 +59,48 @@ def ui_hivemap_set(obj, context):
     hivemap_prop.show_debug = 1
 
 
+_object = None
+
+@bpy.app.handlers.persistent
+def tree_switcher(dummy):
+    scene = bpy.context.scene
+    if scene is None:
+        return
+
+    if not scene.switch_to_bound_hive_tree:
+        return
+
+    active_object = bpy.context.scene.objects.active
+    global _object
+
+    if active_object == _object or active_object is None:
+        return
+
+    node_tree_name = active_object.hive_nodetree
+    try:
+        node_tree = bpy.data.node_groups[node_tree_name]
+    except KeyError:
+        return
+
+    blend_manager = BlendManager.blendmanager
+
+    try:
+        nodetree_manager = blend_manager.get_nodetree_manager(node_tree.name)
+
+    except KeyError:
+        return
+
+    for space in (sp for s in bpy.data.screens for a in s.areas for sp in a.spaces if sp.type == "NODE_EDITOR"):
+        if space.tree_type != nodetree_manager.tree_bl_idname:
+            continue
+
+        space.node_tree = node_tree
+        logging.info("Switched to {}".format(node_tree.name))
+        break
+
+    _object = active_object
+
+
 class HivemapSelectionPanel(bpy.types.Panel):
     bl_space_type = "LOGIC_EDITOR"
     bl_region_type = "UI"
@@ -70,17 +113,24 @@ class HivemapSelectionPanel(bpy.types.Panel):
         bpy.types.Object.hive_nodetree = bpy.props.StringProperty("", description="NodeTree to bind to",
                                                                   update=ui_hivemap_set)
 
+    @classmethod
+    def poll(cls, context):
+        return context.object is not None
+
     def draw(self, context):
         layout = self.layout
         ob = bpy.context.object
+
         layout.prop_search(ob, "hive_nodetree", bpy.data, "node_groups", text="NodeTree")
 
 
 def register():
     bpy.utils.register_class(HivemapSelectionPanel)
     HivemapSelectionPanel.on_registered()
+    bpy.app.handlers.scene_update_post.append(tree_switcher)
 
 
 def unregister():
     bpy.utils.unregister_class(HivemapSelectionPanel)
     HivemapSelectionPanel.on_unregistered()
+    bpy.app.handlers.scene_update_post.remove(tree_switcher)

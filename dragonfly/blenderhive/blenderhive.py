@@ -408,17 +408,23 @@ class blenderapp(bee.drone):
         libcontext.plugin(("blender", "entity-register"), plugin_supplier(self._register_entity))
         libcontext.plugin(("remove", "entity"), plugin_supplier(self.remove_entity))
 
-        libcontext.plugin(("blender", "get_entity"), plugin_supplier(self.get_entity_blender))
-        libcontext.plugin("get_entity", plugin_supplier(self.get_entity))
-        libcontext.plugin(("get_entity", "Blender"), plugin_supplier(self.get_entity_blender))
-        libcontext.plugin(("get_entity", "AxisSystem"), plugin_supplier(self.get_entity_axissystem))
-        libcontext.plugin(("get_entity", "NodePath"), plugin_supplier(self.get_entity_nodepath))
+        libcontext.plugin(("entity", "get"), plugin_supplier(self.get_entity_blender))
+        libcontext.plugin(("entity", "get", "Blender"), plugin_supplier(self.get_entity_blender))
+
+        libcontext.plugin(("entity", "matrix",), plugin_supplier(self.get_entity))
+        libcontext.plugin(("entity", "matrix", "Blender"), plugin_supplier(self.get_entity_blender))
+        libcontext.plugin(("entity", "matrix", "AxisSystem"), plugin_supplier(self.get_entity_axissystem))
+        libcontext.plugin(("entity", "matrix", "NodePath"), plugin_supplier(self.get_entity_nodepath))
 
         for view in ("local", "relative", "reference"):
-            libcontext.plugin(("get_entity", "view", view), plugin_supplier(functools.partial(self.get_entity_view, view)))
-            libcontext.plugin(("get_entity", "view", view, "Blender"), plugin_supplier(functools.partial(self.get_entity_view, view)))
-            libcontext.plugin(("get_entity", "view", view, "NodePath"), plugin_supplier(functools.partial(self.get_entity_view, view, format="NodePath")))
-            libcontext.plugin(("get_entity", "view", view, "AxisSystem"), plugin_supplier(functools.partial(self.get_entity_view, view, format="AxisSystem")))
+            libcontext.plugin(("entity", "view", view),
+                              plugin_supplier(functools.partial(self.get_entity_view, view)))
+            libcontext.plugin(("entity", "view", view, "Blender"),
+                              plugin_supplier(functools.partial(self.get_entity_view, view)))
+            libcontext.plugin(("entity", "view", view, "NodePath"),
+                              plugin_supplier(functools.partial(self.get_entity_view, view, format="NodePath")))
+            libcontext.plugin(("entity", "view", view, "AxisSystem"),
+                              plugin_supplier(functools.partial(self.get_entity_view, view, format="AxisSystem")))
 
         libcontext.socket(("blender", "register_entityclass"), socket_container(self._register_entity_class))
         libcontext.plugin(("blender", "entityclass-register"), plugin_supplier(self._register_entity_class))
@@ -427,14 +433,14 @@ class blenderapp(bee.drone):
 
         libcontext.plugin("get_entity_names", plugin_supplier(self.get_entity_names))
 
-        libcontext.plugin(("entity", "parent_to"), plugin_supplier(self.entity_parent_to))
-        libcontext.plugin(("entity", "unparent"), plugin_supplier(self.entity_unparent))
+        libcontext.plugin(("entity", "parent", "set"), plugin_supplier(self.entity_parent_to))
+        libcontext.plugin(("entity", "parent", "remove"), plugin_supplier(self.entity_unparent))
         libcontext.plugin(("entity", "show"), plugin_supplier(self.entity_show))
         libcontext.plugin(("entity", "hide"), plugin_supplier(self.entity_hide))
-        libcontext.plugin(("entity", "get_property"), plugin_supplier(self.entity_get_property))
-        libcontext.plugin(("entity", "set_property"), plugin_supplier(self.entity_set_property))
-        libcontext.plugin(("entity", "get_collisions"), plugin_supplier(self.entity_get_collisions))
-        libcontext.plugin(("entity", "get_material"), plugin_supplier(self.entity_get_material))
+        libcontext.plugin(("entity", "property", "get"), plugin_supplier(self.entity_get_property))
+        libcontext.plugin(("entity", "property", "set"), plugin_supplier(self.entity_set_property))
+        libcontext.plugin(("entity", "collisions"), plugin_supplier(self.entity_get_collisions))
+        libcontext.plugin(("entity", "material", "get"), plugin_supplier(self.entity_get_material))
 
         libcontext.plugin("exit", plugin_supplier(self.exit))
         libcontext.plugin("stop", plugin_supplier(self.exit))
@@ -546,7 +552,7 @@ class current_scene(bee.drone):
 
 
 from .blenderscene import blenderscene, entityloader, entityclassloader, cameraloader, animationloader
-
+from .near_drone import near_drone
 
 class blenderhive(bee.inithive):
     _hivecontext = hivemodule.appcontext(blenderapp)
@@ -561,6 +567,8 @@ class blenderhive(bee.inithive):
     entityclassloader()
     cameraloader()
     animationloader = animationloader()
+
+    near_drone = near_drone()
 
     exitactuator = exitactuator()
     keyboardsensor_exit = keyboardsensor_trigger("ESCAPE")

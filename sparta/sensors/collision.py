@@ -33,8 +33,12 @@ class collision(object):
                 identifier = antenna("pull", ("str", "identifier"))
                 identifier_buffer = buffer("pull", ("str", "identifier"))
                 connect(identifier, identifier_buffer)
-
                 trigger_identifier_buffer = triggerfunc(identifier_buffer)
+
+                @property
+                def entity_name(self):
+                    self.trigger_identifier_buffer()
+                    return self.identifier_buffer
 
             # How are the collisions filtered?
             filter_mode = variable("str")
@@ -74,16 +78,9 @@ class collision(object):
                 "_memberorder": ["filter_value", "identifier", "collision_id", "active"],
                 }
 
-            if idmode == "bound":
-                def get_entity_name(self):
-                    """Get name of bound entity"""
-                    return self.get_entity().entityname
-
-            elif idmode == "unbound":
-                def get_entity_name(self):
-                    """Get name from input entity identifier"""
-                    self.trigger_identifier_buffer()
-                    return self.identifier_buffer
+            if idmode == "unbound":
+                def get_collisions(self):
+                    return self.get_collisions_for(self.entity_name)
 
             def update_value(self):
                 filter_func = self.get_filter_func()
@@ -92,11 +89,8 @@ class collision(object):
                 self.trigger_filter_value()
                 filter_value = self.filter_buffer
 
-                # Get the invoking entity name
-                entity_name = self.get_entity_name()
-
                 # Find a valid collision
-                for collision_identifier in self.get_collisions(entity_name):
+                for collision_identifier in self.get_collisions():
                     if filter_func(collision_identifier, filter_value):
                         break
                 else:
@@ -162,6 +156,9 @@ class collision(object):
             def set_get_collisions(self, get_collisions):
                 self.get_collisions = get_collisions
 
+            def set_get_collisions_for(self, get_collisions_for):
+                self.get_collisions_for = get_collisions_for
+
             def set_get_property(self, get_property):
                 self.get_property = get_property
 
@@ -173,10 +170,10 @@ class collision(object):
 
             def place(self):
                 if idmode == "bound":
-                    libcontext.socket("entity", socket_single_required(self.set_get_entity))
+                    libcontext.socket(("entity", "bound", "collisions"), socket_single_required(self.set_get_collisions))
 
-                libcontext.socket(("entity", "get_collisions"), socket_single_required(self.set_get_collisions))
-                libcontext.socket(("entity", "get_property"), socket_single_required(self.set_get_property))
-                libcontext.socket(("entity", "get_material"), socket_single_required(self.set_get_property))
+                libcontext.socket(("entity", "collisions"), socket_single_required(self.set_get_collisions_for))
+                libcontext.socket(("entity", "property", "get"), socket_single_required(self.set_get_property))
+                libcontext.socket(("entity", "material", "get"), socket_single_required(self.set_get_property))
 
         return collision

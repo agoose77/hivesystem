@@ -51,7 +51,7 @@ class entitybinderdrone(bee.drone):
         libcontext.plugin(("entity", "get_registered_hivemap_name"), binder_plugin)
 
         socket = socket_single_required(self.set_get_property)
-        libcontext.socket(("entity", "get_property"), socket)
+        libcontext.socket(("entity", "property", "get"), socket)
 
         socket = socket_single_required(self.set_register_hive)
         libcontext.socket("register_hive", socket)

@@ -19,9 +19,9 @@ class near(object):
     def form(cls, f):
         f.sensormode.name = "Sensor mode"
         f.sensormode.type = "option"
-        f.sensormode.options = "normal", "radar", "ray"
+        f.sensormode.options = "normal", "ray"
         f.sensormode.default = "normal"
-        f.sensormode.optiontitles = "Normal", "Radar", "Ray"
+        f.sensormode.optiontitles = "Normal", "Ray"
 
         f.idmode.name = "ID mode"
         f.idmode.advanced = True
@@ -31,7 +31,7 @@ class near(object):
         f.idmode.optiontitles = "Unbound", "Bound"
 
     def __new__(cls, sensormode, idmode):
-        assert sensormode in ("normal", "radar", "ray"), sensormode
+        assert sensormode in ("normal", "ray"), sensormode
         assert idmode in ("bound", "unbound"), idmode
 
         class near(bee.worker):
@@ -39,6 +39,22 @@ class near(object):
 
             if idmode == "unbound":
                 identifier = antenna("pull", ("str", "identifier"))
+                identifier_buffer = buffer("pull", ("str", "identifier"))
+                connect(identifier, identifier_buffer)
+                trigger_identifier_buffer = triggerfunc(identifier_buffer)
+
+                @property
+                def entity_name(self):
+                    self.trigger_identifier_buffer()
+                    return self.identifier_buffer
+
+            else:
+                def set_get_entity_name(self, get_entity_name):
+                    self.get_entity_name = get_entity_name
+
+                @property
+                def entity_name(self):
+                    return self.get_entity_name()
 
             # Are we monitoring enter or leave events?
             eventmode = variable("str")
@@ -50,17 +66,23 @@ class near(object):
 
             #What is the value of the filter?
             filtervalue = antenna("pull", "str")
+            b_filtervalue = buffer("pull", "str")
+            connect(filtervalue, b_filtervalue)
 
-            if sensormode in ("radar", "ray"):
+            trigger_inputs = triggerfunc(b_filtervalue)
+
+            if sensormode == "ray":
                 #What is the direction axis of the sensor
                 axis = antenna("pull", "Coordinate")
-
-            if sensormode == "radar":
-                #Projection cone angle (in degrees)
-                angle = antenna("pull", "float")
+                b_axis = buffer("pull", "Coordinate")
+                connect(axis, b_axis)
+                trigger(b_filtervalue, b_axis)
 
             #What distance causes a near event (enter/leave)?
             distance = antenna("pull", "float")
+            b_distance = buffer("pull", "float")
+            connect(distance, b_distance)
+            trigger(b_filtervalue, b_distance)
 
             #Has a near event (enter/leave) happened during the last tick?
             is_active = variable("bool")
@@ -72,6 +94,20 @@ class near(object):
             v_near_id = variable(("str", "identifier"))
             near_id = output("pull", ("str", "identifier"))
             connect(v_near_id, near_id)
+
+            @modifier
+            def do_near(self):
+                self.trigger_inputs()
+                node = self.create_sphere_node(self.b_distance, True)
+                result = self.contact_test(self.entity_name, node)
+                found_results = bool(result.contacts)
+                self.is_active = found_results
+                # TODO Panda?
+                self.v_near_id = result.contacts[0].node_b if found_results else ""
+
+
+            pretrigger(v_near_id, do_near)
+            pretrigger(is_active, do_near)
 
             @staticmethod
             def form(f):
@@ -92,15 +128,25 @@ class near(object):
                 "identifier": {"name": "Identifier", "fold": True},
                 "filtervalue": {"name": "Filter value", "fold": True},
                 "axis": {"name": "Axis", "tooltip": "Projection axis", "fold": True},
-                "angle": {"name": "Cone angle", "tooltip": "Projection cone angle (degrees)", "fold": True},
                 "distance": {"name": "Distance", "fold": True},
                 "active": {"name": "Active"},
                 "near_id": {"name": "Near ID", "advanced": True},
-                "_memberorder": ["filtervalue", "identifier", "axis", "angle", "distance", "near_id", "active"],
+                "_memberorder": ["filtervalue", "identifier", "axis", "distance", "near_id", "active"],
             }
 
+            def set_create_sphere_node(self, func):
+                self.create_sphere_node = func
+
+            def set_contact_test(self, func):
+                self.contact_test = func
+
             def place(self):
-                raise NotImplementedError("sparta.sensors.near has not been implemented yet")
+                if idmode == "bound":
+                    libcontext.socket(("entity", "bound"), socket_single_required(self.set_get_entity_name))
+
+                libcontext.socket(("collision", "create_node", "sphere"),
+                                  socket_single_required(self.set_create_sphere_node))
+                libcontext.socket(("collision", "contact_test"),
+                                  socket_single_required(self.set_contact_test))
 
         return near
-    

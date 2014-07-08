@@ -21,4 +21,4 @@ class unparent(bee.worker):
 
     def place(self):
         s = libcontext.socketclasses.socket_single_required(self.set_entity_unparent)
-        libcontext.socket(("entity", "unparent"), s)
+        libcontext.socket(("entity", "parent", "remove"), s)

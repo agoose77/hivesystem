@@ -254,10 +254,6 @@ class WorkerManager(object):
 
         self._wim.set_parameters(workerid, paramter_values)
 
-        # First time we call this, so onload is True
-        if self._antennafoldstate is not None:
-            self._antennafoldstate.sync(workerid, onload=True)
-
         self._persistent_id_manager.create_persistent_id(workerid)
 
     def _select(self, workerids):
@@ -700,10 +696,10 @@ class WorkerManager(object):
 
         self._workerfinder_local = None
 
-    def sync_antennafoldstate(self):
-        raise DeprecationWarning()
+    def sync_antennafoldstate(self, workerids):
+        #raise DeprecationWarning()
         if self._antennafoldstate is None:
             return
 
-        for workerid in self._wim.get_workerinstances():
+        for workerid in workerids:
             self._antennafoldstate.sync(workerid, onload=True)

@@ -34,17 +34,24 @@ The Game Object assessor returns a Blender Game Engine game object (KX_GameObjec
                 identifier = antenna("pull", ("str", "identifier"))
                 identifier_buffer = buffer("pull", ("str", "identifier"))
                 connect(identifier, identifier_buffer)
-                pretrigger(obj_variable, identifier_buffer)
+                trigger_identifier_buffer = triggerfunc(identifier_buffer)
+
+                @property
+                def entity_name(self):
+                    self.trigger_identifier_buffer()
+                    return self.identifier_buffer
 
             else:
                 @property
-                def identifier_buffer(self):
-                    return self.get_entity().entityname
+                def entity_name(self):
+                    return self.get_entity_name()
+
+                def set_get_entity_name(self, get_entity_name):
+                    self.get_entity_name = get_entity_name
 
             @modifier
             def get_bge_obj(self):
-                identifier = self.identifier_buffer
-                self.obj_variable = self.lookup_entity(identifier)
+                self.obj_variable = self.lookup_entity(self.entity_name)
 
             pretrigger(obj_variable, get_bge_obj)
 
@@ -54,17 +61,14 @@ The Game Object assessor returns a Blender Game Engine game object (KX_GameObjec
                 "obj": {"name": "Object"},
             }
 
-            def set_get_entity(self, get_entity):
-                self.get_entity = get_entity
-
             def set_lookup_entity(self, get_entity):
                 self.lookup_entity = get_entity
 
             def place(self):
                 if idmode == "bound":
-                    libcontext.socket("entity", socket_single_required(self.set_get_entity))
+                    libcontext.socket(("entity", "bound"), socket_single_required(self.set_get_entity_name))
 
-                libcontext.socket(("get_entity", "Blender"), socket_single_required(self.set_lookup_entity))
+                libcontext.socket(("entity", "get", "Blender"), socket_single_required(self.set_lookup_entity))
 
 
         return game_object

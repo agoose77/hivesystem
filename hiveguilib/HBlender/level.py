@@ -90,7 +90,7 @@ def get_level(path):
 
 def minlevel(context, level):
     try:
-        current_level = int(context.screen.hive_level)
+        current_level = int(context.scene.hive_level)
 
     except (TypeError, AttributeError):
         return False

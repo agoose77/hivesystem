@@ -54,10 +54,21 @@ The set_property actuator modifies a named property
                 connect(identifier, identifier_buffer)
                 trigger(trig, identifier_buffer)
 
+                @modifier
+                def set_property_value(self):
+                    self.set_property_for(self.identifier_buffer, self.property_name_buffer, self.property_value_buffer)
+
+                def set_set_property_for(self, set_property_for):
+                    self.set_property_for = set_property_for
+
             else:
-                @property
-                def identifier_buffer(self):
-                    return self.get_entity().entityname
+                @modifier
+                def set_property_value(self):
+                    self.set_property(self.property_name_buffer, self.property_value_buffer)
+
+                def set_set_property(self, set_property):
+                    self.set_property = set_property
+
 
             # Name the inputs and outputs
             guiparams = {
@@ -68,22 +79,14 @@ The set_property actuator modifies a named property
                 "_memberorder": ["trig", "identifier", "property_name", "property_value"],
             }
 
-            @modifier
-            def set_property_value(self):
-                self.set_property(self.identifier_buffer, self.property_name_buffer, self.property_value_buffer)
-
             trigger(trig, set_property_value)
-
-            def set_set_property(self, set_property):
-                self.set_property = set_property
-
-            def set_get_entity(self, get_entity):
-                self.get_entity = get_entity
 
             def place(self):
                 if idmode == "bound":
-                    libcontext.socket("entity", socket_single_required(self.set_get_entity))
+                    libcontext.socket(("entity", "bound", "property", "set"),
+                                      socket_single_required(self.set_set_property))
 
-                libcontext.socket(("entity", "set_property"), socket_single_required(self.set_set_property))
+                else:
+                    libcontext.socket(("entity", "property", "set"), socket_single_required(self.set_set_property_for))
 
         return set_property

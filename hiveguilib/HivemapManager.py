@@ -61,6 +61,7 @@ class HivemapManager(object):
 
     def _load(self, hivemap, soft_load=False, pre_load=None):
         worker_id_mapping = {}
+        worker_ids = []
 
         for worker in hivemap.workers:
             x, y = worker.position.x, worker.position.y
@@ -78,7 +79,6 @@ class HivemapManager(object):
 
             worker_manager = self._workermanager
             worker_ids = worker_manager.workerids()
-            print(worker.workertype)
             # If an ID clash occurred
             worker_id = worker.workerid
 
@@ -94,6 +94,8 @@ class HivemapManager(object):
                 # The new ID and the previous ID are the same
                 if callable(pre_load):
                     pre_load(worker_id, worker_id)
+
+            worker_ids.append(worker_id)
 
             try:
                 self._workermanager.instantiate(worker_id, worker.workertype, x, y, metaparamvalues, paramvalues)
@@ -237,6 +239,7 @@ class HivemapManager(object):
             self._workermanager.instantiate(
                 b.wasp_id, workertype, x, y, paramvalues=params
             )
+        self._workermanager.sync_antennafoldstate(worker_ids)
 
     def load(self, hivemapfile):
         self.clear()

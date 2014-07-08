@@ -32,7 +32,7 @@ class jumpworker(bee.worker):
             self.remove_listener(self.listener)
             self.position = 0
 
-        mat = self.entity().get_proxy("AxisSystem")
+        mat = self.get_matrix().get_proxy("AxisSystem")
         mat.origin.z = self.position
         mat.commit()
 
@@ -40,8 +40,8 @@ class jumpworker(bee.worker):
     def set_pacemaker(self, pacemaker):
         self.pacemaker = pacemaker
 
-    def set_entity(self, entity):
-        self.entity = entity
+    def set_get_matrix(self, function):
+        self.get_matrix = function
 
     def set_add_listener(self, add_listener):
         self.add_listener = add_listener
@@ -53,4 +53,4 @@ class jumpworker(bee.worker):
         libcontext.socket("pacemaker", socket_single_required(self.set_pacemaker))
         libcontext.socket(("evin", "add_listener"), socket_single_required(self.set_add_listener))
         libcontext.socket(("evin", "remove_listener"), socket_single_required(self.set_remove_listener))
-        libcontext.socket("entity", socket_single_required(self.set_entity))
+        libcontext.socket(("entity", "matrix"), socket_single_required(self.set_get_matrix))
