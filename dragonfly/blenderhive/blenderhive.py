@@ -29,7 +29,7 @@ class blenderapp(bee.drone):
         self._ref_entities = {}
         self._entity_classes = {}
         self._animationdict = {}
-        self._entity_processes = {}
+        self._registered_processes = {}
 
         self._collision_dict = {}
         self._collision_callback_dict = {}
@@ -186,8 +186,8 @@ class blenderapp(bee.drone):
         if entity_name not in entity_dict:
             raise KeyError("No such entity '%s'" % entity_name)
 
-        if entity_name in self._entity_processes:
-            stop_func = self._entity_processes.pop(entity_name)
+        if entity_name in self._registered_processes and end_process:
+            stop_func = self._registered_processes.pop(entity_name)
             stop_func()
 
         entity = entity_dict.pop(entity_name)
@@ -390,8 +390,8 @@ class blenderapp(bee.drone):
             for collision_info in ended_collisions:
                 collision_list.remove(collision_info)
 
-    def entity_register_process(self, entity_name, stop_process):
-        self._entity_processes[entity_name] = stop_process
+    def register_process(self, process_name, stop_process):
+        self._registered_processes[process_name] = stop_process
 
     def place(self):
         libcontext.socket("startupfunction", socket_container(self.addstartupfunction))
@@ -449,9 +449,8 @@ class blenderapp(bee.drone):
         libcontext.plugin(("entity", "property", "set"), plugin_supplier(self.entity_set_property))
         libcontext.plugin(("entity", "collisions"), plugin_supplier(self.entity_get_collisions))
         libcontext.plugin(("entity", "material", "get"), plugin_supplier(self.entity_get_material))
-        libcontext.plugin(("entity", "process", "register"), plugin_supplier(self.entity_register_process))
 
-        #libcontext.plugin(("process", "register"), plugin_supplier(self.register_process))
+        libcontext.plugin(("process", "register"), plugin_supplier(self.register_process))
         #libcontext.plugin(("process", "get"), plugin_supplier(self.get_process))
 
         libcontext.plugin("exit", plugin_supplier(self.exit))

@@ -189,6 +189,7 @@ class entity_binder(binderdrone):
         :param bindname: name of bound entity (Warning, this is passed by keyword)
         """
         # Bound functions
+        # TODO just pass string here
         libcontext.plugin(("entity", "bound"), plugin_supplier(lambda: bindname))
         libcontext.plugin(("entity", "bound", "parent", "set"),
                           plugin_supplier(lambda parent: self.set_parent(bindname, parent)))
@@ -209,14 +210,8 @@ class entity_binder(binderdrone):
         libcontext.plugin(("entity", "property", "set"), plugin_supplier(self.set_property))
         libcontext.plugin(("entity", "property", "get"), plugin_supplier(self.get_property))
         libcontext.plugin(("entity", "material", "get"), plugin_supplier(self.get_material))
-        libcontext.plugin(("entity",  "collisions"), plugin_supplier(self.get_collisions))
+        libcontext.plugin(("entity", "collisions"), plugin_supplier(self.get_collisions))
         libcontext.plugin(("entity", "remove"), plugin_supplier(self.remove_entity))
-
-        # Get stop for bound process
-        libcontext.socket("stop", socket_single_required(self.set_stop_func))
-
-        # Register process for entity name
-        self.entity_register_process(bindname, lambda: self.stop_func())
 
     def place(self):
         libcontext.socket(("entity", "parent", "set"), socket_single_required(self.set_set_parent))
@@ -229,7 +224,6 @@ class entity_binder(binderdrone):
         libcontext.socket(("entity", "material", "get"), socket_single_required(self.set_get_material))
         libcontext.socket(("entity", "remove"), socket_single_required(self.set_remove_entity))
         libcontext.socket(("entity", "get"), socket_single_required(self.set_get_entity))
-        libcontext.socket(("entity", "process", "register"), socket_single_required(self.set_entity_register_process))
 
 
 class bind(bind_baseclass):

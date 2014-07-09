@@ -56,12 +56,16 @@ class stop(object):
                 self.stop_func = stop_func
 
             if idmode == "bound":
+                def set_entity(self, entity_name):
+                    self.entity_name = entity_name()
+
                 def set_remove_entity(self, remove_entity):
                     self.remove_entity = remove_entity
 
             def place(self):
                 if idmode == "bound":
                     libcontext.socket(("entity", "bound", "remove"), socket_single_required(self.set_remove_entity))
+                    libcontext.socket(("entity", "bound"), socket_single_required(self.set_entity))
                 libcontext.socket("stop", socket_single_required(self.set_stop_func))
 
         return stop
