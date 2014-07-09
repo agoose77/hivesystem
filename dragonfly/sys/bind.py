@@ -3,6 +3,7 @@ from bee.bind import *
 
 
 class stopforwarder(binderdrone):
+
     def stopfunc(self, bindname):
         self.binderworker.v_stop = bindname
         self.binderworker.m_stop()
@@ -11,6 +12,8 @@ class stopforwarder(binderdrone):
         self.binderworker = binderworker
         p = libcontext.pluginclasses.plugin_supplier(lambda: self.stopfunc(bindname))
         libcontext.plugin("stop", p)
+       # p = libcontext.pluginclasses.plugin_supplier(lambda: self.pausefunc(bindname))
+     #   libcontext.plugin("pause", p)
 
 
 class processbinder(binderdrone):

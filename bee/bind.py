@@ -221,33 +221,70 @@ class bindbuilder(mytype):
                 trigger(v_bind, parse_bindantennas)
                 trigger(v_bind, do_bind)
 
-                pause = antenna("push", "trigger")
-                resume = antenna("push", "trigger")
-                v_running = variable("bool")
-                startvalue(v_running, True)
+                # Pause name
+                pause = antenna("push", "id")
+                v_pause = variable("id")
+                connect(pause, v_pause)
 
                 @modifier
                 def m_pause(self):
-                    self.v_running = False
+                    paused_name = self.v_pause
+                    self.handler_states[paused_name] = False
 
-                trigger(pause, m_pause)
+                trigger(v_pause, m_pause)
+
+                # Resume name
+                resume = antenna("push", "id")
+                v_resume = variable("id")
+                connect(resume, v_resume)
 
                 @modifier
                 def m_resume(self):
-                    self.v_running = True
+                    resumed_name = self.v_resume
+                    self.handler_states[resumed_name] = True
 
-                trigger(resume, m_resume)
+                trigger(v_resume, m_resume)
 
+                # Stop all hives
+                @modifier
+                def m_stop_all(self):
+                    self.hives.clear()
+                    self.handler_states.clear()
+                    self.event_handlers.clear()
+
+                stop_all = antenna("push", "trigger")
+                trigger(stop_all, m_stop_all)
+
+                # Pause all hives
+                @modifier
+                def m_pause_all(self):
+                    # For every bound event handler, disable this
+                    handler_states = self.handler_states
+                    for bind_name in handler_states:
+                        handler_states[bind_name] = False
+
+                pause_all = antenna("push", "trigger")
+                trigger(pause_all, m_pause_all)
+
+                # Stop name
                 stop = antenna("push", "id")
                 v_stop = variable("id")
                 connect(stop, v_stop)
 
                 @modifier
                 def m_stop(self):
+                    stopped_name = self.v_stop
+
                     try:
-                        del self.hives[self.v_stop]
+                        del self.hives[stopped_name]
                     except KeyError:
-                        print("Couldn't find hive %s to stop" % self.v_stop)
+                        print("Couldn't find hive %s to stop" % stopped_name)
+
+                    try:
+                        del self.handler_states[stopped_name]
+                        del self.event_handlers[stopped_name]
+                    except KeyError:
+                        print("Couldn't find hive %s to stop" % stopped_name)
 
                 trigger(v_stop, m_stop)
 
@@ -257,20 +294,31 @@ class bindbuilder(mytype):
 
                 @modifier
                 def m_event(self):
-                    if self.v_running:
-                        for f in self.eventfuncs:
-                            f(self.v_event)
+                    """Push events into the bound hives"""
+                    event = self.v_event
+                    # They will handle if they are active or not
+                    for event_func in self.eventfuncs:
+                        event_func(event)
 
                 trigger(v_event, m_event)
+
+                def add_bound_handler(self, binder, bind_name, handler):
+                    """Add a handler for the current bind name"""
+                    if not bind_name in self.event_handlers:
+                        self.event_handlers[bind_name] = {}
+                        self.handler_states[bind_name] = True
+
+                    self.event_handlers[bind_name][binder] = handler
 
                 def place(self):
                     self.hives = {}
                     self.eventfuncs = []
+
+                    self.handler_states = {}
+                    self.event_handlers = {}
+
                     self.binderinstances = []
                     self.prebinderinstances = []
-
-                    self.startup_functions = {}
-                    self.cleanup_functions = {}
 
                     for b in binders:
                         inst = b.getinstance()

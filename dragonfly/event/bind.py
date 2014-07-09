@@ -2,93 +2,90 @@ import libcontext
 from bee.bind import *
 
 
-class eventlistener(binderdrone):
-    def __init__(self, leader):
-        self.leader = leader
+class eventdispatcher(binderdrone):
+
+    def __init__(self):
         self.bindnames = set()
-        self.send_event = {}
 
     def listener(self, event):
+        # As this is a plugin, it may be prematurely called
+        if not self.bindnames:
+            return
+
+        event_forwarders = self.binderworker.event_handlers
+        handler_states = self.binderworker.handler_states
+
+        # Careful this list doesn't change during iteration
         for bindname in list(self.bindnames):
             if bindname not in self.binderworker.hives:
                 self.bindnames.remove(bindname)
                 continue
-            self.send_event[bindname](event)
 
-    def set_send_event(self, send_event):
-        self.send_event[self.currbindname] = send_event
+            # Check if this bind name is active
+            is_active = handler_states[bindname]
+            if not is_active:
+                continue
+
+            # Check we match the event
+            event_after = event.match_head(bindname)
+            if event_after is None:
+                continue
+
+            # Forward the event
+            event_func = event_forwarders[bindname][self]
+            event_func(event_after)
 
     def bind(self, binderworker, bindname):
         self.binderworker = binderworker
+
+        # In case any other binders want event functions
+        # Register this bind_class (which belongs to the hive BINDER only once)
         if self.listener not in binderworker.eventfuncs:
             binderworker.eventfuncs.append(self.listener)
+
+        # So we know which processes exist
         self.bindnames.add(bindname)
-        self.currbindname = bindname
-        s = libcontext.socketclasses.socket_single_required(self.set_send_event)
+
+        # Individual event handler of the BOUND class (multiple bound hives possible)
+        add_func = lambda func: binderworker.add_bound_handler(self, bindname, func)
+        s = libcontext.socketclasses.socket_single_required(add_func)
         libcontext.socket(("evin", "event"), s)
+
+    def place(self):
+        p = libcontext.pluginclasses.plugin_single_required(("all", self.listener))
+        libcontext.plugin(("evin", "listener"), p)
+
+
+class eventforwarder(eventdispatcher):
+
+    def listener(self, event):
+        event_forwarders = self.binderworker.event_handlers
+        handler_states = self.binderworker.handler_states
+
+        # Careful this list doesn't change during iteration
+        for bindname in list(self.bindnames):
+            if bindname not in self.binderworker.hives:
+                self.bindnames.remove(bindname)
+                continue
+
+            # Check if this bind name is active
+            is_active = handler_states[bindname]
+            if not is_active:
+                continue
+
+            # Forward the event
+            event_func = event_forwarders[bindname][self]
+            event_func(event)
+
+
+class eventlistener(eventforwarder):
+
+    def __init__(self, leader):
+        self.bindnames = set()
+        self.leader = leader
 
     def place(self):
         p = libcontext.pluginclasses.plugin_single_required(("match_leader", self.listener, self.leader))
-        libcontext.plugin(("evin", "listener"), p)
-
-
-class eventdispatcher(binderdrone):
-    def __init__(self):
-        self.bindnames = set()
-        self.send_event = {}
-
-    def listener(self, event):
-        for bindname in list(self.bindnames):
-            if bindname not in self.binderworker.hives:
-                self.bindnames.remove(bindname)
-                continue
-            e = event.match_head(bindname)
-            if e is not None:
-                self.send_event[bindname](e)
-
-    def set_send_event(self, send_event):
-        self.send_event[self.currbindname] = send_event
-
-    def bind(self, binderworker, bindname):
-        self.binderworker = binderworker
-        if self.listener not in binderworker.eventfuncs:
-            binderworker.eventfuncs.append(self.listener)
-        self.bindnames.add(bindname)
-        self.currbindname = bindname
-        s = libcontext.socketclasses.socket_single_required(self.set_send_event)
-        libcontext.socket(("evin", "event"), s)
-
-    def place(self):
-        p = libcontext.pluginclasses.plugin_single_required(("all", self.listener))
-        libcontext.plugin(("evin", "listener"), p)
-
-
-class eventforwarder(binderdrone):
-    def __init__(self):
-        self.bindnames = set()
-        self.send_event = {}
-
-    def listener(self, event):
-        for bindname in list(self.bindnames):
-            if bindname not in self.binderworker.hives:
-                self.bindnames.remove(bindname)
-                continue
-            self.send_event[bindname](event)
-
-    def set_send_event(self, send_event):
-        self.send_event[self.currbindname] = send_event
-
-    def bind(self, binderworker, bindname):
-        self.binderworker = binderworker
-        if self.listener not in binderworker.eventfuncs:
-            binderworker.eventfuncs.append(self.listener)
-        self.bindnames.add(bindname)
-        self.currbindname = bindname
-        s = libcontext.socketclasses.socket_single_required(self.set_send_event)
-        libcontext.socket(("evin", "event"), s)
-
-    def place(self):
-        p = libcontext.pluginclasses.plugin_single_required(("all", self.listener))
         libcontext.plugin(("evin", "listener"), p)
 
 
