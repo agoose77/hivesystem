@@ -170,6 +170,18 @@ class entity_binder(binderdrone):
     def set_get_material(self, get_material):
         self.get_material = get_material
 
+    def set_remove_entity(self, remove_entity):
+        self.remove_entity = remove_entity
+
+    def set_get_entity(self, get_entity):
+        self.get_entity = get_entity
+
+    def set_stop_func(self, stop_func):
+        self.stop_func = stop_func
+
+    def set_entity_register_process(self, function):
+        self.entity_register_process = function
+
     def bind(self, bind_worker, bindname):
         """Bind call to map plugins to bound hive
 
@@ -189,6 +201,7 @@ class entity_binder(binderdrone):
         libcontext.plugin(("entity", "bound", "material", "get"),
                           plugin_supplier(lambda name: self.get_material(bindname, name)))
         libcontext.plugin(("entity", "bound", "collisions"), plugin_supplier(lambda: self.get_collisions(bindname)))
+        libcontext.plugin(("entity", "bound", "remove"), plugin_supplier(lambda: self.remove_entity(bindname)))
 
         # Unbound functions
         libcontext.plugin(("entity", "parent", "set"), plugin_supplier(self.set_parent))
@@ -197,6 +210,13 @@ class entity_binder(binderdrone):
         libcontext.plugin(("entity", "property", "get"), plugin_supplier(self.get_property))
         libcontext.plugin(("entity", "material", "get"), plugin_supplier(self.get_material))
         libcontext.plugin(("entity",  "collisions"), plugin_supplier(self.get_collisions))
+        libcontext.plugin(("entity", "remove"), plugin_supplier(self.remove_entity))
+
+        # Get stop for bound process
+        libcontext.socket("stop", socket_single_required(self.set_stop_func))
+
+        # Register process for entity name
+        self.entity_register_process(bindname, lambda: self.stop_func())
 
     def place(self):
         libcontext.socket(("entity", "parent", "set"), socket_single_required(self.set_set_parent))
@@ -207,6 +227,9 @@ class entity_binder(binderdrone):
         libcontext.socket(("entity", "property", "set"), socket_single_required(self.set_set_property))
         libcontext.socket(("entity", "collisions"), socket_single_required(self.set_get_collisions))
         libcontext.socket(("entity", "material", "get"), socket_single_required(self.set_get_material))
+        libcontext.socket(("entity", "remove"), socket_single_required(self.set_remove_entity))
+        libcontext.socket(("entity", "get"), socket_single_required(self.set_get_entity))
+        libcontext.socket(("entity", "process", "register"), socket_single_required(self.set_entity_register_process))
 
 
 class bind(bind_baseclass):

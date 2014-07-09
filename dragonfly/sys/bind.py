@@ -19,6 +19,7 @@ class bind(bind_baseclass):
     binder("bind_exit", False, None)
     binder("bind_exit", True, pluginbridge("exit"))
     binder("bind_exit", "stop", stopforwarder(), "bindname")
+
     bind_stop = bindparameter(True)
     binder("bind_stop", False, None)
     binder("bind_stop", True, stopforwarder(), "bindname")

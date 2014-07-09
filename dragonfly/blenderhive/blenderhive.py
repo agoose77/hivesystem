@@ -29,6 +29,7 @@ class blenderapp(bee.drone):
         self._ref_entities = {}
         self._entity_classes = {}
         self._animationdict = {}
+        self._entity_processes = {}
 
         self._collision_dict = {}
         self._collision_callback_dict = {}
@@ -175,7 +176,7 @@ class blenderapp(bee.drone):
 
         entity_dict[entityname] = node0
 
-    def remove_entity(self, entity_name, entity_dict=None, name_dict=None):
+    def remove_entity(self, entity_name, entity_dict=None, name_dict=None, end_process=True):
         if entity_dict is None:
             entity_dict = self._entities
 
@@ -184,6 +185,10 @@ class blenderapp(bee.drone):
 
         if entity_name not in entity_dict:
             raise KeyError("No such entity '%s'" % entity_name)
+
+        if entity_name in self._entity_processes:
+            stop_func = self._entity_processes.pop(entity_name)
+            stop_func()
 
         entity = entity_dict.pop(entity_name)
         name_dict.pop(entity)
@@ -385,6 +390,9 @@ class blenderapp(bee.drone):
             for collision_info in ended_collisions:
                 collision_list.remove(collision_info)
 
+    def entity_register_process(self, entity_name, stop_process):
+        self._entity_processes[entity_name] = stop_process
+
     def place(self):
         libcontext.socket("startupfunction", socket_container(self.addstartupfunction))
         libcontext.socket("cleanupfunction", socket_container(self.addcleanupfunction))
@@ -406,7 +414,7 @@ class blenderapp(bee.drone):
         libcontext.plugin(("spawn", "actor"), plugin_supplier(self.spawn_actor))
 
         libcontext.plugin(("blender", "entity-register"), plugin_supplier(self._register_entity))
-        libcontext.plugin(("remove", "entity"), plugin_supplier(self.remove_entity))
+        libcontext.plugin(("entity", "remove"), plugin_supplier(self.remove_entity))
 
         libcontext.plugin(("entity", "get"), plugin_supplier(self.get_entity_blender))
         libcontext.plugin(("entity", "get", "Blender"), plugin_supplier(self.get_entity_blender))
@@ -441,12 +449,17 @@ class blenderapp(bee.drone):
         libcontext.plugin(("entity", "property", "set"), plugin_supplier(self.entity_set_property))
         libcontext.plugin(("entity", "collisions"), plugin_supplier(self.entity_get_collisions))
         libcontext.plugin(("entity", "material", "get"), plugin_supplier(self.entity_get_material))
+        libcontext.plugin(("entity", "process", "register"), plugin_supplier(self.entity_register_process))
+
+        #libcontext.plugin(("process", "register"), plugin_supplier(self.register_process))
+        #libcontext.plugin(("process", "get"), plugin_supplier(self.get_process))
 
         libcontext.plugin("exit", plugin_supplier(self.exit))
         libcontext.plugin("stop", plugin_supplier(self.exit))
         libcontext.plugin("display", plugin_supplier(self.display))
         libcontext.plugin("watch", plugin_supplier(self.watch))
         libcontext.socket("pacemaker", socket_single_required(self.set_pacemaker))
+        # TODO remove or rename
         libcontext.plugin("doexit", plugin_supplier(lambda: self.doexit))
 
         libcontext.socket("get_camera", socket_single_required(self.set_get_camera))

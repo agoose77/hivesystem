@@ -20,6 +20,6 @@ class kill(bee.worker):
     }
 
     def place(self):
-        raise NotImplementedError("sparta.actuators.kill has not been implemented yet") 
-      
-      
+        raise NotImplementedError("sparta.actuators.kill has not been implemented yet")
+
+

@@ -47,6 +47,7 @@ from . import mytype
 
 
 class bindbuilder(mytype):
+
     def __new__(cls, name, bases, dic):
         if name.endswith("bind_baseclass"):
             return mytype.__new__(cls, name, bases, dic)
@@ -75,7 +76,8 @@ class bindbuilder(mytype):
         rdkeys = rdic.keys()
         for k in sorted(rdkeys):
             a = rdic[k]
-            if isinstance(a, bindhelper): bindhelpers.append((k, a))
+            if isinstance(a, bindhelper):
+                bindhelpers.append((k, a))
         bindparameters = [h for h in bindhelpers if isinstance(h[1], bindparameter)]
 
         dicitems = [(k, dic[k]) for k in sorted(dic.keys())]
@@ -90,30 +92,17 @@ class bindbuilder(mytype):
         bindantennatypes = tuple([b[1].type for b in bindantennas])
         for t in bindantennatypes:
             assert t in types, t
-        if len(bindantennatypes) == 1: bindantennatypes = bindantennatypes[0]
+
+        if len(bindantennatypes) == 1:
+            bindantennatypes = bindantennatypes[0]
 
         bindhelpers += [((nr + 1), a) for nr, a in enumerate(bindhelpers_nameless)]
 
         binders = [n[1] for n in bindhelpers if isinstance(n[1], binder)]
-        for b in binders: assert b.parametername in bindparameternames, b.parametername
+        for b in binders:
+            assert b.parametername in bindparameternames, b.parametername
 
         prebinders = [n[1] for n in bindhelpers if isinstance(n[1], prebinder)]
-
-        class bindbridge(drone):
-            def __init__(self, bindobject):
-                self.bindobject = bindobject
-
-            def place(self):
-                for binder in self.bindobject.binderinstances:
-                    if getattr(self.bindobject, binder.parametername) != binder.parametervalue:
-                        continue
-
-                    values = {}
-                    for antennaname in binder.antennanames:
-                        values[antennaname] = self.bindobject.bindantennavalues[antennaname]
-                    binder.binderdroneinstance.bind(self.bindobject, **values)
-                s = libcontext.socketclasses.socket_supplier(lambda f: self.bindobject.startupfunctions.append(f))
-                libcontext.socket("startupfunction", s)
 
         def get_bindhiveworker(*args, **kwargs):
             class bindhiveworker(bindworker):
@@ -135,13 +124,6 @@ class bindbuilder(mytype):
                     def set(self, instance, value):
                         instance.value = value
 
-                #bindhive = None
-                #if rdic["hive"] != None:
-                #  class bindhive(rdic["hive"]): pass
-                #prop = propclass(bindhive)
-                #hive = property(prop.get, prop.set)
-                #del bindhive, prop
-
                 p = None
                 for p in bindparameters:
                     locals()[p[0]] = p[1].value  #changes can only be made by subclassing
@@ -150,6 +132,17 @@ class bindbuilder(mytype):
                 bind = antenna("push", bindantennatypes)
                 v_bind = variable(bindantennatypes)
                 connect(bind, v_bind)
+
+                def on_place(self):
+                    for binder_ in self.binderinstances:
+                        if getattr(self, binder_.parametername) != binder_.parametervalue:
+                            continue
+
+                        values = {}
+                        for antenna_name in binder_.antennanames:
+                            values[antenna_name] = self.bindantennavalues[antenna_name]
+
+                        binder_.binderdroneinstance.bind(self, **values)
 
                 @modifier
                 def parse_bindantennas(self):
@@ -176,23 +169,54 @@ class bindbuilder(mytype):
                     if self.hive is None:
                         raise ValueError('"hive" is not defined in bind class "%s"' % name)
 
+                    bind_name = self.bindantennavalues["bindname"]
+
+                    class bindbridge(drone):
+
+                        def __init__(bridge):
+                            bridge.startup_functions = []
+                            bridge.cleanup_functions = []
+
+                        def stop_hive(bridge):
+                            try:
+                                del self.hives[bind_name]
+                            except KeyError:
+                                pass
+
+                        def place(bridge):
+                            self.on_place()
+
+                            # Expose these to the hive, per class
+                            s = libcontext.socketclasses.socket_supplier(bridge.startup_functions.append)
+                            libcontext.socket("startupfunction", s)
+
+                            s = libcontext.socketclasses.socket_supplier(bridge.cleanup_functions.append)
+                            libcontext.socket("cleanupfunction", s)
+
+                            p = libcontext.pluginclasses.plugin_supplier(bridge.stop_hive)
+                            libcontext.plugin("exit", p)
+
                     class newhive(self.hive):
-                        zzz_bindbridgedrone = bindbridge(self)
+                        zzz_bindbridgedrone = bindbridge()
                         raiser = raiser()
                         hiveconnect("evexc", raiser)
 
                     hive = newhive().getinstance()
                     try:
                         libcontext.push(self._context.contextname)
-                        bindname = self.bindantennavalues["bindname"]
-                        hive.build(bindname)
+                        hive.build(bind_name)
                         hive.place()
+
                     finally:
                         libcontext.pop()
+
                     hive.close()
                     hive.init()
-                    for f in self.startupfunctions: f()
-                    self.hives[bindname] = hive
+
+                    for function in newhive.zzz_bindbridgedrone.startup_functions:
+                        function()
+
+                    self.hives[bind_name] = hive
 
                 trigger(v_bind, parse_bindantennas)
                 trigger(v_bind, do_bind)
@@ -220,7 +244,10 @@ class bindbuilder(mytype):
 
                 @modifier
                 def m_stop(self):
-                    del self.hives[self.v_stop]
+                    try:
+                        del self.hives[self.v_stop]
+                    except KeyError:
+                        print("Couldn't find hive %s to stop" % self.v_stop)
 
                 trigger(v_stop, m_stop)
 
@@ -241,17 +268,26 @@ class bindbuilder(mytype):
                     self.eventfuncs = []
                     self.binderinstances = []
                     self.prebinderinstances = []
-                    self.startupfunctions = []
+
+                    self.startup_functions = {}
+                    self.cleanup_functions = {}
+
                     for b in binders:
                         inst = b.getinstance()
-                        if inst != None: self.binderinstances.append(inst)
+                        if inst != None:
+                            self.binderinstances.append(inst)
+
                     for b in prebinders:
                         inst = b.getinstance()
-                        if inst != None: self.prebinderinstances.append(inst)
+                        if inst != None:
+                            self.prebinderinstances.append(inst)
 
                     for b in self.binderinstances:
-                        if getattr(self, b.parametername) != b.parametervalue: continue
+                        if getattr(self, b.parametername) != b.parametervalue:
+                            continue
+
                         b.place()
+
                     for b in self.prebinderinstances:
                         b.place()
 
