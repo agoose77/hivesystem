@@ -23,9 +23,10 @@ class parameter(helpersegment):
             guiparamsdict["parameters"] = {}
         d = guiparamsdict["parameters"]
         v = None
-        if self.gui_defaultvalue != "no-defaultvalue": v = self.gui_defaultvalue
+        if self.gui_defaultvalue != "no-defaultvalue":
+            v = self.gui_defaultvalue
+
         d[self.segmentname] = (self.parameterclass, v)
 
     def parameters(self, segmentname):
         return (self.segmentname, self.parameterclass, self.gui_defaultvalue)
-    

@@ -102,9 +102,11 @@ def tree_switcher(dummy):
 
 
 class HivemapSelectionPanel(bpy.types.Panel):
-    bl_space_type = "LOGIC_EDITOR"
-    bl_region_type = "UI"
     bl_label = "Hive Logic"
+    bl_idname = "OBJECT_PT_layout"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "object"
     COMPAT_ENGINES = {'BLENDER_GAME'}
 
     @classmethod
@@ -119,9 +121,58 @@ class HivemapSelectionPanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        ob = bpy.context.object
+        scene = context.scene
 
-        layout.prop_search(ob, "hive_nodetree", bpy.data, "node_groups", text="NodeTree")
+        ob = context.active_object
+        game = ob.game
+
+        row = layout.row()
+        row.label("Bound NodeTree")
+
+        row = layout.row()
+        row.prop_search(ob, "hive_nodetree", bpy.data, "node_groups", text="")
+
+        row = layout.row()
+        row.label("Properties")
+
+        box = layout.box()
+        is_font = (ob.type == 'FONT')
+
+        if is_font:
+            prop_index = game.properties.find("Text")
+            if prop_index != -1:
+                box.operator("object.game_property_remove", text="Remove Text Game Property", icon='X').index = prop_index
+                row = box.row()
+                sub = row.row()
+                sub.enabled = 0
+                prop = game.properties[prop_index]
+                sub.prop(prop, "name", text="")
+                row.prop(prop, "type", text="")
+                # get the property from the body, not the game property
+                # note, don't do this - it's too slow and body can potentially be a really long string.
+                #~ row.prop(ob.data, "body", text="")
+                row.label("See Text Object")
+            else:
+                props = box.operator("object.game_property_new", text="Add Text Game Property", icon='ZOOMIN')
+                props.name = 'Text'
+                props.type = 'STRING'
+
+        props = box.operator("object.game_property_new", text="Add Game Property", icon='ZOOMIN')
+        props.name = ''
+
+        for i, prop in enumerate(game.properties):
+
+            if is_font and i == prop_index:
+                continue
+
+            prop_box = box.box()
+            row = prop_box.row()
+            row.prop(prop, "name", text="")
+            row.prop(prop, "type", text="")
+            row.prop(prop, "value", text="")
+            row.prop(prop, "show_debug", text="", toggle=True, icon='INFO')
+            row.operator("object.game_property_remove", text="", icon='X', emboss=False).index = i
+
 
 
 def register():
