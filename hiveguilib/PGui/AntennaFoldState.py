@@ -5,7 +5,8 @@ class Antenna(object):
 
     def __init__(self, typ):
         self.typ = typ
-        self.fold = False
+        self.initial_fold = False
+        self.is_folded = False
         self.foldable = True
 
     def __str__(self):
@@ -24,7 +25,6 @@ class AntennaFoldState(object):
         self.states = {}
 
     def create_worker(self, workerid, antennas, guiparams):
-        print("CREATE WORKER", antennas, workerid)
         state = {}
         for antenna_name, typ in antennas:
             antenna = Antenna(typ)
@@ -40,7 +40,8 @@ class AntennaFoldState(object):
                 else:
                     fold = antenna_params.get("fold", False)
 
-                antenna.fold = fold
+                antenna.initial_fold = fold
+
             state[antenna_name] = antenna
 
         if not state:
@@ -79,6 +80,28 @@ class AntennaFoldState(object):
         if workerid in self._init_widget:
             return
 
+    # COPTY SECTION
+        state = self.states[workerid]
+        if state is None:
+            return
+
+        for antenna_name in state:
+            antenna = state[antenna_name]
+
+            if not antenna.foldable:
+                continue
+
+            # Set the antenna.fold value from the GUI ( if at 0,0 its folded else not)
+            should_be_folded = self._nodecanvas().check_default_folded(workerid, antenna_name)
+
+            if should_be_folded is None:
+                should_be_folded = antenna.initial_fold
+
+            if not antenna.is_folded and should_be_folded:
+                self.fold(workerid, antenna_name)
+
+    #END COPY SECTION
+
         self._init_widget[workerid] = True
         self._pAntennaFoldState.init_widget(workerid, widget, controller)
 
@@ -89,31 +112,30 @@ class AntennaFoldState(object):
         for antenna_name in state:
             antenna = state[antenna_name]
 
-            if antenna.fold:
+            if antenna.is_folded:
                 self._pAntennaFoldState.p_fold(workerid, antenna_name)
 
             else:
                 self._pAntennaFoldState.p_expand(workerid, antenna_name)
 
-    def gui_sets_value(self, workerid, member, value):
-        variable = self._nodecanvas().get_antenna_connected_variable(workerid, member)
+    def gui_sets_value(self, worker_id, member, value):
+        variable = self._nodecanvas().get_folded_variable(worker_id, member)
         self._workermanager()._update_variable(variable, value)
 
-
-    def fold(self, workerid, member):
-        antenna = self.states[workerid][member]
-        assert not antenna.fold
+    def fold(self, worker_id, member):
+        antenna = self.states[worker_id][member]
+        assert not antenna.is_folded
         if not antenna.foldable:
             return
-        antenna.fold = True
 
-        folded, value = self._nodecanvas().fold_antenna_connection(workerid, member, antenna.typ, called_on_load=False)
-        if not folded:
-            antenna.fold = False
-            return
-        if workerid in self._init_widget:
-            self._pAntennaFoldState.p_fold(workerid, member)
-        self._pAntennaFoldState.p_set_value(workerid, member, value)
+        antenna.is_folded = True
+
+        value = self._nodecanvas().fold_antenna_connection(worker_id, member, antenna.typ)
+
+        if worker_id in self._init_widget:
+            self._pAntennaFoldState.p_fold(worker_id, member)
+
+        self._pAntennaFoldState.p_set_value(worker_id, member, value)
 
     def gui_folds(self, workerid, member):
         self.fold(workerid, member)
@@ -123,19 +145,20 @@ class AntennaFoldState(object):
 
     def expand(self, workerid, member):
         antenna = self.states[workerid][member]
-        if not antenna.fold:
+        if not antenna.is_folded:
             return
-        antenna.fold = False
+
+        antenna.is_folded = False
         self._nodecanvas().expand_antenna_connection(workerid, member)
+
         if workerid in self._init_widget:
             self._pAntennaFoldState.p_expand(workerid, member)
 
     def p(self):
         return self._pAntennaFoldState
 
-    def sync(self, workerid, onload):
-        """
-        Synchronizes all folded variables
+    def sync(self, workerid):
+        """Synchronizes initial fold state once all connections are created
         If a folded antenna has a connection:
           Retrieve the variable and update the parameter GUI
         If not:
@@ -145,24 +168,18 @@ class AntennaFoldState(object):
         if state is None:
             return
 
-        if workerid in self._sync:
-            return
-        if workerid in self._init_widget:
-            return
-
-        assert workerid not in self._sync, workerid
-        assert workerid not in self._init_widget, workerid
-        self._sync[workerid] = True
-
         for antenna_name in state:
             antenna = state[antenna_name]
-            if not onload and not antenna.fold:
+
+            if not antenna.foldable:
                 continue
 
-            folded, value = self._nodecanvas().fold_antenna_connection(workerid, antenna_name, antenna.typ, onload)
-            if not folded:
-                antenna.fold = False
-                continue
+            # Set the antenna.fold value from the GUI ( if at 0,0 its folded else not)
+            should_be_folded = self._nodecanvas().check_default_folded(workerid, antenna_name)
 
-            antenna.fold = True
-            self._pAntennaFoldState.p_set_value(workerid, antenna_name, value)
+            if should_be_folded is None:
+                should_be_folded = antenna.initial_fold
+
+            if not antenna.is_folded and should_be_folded:
+                self.fold(workerid, antenna_name)
+                print("DEFAULT FOLD")

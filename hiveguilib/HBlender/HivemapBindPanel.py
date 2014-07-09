@@ -2,7 +2,6 @@ import bpy
 import logging
 
 from . import BlendManager
-from .NodeTrees import HivemapNodeTree
 
 
 def get_property(obj, name):
@@ -17,6 +16,7 @@ def create_property(obj, name, type_="STRING"):
 
 def remove_property(obj, name):
     bpy.context.scene.objects.active = obj
+
     prop_index = obj.game.properties.find(name)
     if prop_index == -1:
         raise KeyError("Couldn't find property called {}".format(name))
@@ -95,8 +95,8 @@ def tree_switcher(dummy):
             continue
 
         space.node_tree = node_tree
-        logging.info("Switched to {}".format(node_tree.name))
-        break
+        logging.info("Switched to {} {}".format(node_tree_name, node_tree))
+
 
     _object = active_object
 
@@ -115,9 +115,35 @@ class HivemapSelectionPanel(bpy.types.Panel):
         bpy.types.Object.hive_nodetree = bpy.props.StringProperty("", description="NodeTree to bind to",
                                                                   update=ui_hivemap_set)
 
+        BlendManager.blendmanager.on_renamed.append(cls.on_renamed)
+        BlendManager.blendmanager.on_removed.append(cls.on_removed)
+
+    @classmethod
+    def on_unregistered(cls):
+        BlendManager.blendmanager.on_renamed.remove(cls.on_renamed)
+        BlendManager.blendmanager.on_removed.remove(cls.on_removed)
+
+
     @classmethod
     def poll(cls, context):
         return context.object is not None
+
+    @classmethod
+    def on_renamed(cls, old_name, new_name):
+        for obj in bpy.context.scene.objects:
+            if obj.hive_nodetree != old_name:
+                continue
+
+            obj.hive_nodetree = new_name
+
+    @classmethod
+    def on_removed(cls, name):
+        for obj in bpy.context.scene.objects:
+            if obj.hive_nodetree != name:
+                continue
+
+
+            obj.hive_nodetree = ""
 
     def draw(self, context):
         layout = self.layout
@@ -174,14 +200,13 @@ class HivemapSelectionPanel(bpy.types.Panel):
             row.operator("object.game_property_remove", text="", icon='X', emboss=False).index = i
 
 
-
 def register():
     bpy.utils.register_class(HivemapSelectionPanel)
     HivemapSelectionPanel.on_registered()
-    bpy.app.handlers.scene_update_post.append(tree_switcher)
+    bpy.app.handlers.scene_update_pre.append(tree_switcher)
 
 
 def unregister():
     bpy.utils.unregister_class(HivemapSelectionPanel)
     HivemapSelectionPanel.on_unregistered()
-    bpy.app.handlers.scene_update_post.remove(tree_switcher)
+    bpy.app.handlers.scene_update_pre.remove(tree_switcher)

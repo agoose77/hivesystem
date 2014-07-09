@@ -126,8 +126,11 @@ class BlendManager:
         self._activated = False
 
         self.popup_callbacks = {}
-
         self.last_nodetree = None
+
+        self.on_added = []
+        self.on_removed = []
+        self.on_renamed = []
 
     @staticmethod
     def get_escaped_name(name):
@@ -372,9 +375,9 @@ class BlendManager:
         from .NodeTrees import HivemapNodeTree, WorkermapNodeTree, SpydermapNodeTree
 
         node_trees = bpy.data.node_groups
-        for node_tree_name in added_node_tree_names:
-            node_tree = node_trees[node_tree_name]
-            tree_name = tree_text_name = str(node_tree_name)
+        for tree_name in added_node_tree_names:
+            node_tree = node_trees[tree_name]
+            tree_text_name = tree_name
 
             escaped_name = self.get_escaped_name(tree_text_name)
             node_tree.registered_name = tree_name
@@ -439,6 +442,9 @@ class BlendManager:
                 elif isinstance(node_tree, SpydermapNodeTree):
                     node_tree_manager.spydermapmanager._load(map_object)
 
+                for callback in self.on_added:
+                    callback(tree_name)
+
             finally:
                 for name, _ in self.nodetrees:
                     if name == tree_name:
@@ -493,23 +499,27 @@ class BlendManager:
                     stripped_new_name_underscores = new_name[:-len("-spyder")]
 
             for block in blocks:
-                path, new_name = block
-                if new_name == old_name_underscores:
+                path, old_name = block
+                if old_name == old_name_underscores:
                     new_file_name = new_name_underscores
 
-                elif new_name == stripped_old_name_underscores:
+                elif old_name == stripped_old_name_underscores:
                     new_file_name = stripped_new_name_underscores
 
                 else:
-                    raise ValueError(new_name)
+                    raise ValueError(old_name)
 
-                text1 = path % new_name
+                text1 = path % old_name
                 text2 = path % new_file_name
 
                 import logging
-                logging.info("Renaming node tree {}".format(new_name))
+                logging.info("Renaming node tree {}".format(old_name))
 
                 self._rename_text(text1, text2)
+
+                for callback in self.on_renamed:
+                    print("renamed", old_name, new_name)
+                    callback(old_name, new_name)
 
         hive_node_groups = {node_tree.name: node_tree for node_tree in bpy.data.node_groups
                             if isinstance(node_tree, HiveNodeTree) if node_tree.users}
@@ -525,6 +535,9 @@ class BlendManager:
 
         for name in removed_node_tree_names:
             remove_node_tree(name)
+
+            for callback in self.on_removed:
+                callback(name)
 
     def blend_update(self, *args):
         """Handle blend file updates"""
@@ -697,7 +710,6 @@ class BlendManager:
 
                         space.node_tree = nodetree
                         logging.info("Loading space to preserve users")
-                        break
 
                     nodetree_name = nodetree.name
                     if nodetree_name not in self.blend_nodetree_managers:

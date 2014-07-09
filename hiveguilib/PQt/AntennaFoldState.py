@@ -3,7 +3,7 @@ from __future__ import print_function
 import weakref
 from functools import partial
 
-from ..worker import PersistentIDManager
+from .. import PersistentIDManager
 
 
 def _hide(widgets):

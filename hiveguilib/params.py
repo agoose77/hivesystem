@@ -190,12 +190,18 @@ def get_paramtypelist(workername, paramdic):
 def get_param_pullantennas(antennas):
     pullantennas = []
     for a in antennas:
-        if a == "inp": continue
+        if a == "inp":
+            continue
+
         antenna = antennas[a]
         assert isinstance(antenna, tuple) and len(antenna) == 2, antenna
-        if antenna[0] == "push": continue
+        if antenna[0] == "push":
+            continue
+
         pp = antenna[1]
-        if typetuple(pp): continue
-        if pp == "any": continue
+        if typetuple(pp):
+            continue
+        if pp == "any":
+            continue
         pullantennas.append((a, pp))
     return pullantennas

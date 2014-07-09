@@ -5,7 +5,8 @@ Manages the finding and building of worker templates
  and the instantiation of workers and worker parameters
 """
 import os, functools
-from . import WorkerFinder, PersistentIDManager
+from . import WorkerFinder
+from .. import PersistentIDManager
 from ..params import parse_paramtypelist, get_param_pullantennas
 
 
@@ -153,8 +154,8 @@ class WorkerManager(object):
             raise KeyError(workername)
         self._pworkercreator.remove(workername)
 
-    def instantiate(self, workerid, workertype, x, y, metaparamvalues=None, paramvalues=None, clash_offset=None):
-        assert workerid not in self._worker_parameters, workerid
+    def instantiate(self, worker_id, workertype, x, y, metaparamvalues=None, paramvalues=None, clash_offset=None):
+        assert worker_id not in self._worker_parameters, worker_id
         if workertype.startswith("<drone>:"):
             worker_instance = self._workerbuilder.get_droneinstance()
 
@@ -172,7 +173,7 @@ class WorkerManager(object):
             meta_worker_data = self._workerbuilder.build_worker_from_meta(
                 workertype, metaparamvalues
             )
-            self._worker_metaparameters[workerid] = [workertype, meta_worker_data[0], meta_worker_data[1], meta_worker_data[2], meta_worker_data[3]]
+            self._worker_metaparameters[worker_id] = [workertype, meta_worker_data[0], meta_worker_data[1], meta_worker_data[2], meta_worker_data[3]]
             worker = meta_worker_data[0]
             worker_instance = worker.primary_instance
 
@@ -211,7 +212,7 @@ class WorkerManager(object):
             cx, cy = clash_offset
             nodexy = []
             for wid in self.workerids():
-                if wid == workerid: continue
+                if wid == worker_id: continue
                 node = self._wim.get_node(wid)[0]
                 nx, ny = node.position
                 nodexy.append((nx, ny))
@@ -227,7 +228,7 @@ class WorkerManager(object):
                 else:
                     break
 
-        self._wim.add_workerinstance(workerid, worker_instance, x, y)
+        self._wim.add_workerinstance(worker_id, worker_instance, x, y)
 
         paramter_values = {}
         if paramvalues is not None:
@@ -242,7 +243,8 @@ class WorkerManager(object):
                 if argument is not None:
                     paramter_values[parameter_name] = argument
 
-        self._worker_parameters[workerid] = [workertype, worker_instance.paramnames, worker_instance.paramtypelist, paramter_values, worker_instance.guiparams]
+        print("SETTING WORKERPARAMS", worker_id)
+        self._worker_parameters[worker_id] = [workertype, worker_instance.paramnames, worker_instance.paramtypelist, paramter_values, worker_instance.guiparams]
         if self._antennafoldstate is not None:
             gp = {}
             pullantennas = []
@@ -250,52 +252,47 @@ class WorkerManager(object):
                 gp = worker_instance.guiparams.get("guiparams", {})
                 antennas = worker_instance.guiparams.get("antennas", {})
                 pullantennas = get_param_pullantennas(antennas)
-            self._antennafoldstate.create_worker(workerid, pullantennas, gp)
+            self._antennafoldstate.create_worker(worker_id, pullantennas, gp)
 
-        self._wim.set_parameters(workerid, paramter_values)
+        self._wim.set_parameters(worker_id, paramter_values)
 
-        self._persistent_id_manager.create_persistent_id(workerid)
+        self._persistent_id_manager.create_persistent_id(worker_id)
 
-    def _select(self, workerids):
+    def _select(self, worker_ids):
         self._pmanager.deselect()
-        if workerids is None:
+        if worker_ids is None:
             return
 
-        if len(workerids) == 1:
-            workerid = workerids[0]
+        for worker_id in worker_ids:
             pwin_general = self._pmanager.get_pwindow("general")
-            pwin_general.load_paramset(workerid)
-            if workerid in self._worker_parameters:
-                self._pwindow_select_worker_params(workerid)
-            if workerid in self._worker_metaparameters:
-                self._pwindow_select_worker_metaparams(workerid)
+            pwin_general.load_paramset(worker_id)
+            if worker_id in self._worker_parameters:
+                self._pwindow_select_worker_params(worker_id)
+            if worker_id in self._worker_metaparameters:
+                self._pwindow_select_worker_metaparams(worker_id)
             if self._with_blocks:
                 pwin_block = self._pmanager.get_pwindow("block")
-                pwin_block.load_paramset(workerid)
+                pwin_block.load_paramset(worker_id)
 
-    def select(self, workerids):
-        self._wim.select(workerids)
-        self._select(workerids)
+    def select(self, worker_ids):
+        self._wim.select(worker_ids)
+        self._select(worker_ids)
 
-    def gui_selects(self, workerids):
-        self._select(workerids)
+    def gui_selects(self, worker_ids):
+        self._select(worker_ids)
 
-    def _pwindow_select_worker_params(self, workerid):
-        params = self._worker_parameters[workerid]
+    def _pwindow_select_worker_params(self, worker_id):
+        params = self._worker_parameters[worker_id]
         workertype = params[0]
         pullantennas = []
-        wi = self._wim.get_workerinstance(workerid)
+        wi = self._wim.get_workerinstance(worker_id)
         if wi.guiparams is not None:
             pullantennas = get_param_pullantennas(wi.guiparams.get("antennas", {}))
             pullantennas = [p[0] for p in pullantennas]
 
         pureparams = [p for p in params[1] if p not in pullantennas]
-        up = functools.partial(
-            self._update_worker_parameters, workerid, pureparams
-        )
-
         # Unchanging persistent ID
-        mvc_id = self._persistent_id_manager.get_persistent_id(workerid)
+        mvc_id = self._persistent_id_manager.get_persistent_id(worker_id)
 
         def update_function(parameters):
             _worker_id = self._persistent_id_manager.get_temporary_id(mvc_id)
@@ -306,30 +303,30 @@ class WorkerManager(object):
             self._antennafoldstate.init_form(_worker_id, form)
 
         metaparams = None
-        if workerid in self._worker_metaparameters:
-            metaparams = self._worker_metaparameters[workerid][4]
+        if worker_id in self._worker_metaparameters:
+            metaparams = self._worker_metaparameters[worker_id][4]
 
         form_manipulators = self._workerbuilder.get_form_manipulators(workertype, metaparams)
         if self._antennafoldstate is not None:
             form_manipulators = form_manipulators + [form_function]
 
-        widget, controller = self._pmanager.select_pwidget(workerid, "params", params[1], params[2],  params[3],
+        widget, controller = self._pmanager.select_pwidget(worker_id, "params", params[1], params[2],  params[3],
                                                            update_function, [], form_manipulators)
 
         if widget is not None and self._antennafoldstate is not None:
-            self._antennafoldstate.init_widget(workerid, widget, controller)
+            self._antennafoldstate.init_widget(worker_id, widget, controller)
 
-    def _pwindow_select_worker_metaparams(self, workerid):
-        params = self._worker_metaparameters[workerid]
+    def _pwindow_select_worker_metaparams(self, worker_id):
+        params = self._worker_metaparameters[worker_id]
         inst = functools.partial(
-            self.instantiate_from_meta, workerid, params[0]
+            self.instantiate_from_meta, worker_id, params[0]
         )
         buttons = [("Create instance", inst)]
         up = functools.partial(
-            self._update_worker_metaparameters, workerid
+            self._update_worker_metaparameters, worker_id
         )
         form_manipulators = self._workerbuilder.get_form_manipulators(params[0], None)
-        self._pmanager.select_pwidget(workerid, "metaparams",
+        self._pmanager.select_pwidget(worker_id, "metaparams",
                                       params[2], params[3], params[4], up, buttons, form_manipulators
         )
 
@@ -382,21 +379,21 @@ class WorkerManager(object):
             if id_ in con_ids: continue
             return id_
 
-    def meta_empty_instantiate(self, workerid, workertype, x, y):
+    def meta_empty_instantiate(self, worker_id, workertype, x, y):
         t = self._workerbuilder.get_metaworker(workertype)
-        self._worker_metaparameters[workerid] = [workertype, None, t[1], t[2], {}]
-        self._wim.add_empty(workerid, x, y)
+        self._worker_metaparameters[worker_id] = [workertype, None, t[1], t[2], {}]
+        self._wim.add_empty(worker_id, x, y)
 
-    def instantiate_from_meta(self, workerid, workertype, metaparamvalues):
+    def instantiate_from_meta(self, worker_id, workertype, metaparamvalues):
         if metaparamvalues is None:
             print("Cannot instantiate metaworker '%s' (%s): invalid meta-parameters" \
-                  % (workerid, workertype))
+                  % (worker_id, workertype))
             return
         try:
-            node = self._wim.get_node(workerid)[0]
+            node = self._wim.get_node(worker_id)[0]
         except KeyError:
             print("Cannot instantiate metaworker '%s' (%s): empty no longer exists" \
-                  % (workerid, workertype))
+                  % (worker_id, workertype))
             return
         x, y = node.position
 
@@ -406,26 +403,26 @@ class WorkerManager(object):
         )
 
         # all set, there should be no exceptions now
-        already_existed = workerid in self._worker_parameters
+        already_existed = worker_id in self._worker_parameters
         if already_existed:  #re-instantiation, delete the old worker
             #Re-form connections of the old worker, and restore parameters, if we can
             all_connections = self._wim.get_connections()
             worker_connections = []
             for connection in all_connections:
-                if connection.start_node == workerid:
+                if connection.start_node == worker_id:
                     worker_connections.append(connection)
-                elif connection.end_node == workerid:
+                elif connection.end_node == worker_id:
                     worker_connections.append(connection)
 
-            self.remove(workerid)
+            self.remove(worker_id)
 
         else:  #the worker was only a shell, instantiating for the first time
-            self._wim.remove_empty(workerid)
-            self._worker_metaparameters.pop(workerid)
-            self._pmanager.delete_pwidget(workerid)
-            workerid = self.get_new_workerid(workertype)
+            self._wim.remove_empty(worker_id)
+            self._worker_metaparameters.pop(worker_id)
+            self._pmanager.delete_pwidget(worker_id)
+            worker_id = self.get_new_workerid(workertype)
 
-        self.instantiate(workerid, workertype, x, y, metaparamvalues)
+        self.instantiate(worker_id, workertype, x, y, metaparamvalues)
 
         if already_existed:
             for connection in worker_connections:
@@ -438,9 +435,9 @@ class WorkerManager(object):
                 except KeyError:
                     continue
 
-        self.select([workerid])
+        self.select([worker_id])
 
-    def _meta_autocreate(self, workertype, workerid, x, y):
+    def _meta_autocreate(self, workertype, worker_id, x, y):
         t = self._workerbuilder.get_metaworker(workertype)
         metaguiparams = t[0].metaguiparams
         paramnames = t[1]
@@ -455,11 +452,11 @@ class WorkerManager(object):
                 raise ValueError(
                     "%s.metaguiparams[\"autocreate\"] must be a dict with default values for all metaparameters; missing parameter '%s'" % (
                         workertype, p))
-        self.instantiate(workerid, workertype, x, y, autocreate)
+        self.instantiate(worker_id, workertype, x, y, autocreate)
         return True
 
-    def create(self, workerid, workertype, x, y, metaparamvalues=None, paramvalues=None):
-        assert workerid not in self._worker_parameters, workerid
+    def create(self, worker_id, workertype, x, y, metaparamvalues=None, paramvalues=None):
+        assert worker_id not in self._worker_parameters, worker_id
 
         if metaparamvalues == {}:
             metaparamvalues = None
@@ -468,90 +465,92 @@ class WorkerManager(object):
 
         if metaparamvalues is None and self._workerbuilder.has_metaworker(workertype):
             assert paramvalues is None
-            autocreate = self._meta_autocreate(workertype, workerid, x, y)
+            autocreate = self._meta_autocreate(workertype, worker_id, x, y)
             if autocreate:
-                return workerid
+                return worker_id
 
-            empty_workerid = self.get_new_empty_workerid()
-            self.meta_empty_instantiate(empty_workerid, workertype, x, y)
-            return empty_workerid
+            empty_worker_id = self.get_new_empty_workerid()
+            self.meta_empty_instantiate(empty_worker_id, workertype, x, y)
+            return empty_worker_id
+
         else:
-            self.instantiate(workerid, workertype, x, y, metaparamvalues, paramvalues)
-            return workerid
+            self.instantiate(worker_id, workertype, x, y, metaparamvalues, paramvalues)
+            return worker_id
 
-    def create_drone(self, workerid, dronetype, x, y, paramvalues=None):
-        assert workerid not in self._worker_parameters, workerid
+    def create_drone(self, worker_id, dronetype, x, y, paramvalues=None):
+        assert worker_id not in self._worker_parameters, worker_id
         workertype = "<drone>:" + dronetype
         if paramvalues is not None:
             paramvalues = dict(zip(["arg1", "arg2", "arg3", "arg4", "arg5"], paramvalues))
-        self.instantiate(workerid, workertype, x, y, paramvalues=paramvalues)
-        return workerid
+        self.instantiate(worker_id, workertype, x, y, paramvalues=paramvalues)
+        return worker_id
 
-    def create_spydermap(self, workerid, workertype, x, y):
-        assert workerid not in self._worker_parameters, workerid
-        self.instantiate(workerid, workertype, x, y)
-        return workerid
+    def create_spydermap(self, worker_id, workertype, x, y):
+        assert worker_id not in self._worker_parameters, worker_id
+        self.instantiate(worker_id, workertype, x, y)
+        return worker_id
 
-    def _remove(self, workerid):
-        self._pmanager.delete_pwidget(workerid)
-        self._worker_parameters.pop(workerid, None)
+    def _remove(self, worker_id):
+        print("REMOVE")
+        self._pmanager.delete_pwidget(worker_id)
+        self._worker_parameters.pop(worker_id, None)
         if self._antennafoldstate is not None:
-            self._antennafoldstate.remove_worker(workerid)
-        m = self._worker_metaparameters.pop(workerid, None)
+            self._antennafoldstate.remove_worker(worker_id)
+        m = self._worker_metaparameters.pop(worker_id, None)
         if m is not None:
             worker = m[1]
 
-    def remove(self, workerid):
-        self._remove(workerid)
-        self._wim.remove_workerinstance(workerid)
+    def remove(self, worker_id):
+        self._remove(worker_id)
+        self._wim.remove_workerinstance(worker_id)
 
-    def gui_removes(self, workerid):
-        self._remove(workerid)
-        self._wim.gui_removes_workerinstance(workerid)
+    def gui_removes(self, worker_id):
+        self._remove(worker_id)
+        self._wim.gui_removes_workerinstance(worker_id)
 
-    def _rename_worker(self, old_workerid, new_workerid):
+    def _rename_worker(self, old_worker_id, new_worker_id):
         for dic in (self._worker_parameters, self._worker_metaparameters):
-            if old_workerid in dic:
-                if new_workerid in dic:
+            if old_worker_id in dic:
+                if new_worker_id in dic:
                     return False
 
         for dic in (self._worker_parameters, self._worker_metaparameters):
-            if old_workerid in dic:
-                params = dic.pop(old_workerid)
-                dic[new_workerid] = params
+            if old_worker_id in dic:
+                params = dic.pop(old_worker_id)
+                dic[new_worker_id] = params
 
         # Update the persistent ID
-        self._persistent_id_manager.change_temporary_with_temporary_id(old_workerid, new_workerid)
+        self._persistent_id_manager.change_temporary_with_temporary_id(old_worker_id, new_worker_id)
 
         return True
 
-    def rename_worker(self, old_workerid, new_workerid):
-        ok = self._rename_worker(old_workerid, new_workerid)
+    def rename_worker(self, old_worker_id, new_worker_id):
+        ok = self._rename_worker(old_worker_id, new_worker_id)
         if not ok:
-            raise ValueError("workerid already exists: '%s'" % new_workerid)
+            raise ValueError("worker_id already exists: '%s'" % new_worker_id)
 
-        self._pmanager.rename_pwidget(old_workerid, new_workerid)
-        self._wim.rename_workerinstance(old_workerid, new_workerid)
+        self._pmanager.rename_pwidget(old_worker_id, new_worker_id)
+        self._wim.rename_workerinstance(old_worker_id, new_worker_id)
 
         if self._antennafoldstate is not None:
-            self._antennafoldstate.rename_worker(old_workerid, new_workerid)
+            self._antennafoldstate.rename_worker(old_worker_id, new_worker_id)
 
-    def gui_renames_worker(self, old_workerid, new_workerid):
+    def gui_renames_worker(self, old_worker_id, new_worker_id):
         """
         Worker has been renamed by the PGui, not the canvas...
         """
-        ok = self._rename_worker(old_workerid, new_workerid)
+        ok = self._rename_worker(old_worker_id, new_worker_id)
         if not ok:
             return False
 
-        self._wim.rename_workerinstance(old_workerid, new_workerid)
+        self._wim.rename_workerinstance(old_worker_id, new_worker_id)
 
         if self._antennafoldstate is not None:
-            self._antennafoldstate.rename_worker(old_workerid, new_workerid)
+            self._antennafoldstate.rename_worker(old_worker_id, new_worker_id)
         return True
 
-    def _update_worker_parameters(self, workerid, paramnames, parameters):
-        params_old = self._worker_parameters[workerid][3]
+    def _update_worker_parameters(self, worker_id, paramnames, parameters):
+        params_old = self._worker_parameters[worker_id][3]
 
         if parameters is None:
             if params_old is None:
@@ -567,42 +566,43 @@ class WorkerManager(object):
 
             parameters = parameters_copy
 
-        self._wim.set_parameters(workerid, parameters)
-        self._worker_parameters[workerid][3] = parameters
+        self._wim.set_parameters(worker_id, parameters)
+        self._worker_parameters[worker_id][3] = parameters
+        print(parameters)
 
-    def _update_worker_metaparameters(self, workerid, parameters):
-        # print("UPM", workerid, parameters)
+    def _update_worker_metaparameters(self, worker_id, parameters):
+        # print("UPM", worker_id, parameters)
         if parameters is None: return  # TODO: may not be the sane thing to do
-        self._worker_metaparameters[workerid][4] = parameters
+        self._worker_metaparameters[worker_id][4] = parameters
 
     def _update_variable(self, varid, value):
         self._update_worker_parameters(varid, ["value"], {"value": value})
 
-    def get_worker_descriptor(self, workerid):
-        node, mapping = self._wim.get_node(workerid)
+    def get_worker_descriptor(self, worker_id):
+        node, mapping = self._wim.get_node(worker_id)
         if node.empty:
             return None
-        inst = self._wim.get_workerinstance(workerid)
+        inst = self._wim.get_workerinstance(worker_id)
         profile = inst.curr_profile
         gp = inst.guiparams
         if gp is None:
             gp = {}
 
-        workertype, params, metaparams = self.get_parameters(workerid)
+        workertype, params, metaparams = self.get_parameters(worker_id)
         x, y = node.position
-        desc = (workerid, workertype, x, y, metaparams, params, profile, gp)
+        desc = (worker_id, workertype, x, y, metaparams, params, profile, gp)
         return desc
 
-    def get_worker_connections(self, workerid):
+    def get_worker_connections(self, worker_id):
         wim = self._wim
         connections = []
         for connection in wim.get_connections():
-            if connection.start_node == workerid or connection.end_node == workerid:
+            if connection.start_node == worker_id or connection.end_node == worker_id:
                 connections.append(connection)
         return connections
 
-    def get_expanded_antennas(self, workerid):
-        state = self._antennafoldstate.states[workerid]
+    def get_expanded_antennas(self, worker_id):
+        state = self._antennafoldstate.states[worker_id]
         expanded_variables = set()
 
         if state is None:
@@ -626,49 +626,49 @@ class WorkerManager(object):
             )
         )
 
-    def get_parameters(self, workerid):
-        assert workerid in self._worker_parameters or \
-               workerid in self._worker_metaparameters
+    def get_parameters(self, worker_id):
+        assert worker_id in self._worker_parameters or \
+               worker_id in self._worker_metaparameters
         workertype, params, metaparams = None, None, None
 
-        if workerid in self._worker_parameters:
-            p = self._worker_parameters[workerid]
+        if worker_id in self._worker_parameters:
+            p = self._worker_parameters[worker_id]
             workertype = p[0]
             params = p[3]
             if len(params) == 0: params = None
-        if workerid in self._worker_metaparameters:
-            p = self._worker_metaparameters[workerid]
+        if worker_id in self._worker_metaparameters:
+            p = self._worker_metaparameters[worker_id]
             workertype = p[0]
             metaparams = p[4]
             if len(metaparams) == 0: metaparams = None
         return workertype, params, metaparams
 
     def clear_workers(self):
-        for workerid in self.workerids():
-            self.remove(workerid)
+        for worker_id in self.workerids():
+            self.remove(worker_id)
 
     def get_wim(self):
         return self._wim
 
-    def get_block(self, workerid):
+    def get_block(self, worker_id):
         assert self._with_blocks == True
-        if workerid in self._worker_metaparameters:
-            worker = self._worker_metaparameters[workerid][1]
+        if worker_id in self._worker_metaparameters:
+            worker = self._worker_metaparameters[worker_id][1]
             if worker is None: return None
             return worker.block
         else:
-            workertype = self._worker_parameters[workerid][0]
+            workertype = self._worker_parameters[worker_id][0]
             if workertype.startswith("<drone>:"): return None
             if workertype.find("#") > -1: return None
             return self._workerbuilder.get_block(workertype)
 
-    def get_workertemplate(self, workerid):
-        if workerid in self._worker_metaparameters:
-            worker = self._worker_metaparameters[workerid][1]
+    def get_workertemplate(self, worker_id):
+        if worker_id in self._worker_metaparameters:
+            worker = self._worker_metaparameters[worker_id][1]
             if worker is None: return None
             return worker
         else:
-            workertype = self._worker_parameters[workerid][0]
+            workertype = self._worker_parameters[worker_id][0]
             return self._workerbuilder.get_workertemplate(workertype)
 
     def unbuild_local_workers(self):
@@ -696,10 +696,10 @@ class WorkerManager(object):
 
         self._workerfinder_local = None
 
-    def sync_antennafoldstate(self, workerids):
+    def sync_antennafoldstate(self, worker_ids):
         #raise DeprecationWarning()
         if self._antennafoldstate is None:
             return
 
-        for workerid in workerids:
-            self._antennafoldstate.sync(workerid, onload=True)
+        for worker_id in worker_ids:
+            self._antennafoldstate.sync(worker_id)

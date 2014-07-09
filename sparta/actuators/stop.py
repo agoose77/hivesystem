@@ -29,9 +29,14 @@ class stop(object):
             """
             # Inputs and outputs
             trig = antenna("push", "trigger")
-            delobj = variable("bool")
-            # TODO fix defaults from sticking
-            parameter(delobj)
+            if idmode == "bound":
+                delobj = variable("bool")
+                # TODO fix defaults from sticking
+                parameter(delobj)
+
+                @classmethod
+                def form(self, f):
+                    f.delobj.name = "Delete object"
 
             # Define the I/O names
             guiparams = {
@@ -47,10 +52,6 @@ class stop(object):
                     self.stop_func()
 
             trigger(trig, do_stop)
-
-            @classmethod
-            def form(self, f):
-                f.delobj.name = "Delete object"
 
             def set_stop_func(self, stop_func):
                 self.stop_func = stop_func

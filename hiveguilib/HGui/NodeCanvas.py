@@ -325,8 +325,6 @@ class NodeCanvas(HGui):
             folding_node, folding_antenna = self._folded_antenna_variables.pop(old_id)
             self._folded_antennas[folding_node][folding_antenna] = new_id
             self._folded_antenna_variables[new_id] = folding_node, folding_antenna
-            connection_id = self._folded_antenna_connections.pop(old_id)
-            self._folded_antenna_connections[new_id] = connection_id
 
         else:
             if old_id in self._folded_antennas:
@@ -480,60 +478,76 @@ class NodeCanvas(HGui):
         # nodes themselves are not modified!
         self._hNodeCanvas.set_attribute_value(node_id, attribute, value)
 
-    def fold_antenna_connection(self, node_id, antenna, value_type, called_on_load):
-        assert node_id in self._nodes, node_id
-        assert node_id not in self._folded_antenna_variables, node_id
-        if node_id in self._folded_antennas:
-            assert antenna not in self._folded_antennas[node_id], (node_id, antenna)
+    def check_default_folded(self, node_id, antenna_name):
+        """Determine if node antenna is expected to be folded when loaded
 
-        can_be_folded = True
-        variable_id = None
-        value = None
-        connection_id = None
-
+        :param node_id: ID of node
+        :param antenna_name: name of antenna
+        """
         for connection_id_ in self._connection_ids:
             connection = self._connections[connection_id_]
 
-            if not (connection.end_node == node_id and connection.end_attribute == antenna):
+            if not (connection.end_node == node_id and connection.end_attribute == antenna_name):
                 continue
 
             variable_id = connection.start_node
-            can_be_folded = False
+            worker_descriptor = self.workermanager.get_worker_descriptor(variable_id)
+
+            # Nodes as 0, 0 are folded nodes!
+            x, y = worker_descriptor[2], worker_descriptor[3]
+            return (x == y == 0)
+
+    def fold_antenna_connection(self, node_id, antenna_name, value_type):
+        # Check nothing went wrong (debugging)
+        assert node_id in self._nodes, node_id
+        assert node_id not in self._folded_antenna_variables, node_id
+        if node_id in self._folded_antennas:
+            assert antenna_name not in self._folded_antennas[node_id], (node_id, antenna_name)
+
+        create_variable = True
+        value = None
+
+        # Prove we don't need to create one!
+        connection_info = self.find_antenna_connected_variable(node_id, antenna_name)
+
+        if connection_info is None:
+            create_variable = True
+
+        else:
+            variable_id, connection_id = connection_info
+
             worker_descriptor = self.workermanager.get_worker_descriptor(variable_id)
             gui_params = worker_descriptor[7].get("guiparams", {})
 
-            if not called_on_load:
-                coordinate_valid = True
+            is_variable = gui_params.get("is_variable")
+            # should_be_folded = worker_descriptor[2] == worker_descriptor[3] == 0
 
-            else:
-                coordinate_valid = False
-                x, y = worker_descriptor[2], worker_descriptor[3]
-                if x == y == 0:
-                    coordinate_valid = True
-
-            if gui_params.get("is_variable") and coordinate_valid:
+            # If this isn't a variable we can't allow the GUI to fold it
+            if is_variable:
                 variable_node = self._nodes[variable_id]
                 variable_connections = [c for c in self._connections.values() if c.start_node == variable_id or
                                         c.end_node == variable_id]
 
+                # We can't fold shared variables
+                gui_can_fold_variable = len(variable_connections) == 1
                 variable_type = worker_descriptor[4]["type"]
-                if len(variable_connections) == 1 and variable_type == value_type:
-                    can_be_folded = True
-                    connection_id = connection_id_
 
+                assert variable_type == value_type  # fixme
+
+                if gui_can_fold_variable:
                     if isinstance(worker_descriptor[5], dict) and "value" in worker_descriptor[5]:
                         value = worker_descriptor[5]["value"]
 
+                    # We have prepared the folding
                     variable_node.position = 0, 0
+                    create_variable = False
 
-            break
-
-        if not can_be_folded or (variable_id is None and called_on_load):
-            return False, None
-
-        if variable_id is None:
-            variable_id = node_id.rstrip("_") + "_ant_" + antenna
+        # Create new variable
+        if create_variable:
+            variable_id = node_id.rstrip("_") + "_ant_" + antenna_name
             original_variable_id = variable_id
+
+            # Get a unique variable ID
             count = 0
             while variable_id in self._nodes:
                 count += 1
@@ -543,46 +557,61 @@ class NodeCanvas(HGui):
             self.workermanager.instantiate(variable_id, "dragonfly.std.variable", 0, 0, metaparamvalues=meta_params)
             connection_id = self.workermanager.get_new_connection_id("con")
             wim = self.workermanager.get_wim()
-            wim.add_connection(connection_id, (variable_id, "outp"), (node_id, antenna))
+            wim.add_connection(connection_id, (variable_id, "outp"), (node_id, antenna_name))
 
-        if node_id not in self._folded_antennas:
-            self._folded_antennas[node_id] = {}
-
-        self._folded_antennas[node_id][antenna] = variable_id
-        self._folded_antenna_variables[variable_id] = node_id
-        self._folded_antenna_connections[variable_id] = connection_id
-
-        # remove the folded node from the rendered canvas
+        # Remove the folded nodes from the visible canvas
         self._hNodeCanvas.remove_connection(connection_id)
         self._hNodeCanvas.remove_node(variable_id)
-        self._hNodeCanvas.hide_attribute(node_id, antenna)
+        self._hNodeCanvas.hide_attribute(node_id, antenna_name)
+
+        # Record which nodes were folded so deleting the parent node clears them
+        if node_id not in self._folded_antennas:
+            self._folded_antennas[node_id] = {}
+        self._folded_antennas[node_id][antenna_name] = variable_id
+        self._folded_antenna_variables[variable_id] = node_id
 
         self.select([node_id])
-        return True, value
 
-    def antenna_is_folded(self, worker_id, antennta):
-        try:
-            self.get_antenna_connected_variable(worker_id, antennta)
-        except AssertionError:
-            return False
+        return value
 
-        else:
-            return True
+    def get_folded_variable(self, worker_id, antenna_name):
+        """Return the variable for the folded antenna
 
-    def get_antenna_connected_variable(self, worker_id, antenna):
-        assert worker_id in self._folded_antennas, worker_id
-        assert antenna in self._folded_antennas[worker_id], antenna
-        return self._folded_antennas[worker_id][antenna]
+        :param worker_id: id of worker
+        :param antenna_name: name of antenna of variable
+        """
+        return self._folded_antennas[worker_id][antenna_name]
 
-    def expand_antenna_connection(self, worker_id, antenna):
-        variable_id = self.get_antenna_connected_variable(worker_id, antenna)
+    def find_antenna_connected_variable(self, worker_id, antenna):
+        """Return the variable for the folded antenna.
+
+        This is required if we haven't saved it yet.
+
+        See get_folded_variable if folding has occured at least once
+
+        :param worker_id: id of worker
+        :param antenna_name: name of antenna of variable
+        """
+        for connection_id_ in self._connection_ids:
+            connection = self._connections[connection_id_]
+
+            if not (connection.end_node == worker_id and connection.end_attribute == antenna):
+                continue
+
+            variable_id = connection.start_node
+
+            # If this isn't a variable we can't allow the GUI to fold it
+            return variable_id, connection_id_
+
+    def expand_antenna_connection(self, worker_id, antenna_name):
+        variable_id, connection_id = self.find_antenna_connected_variable(worker_id, antenna_name)
 
         node = self._nodes[worker_id]
         variable = self._nodes[variable_id]
 
         # Get the attribute with the antenna name
         for index, attribute in enumerate(node.attributes):
-            if attribute.name == antenna:
+            if attribute.name == antenna_name:
                 break
 
         yrange = (index + 0.5) / len(node.attributes) - 0.5
@@ -592,19 +621,24 @@ class NodeCanvas(HGui):
         variable.position = x, y
         self._hNodeCanvas.h_add_node(variable_id, variable)
 
-        connection_id = self._folded_antenna_connections[variable_id]
         connection = self._connections[connection_id]
         valid, is_push_pull = self._valid_connection(connection)
 
         if is_push_pull:
             valid = False
 
-        self._hNodeCanvas.show_attribute(worker_id, antenna)
-        self._hNodeCanvas.h_add_connection(connection_id, connection, valid)
+        # For renaming and deltion
+        try:
+            assert self._folded_antennas[worker_id].pop(antenna_name, None)
+            assert self._folded_antenna_variables.pop(variable_id, None)
+        finally:
+            print("Antennas weren't there, probably init")
 
-        self._folded_antennas[worker_id].pop(antenna)
-        self._folded_antenna_variables.pop(variable_id)
-        self._folded_antenna_connections.pop(variable_id)
+        if is_push_pull:
+            valid = False
+
+        self._hNodeCanvas.show_attribute(worker_id, antenna_name)
+        self._hNodeCanvas.h_add_connection(connection_id, connection, valid)
 
         worker_descriptor = self.workermanager.get_worker_descriptor(variable_id)
         if isinstance(worker_descriptor[5], dict) and "value" in worker_descriptor[5]:

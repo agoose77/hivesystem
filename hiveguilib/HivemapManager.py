@@ -78,11 +78,11 @@ class HivemapManager(object):
                     paramvalues[param.pname] = param.pvalue
 
             worker_manager = self._workermanager
-            worker_ids = worker_manager.workerids()
+            existing_ids = worker_manager.workerids()
             # If an ID clash occurred
             worker_id = worker.workerid
 
-            if worker_id in worker_ids and soft_load:
+            if worker_id in existing_ids and soft_load:
                 old_worker_id = worker_id
                 worker_id = worker_manager.get_new_workerid(worker_id)
                 worker_id_mapping[old_worker_id] = worker_id
@@ -239,7 +239,7 @@ class HivemapManager(object):
             self._workermanager.instantiate(
                 b.wasp_id, workertype, x, y, paramvalues=params
             )
-        self._workermanager.sync_antennafoldstate(worker_ids)
+        self._workermanager.select(worker_ids)
 
     def load(self, hivemapfile):
         self.clear()

@@ -1,5 +1,7 @@
 import bpy
 
+from collections import defaultdict
+
 
 class SynchroniseDataOperator(bpy.types.Operator):
     """Synchronise the text blocks and Node trees.
@@ -7,7 +9,7 @@ class SynchroniseDataOperator(bpy.types.Operator):
     First save all node trees to text, then reload all text files.
     """
     bl_idname = "hive.synchronise_data"
-    bl_label = "Synchronise NodeTrees and TextBlocks"
+    bl_label = "Synchronise"
 
     @classmethod
     def poll(cls, context):
@@ -25,8 +27,43 @@ class SynchroniseDataOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class RemoveBoundUsers(bpy.types.Operator):
+    """Remove any references to this NodeTree from bound objects"""
+    bl_idname = "hive.remove_bound_users"
+    bl_label = "Remove users"
+
+    @classmethod
+    def poll(cls, context):
+        from . import BlendManager
+        return BlendManager.use_hive_get(context.scene)
+
+    def execute(self, context):
+        mapping = defaultdict(list)
+        for obj in context.scene.objects:
+            mapping[obj.hive_nodetree].append(obj)
+
+        for space in (sp for s in bpy.data.screens for a in s.areas for sp in a.spaces if sp.type == "NODE_EDITOR"):
+            node_tree = space.node_tree
+
+            if node_tree is None:
+                continue
+
+            if space.tree_type != "Hivemap":
+                continue
+
+            if not node_tree.name in mapping:
+                continue
+
+            for obj in mapping[node_tree.name]:
+                obj.hive_nodetree = ""
+
+            break
+
+        return {'FINISHED'}
+
+
 class ChangeHiveLevel(bpy.types.Operator):
-    """Handles keyboard events to change HIVE level with TAB / SHIFT TAB"""
+    """Handles keyboard events to change HIVE level with TAB | SHIFT TAB"""
 
     _running = []
 
@@ -122,8 +159,10 @@ class ChangeHiveLevel(bpy.types.Operator):
 def register():
     bpy.utils.register_class(SynchroniseDataOperator)
     bpy.utils.register_class(ChangeHiveLevel)
+    bpy.utils.register_class(RemoveBoundUsers)
 
 
 def unregister():
     bpy.utils.unregister_class(SynchroniseDataOperator)
     bpy.utils.unregister_class(ChangeHiveLevel)
+    bpy.utils.unregister_class(RemoveBoundUsers)

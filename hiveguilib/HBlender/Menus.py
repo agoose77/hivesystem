@@ -2,7 +2,7 @@ import bpy
 
 from . import BlendManager
 from .NodeTrees import SpydermapNodeTree, HiveNodeTree
-from .Operators import ChangeHiveLevel
+from .Operators import ChangeHiveLevel, RemoveBoundUsers
 
 
 class HiveToolsMenu(bpy.types.Menu):
@@ -17,7 +17,8 @@ class HiveToolsMenu(bpy.types.Menu):
 
         row = layout.column()
         row.prop(context.scene, "switch_to_bound_hive_tree")
-        row.operator("hive.synchronise_data", text="Synchronise", icon="FILE_REFRESH")
+        row.operator("hive.synchronise_data", icon="FILE_REFRESH")
+        row.operator("hive.remove_bound_users", icon="X")
         row.active = context.scene.use_hive
 
 

@@ -4,3 +4,4 @@ from .HivemapManager import HivemapManager
 from .WorkermapManager import WorkermapManager
 from .SpydermapManager import SpydermapManager
 from .Clipboard import Clipboard
+from .PersistentIDManager import PersistentIDManager

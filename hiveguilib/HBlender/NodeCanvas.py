@@ -442,6 +442,7 @@ class NodeCanvas:
         self._statusbar.clearMessage()
 
     def set_attribute_value(self, id_, attribute, value):
+        # TODO
         logging.debug("NodeCanvas.set_attribute_value, what to do?")
 
     def _change_attribute(self, id_, attribute, hidden):
