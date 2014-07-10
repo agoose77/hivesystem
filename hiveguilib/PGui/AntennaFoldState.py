@@ -128,9 +128,13 @@ class AntennaFoldState(object):
         if not antenna.foldable:
             return
 
-        antenna.is_folded = True
+        try:
+            value = self._nodecanvas().fold_antenna_connection(worker_id, member, antenna.typ)
 
-        value = self._nodecanvas().fold_antenna_connection(worker_id, member, antenna.typ)
+        except RuntimeWarning:
+            return
+
+        antenna.is_folded = True
 
         if worker_id in self._init_widget:
             self._pAntennaFoldState.p_fold(worker_id, member)

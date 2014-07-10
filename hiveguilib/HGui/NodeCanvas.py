@@ -523,24 +523,26 @@ class NodeCanvas(HGui):
             # should_be_folded = worker_descriptor[2] == worker_descriptor[3] == 0
 
             # If this isn't a variable we can't allow the GUI to fold it
-            if is_variable:
-                variable_node = self._nodes[variable_id]
-                variable_connections = [c for c in self._connections.values() if c.start_node == variable_id or
-                                        c.end_node == variable_id]
+            if not is_variable:
+                raise RuntimeWarning("Not able to fold this variable")
 
-                # We can't fold shared variables
-                gui_can_fold_variable = len(variable_connections) == 1
-                variable_type = worker_descriptor[4]["type"]
+            variable_node = self._nodes[variable_id]
+            variable_connections = [c for c in self._connections.values() if c.start_node == variable_id or
+                                    c.end_node == variable_id]
 
-                assert variable_type == value_type  # fixme
+            # We can't fold shared variables
+            gui_can_fold_variable = len(variable_connections) == 1
+            variable_type = worker_descriptor[4]["type"]
 
-                if gui_can_fold_variable:
-                    if isinstance(worker_descriptor[5], dict) and "value" in worker_descriptor[5]:
-                        value = worker_descriptor[5]["value"]
+            assert variable_type == value_type  # fixme
 
-                    # We have prepared the folding
-                    variable_node.position = 0, 0
-                    create_variable = False
+            if gui_can_fold_variable:
+                if isinstance(worker_descriptor[5], dict) and "value" in worker_descriptor[5]:
+                    value = worker_descriptor[5]["value"]
+
+                # We have prepared the folding
+                variable_node.position = 0, 0
+                create_variable = False
 
         # Create new variable
         if create_variable:
