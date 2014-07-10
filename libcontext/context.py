@@ -119,7 +119,8 @@ def retrieve_plugins(context, plugin, visited=[]):
         if contextinstance in visited: continue
         # report(name,newname, plugin)
         if newname == plugin:
-            if ret is None: ret = []
+            if ret is None:
+                ret = []
             newvisited = list(visited)
             newvisited.append(context)
             #report("TRY!", contextinstance.contextname, name)
