@@ -13,16 +13,15 @@ class AddHiveNode(bpy.types.Operator):
     def modal(self, context, event):
         if event.type == 'MOUSEMOVE':
             region = context.region
+            # TODO update to 2.7 -> context.space_data.cursor_location_from_region(event.mouse_region_x, event.mouse_region_y)
             x, y = event.mouse_region_x - (region.width / 2), event.mouse_region_y - (region.height / 2)
             node = context.active_node
             if node is None:
-                print("NO NODE")
                 return {'FINISHED'}
 
             node.location = x, y
 
         elif event.type == 'LEFTMOUSE':
-            print("LEFT STOP")
             return {'FINISHED'}
 
         elif event.type == 'RIGHTMOUSE':

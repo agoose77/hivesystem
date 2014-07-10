@@ -853,7 +853,7 @@ class BlendManager:
         import libcontext
 
         # Python runtime remains loaded, so clear game-data
-        libcontext.clear()
+        libcontext._contexts.clear()
         if self._old_directory is not None:
             os.chdir(self._old_directory)
             self._old_directory = None

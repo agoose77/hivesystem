@@ -4,6 +4,7 @@ from bee.staticbind import staticbind_baseclass
 
 
 class hiveloader(binderdrone):
+
     def bind(self, bindworker, hivename):
         bindworker.hive = self.get_hive(hivename)
 

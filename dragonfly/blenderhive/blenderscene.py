@@ -89,6 +89,7 @@ class entityclassloader(bee.drone):
 
 
 class entityloader(bee.drone):
+
     def load(self, obj):
         self.register((obj.name, obj))
 

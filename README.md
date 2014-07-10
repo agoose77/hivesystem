@@ -7,8 +7,15 @@ A framework to build and connect extremely flexible, reusable Python components 
 Current TODO
 ============
 
-  * Enable Export/ Import of hivemaps from Hive GUI
+  * Enable Export/ Import of hivemaps from Hive GUI [DONE]
   * Mirror existing Logic Brick support as far as possible
   * Implement tooltips for workers
   * Simplify Hive Binding
   * Clean code internals
+
+Hive Launch actuator
+====================
+
+  * Provide __advanced__ configuration options
+  * Support non-static hivemap name (as an antenna)
+  * Output the process ID
