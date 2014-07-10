@@ -177,12 +177,6 @@ class bindbuilder(mytype):
                             bridge.startup_functions = []
                             bridge.cleanup_functions = []
 
-                        def stop_hive(bridge):
-                            try:
-                                del self.hives[bind_name]
-                            except KeyError:
-                                pass
-
                         def place(bridge):
                             self.on_place()
 
@@ -193,8 +187,6 @@ class bindbuilder(mytype):
                             s = libcontext.socketclasses.socket_supplier(bridge.cleanup_functions.append)
                             libcontext.socket("cleanupfunction", s)
 
-                            p = libcontext.pluginclasses.plugin_supplier(bridge.stop_hive)
-                            libcontext.plugin("exit", p)
 
                     class newhive(self.hive):
                         zzz_bindbridgedrone = bindbridge()
@@ -248,6 +240,10 @@ class bindbuilder(mytype):
                 # Stop all hives
                 @modifier
                 def m_stop_all(self):
+                    for hive in self.hives.values():
+                        for function in hive.zzz_bindbridgedrone.cleanup_functions:
+                            function()
+
                     self.hives.clear()
                     self.handler_states.clear()
                     self.event_handlers.clear()
@@ -276,9 +272,13 @@ class bindbuilder(mytype):
                     stopped_name = self.v_stop
 
                     try:
-                        del self.hives[stopped_name]
+                        hive = self.hives.pop(stopped_name)
                     except KeyError:
                         print("Couldn't find hive %s to stop" % stopped_name)
+
+                    else:
+                        for function in hive.zzz_bindbridgedrone.cleanup_functions:
+                            function()
 
                     try:
                         del self.handler_states[stopped_name]

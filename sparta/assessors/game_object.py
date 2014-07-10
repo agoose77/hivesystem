@@ -26,8 +26,8 @@ The Game Object assessor returns a Blender Game Engine game object (KX_GameObjec
 
         class game_object(bee.worker):
             __doc__ = cls.__doc__
-            obj = output("pull", ("object", "bge"))
-            obj_variable = variable(("object", "bge"))
+            obj = output("pull", ("object", "entity"))
+            obj_variable = variable(("object", "entity"))
             connect(obj_variable, obj)
 
             if idmode == "unbound":
@@ -68,7 +68,7 @@ The Game Object assessor returns a Blender Game Engine game object (KX_GameObjec
                 if idmode == "bound":
                     libcontext.socket(("entity", "bound"), socket_single_required(self.set_get_entity_name))
 
-                libcontext.socket(("entity", "get", "Blender"), socket_single_required(self.set_lookup_entity))
+                libcontext.socket(("entity", "get"), socket_single_required(self.set_lookup_entity))
 
 
         return game_object

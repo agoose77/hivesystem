@@ -29,7 +29,9 @@ class blenderapp(bee.drone):
         self._ref_entities = {}
         self._entity_classes = {}
         self._animationdict = {}
-        self._registered_processes = {}
+        self._registered_stop_processes = {}
+        self._registered_pause_processes = {}
+        self._registered_resume_processes = {}
 
         self._collision_dict = {}
         self._collision_callback_dict = {}
@@ -186,13 +188,15 @@ class blenderapp(bee.drone):
         if entity_name not in entity_dict:
             raise KeyError("No such entity '%s'" % entity_name)
 
-        if entity_name in self._registered_processes and end_process:
-            stop_func = self._registered_processes.pop(entity_name)
+        # Process management cleanup
+        if entity_name in self._registered_stop_processes and end_process:
+            stop_func = self._registered_stop_processes[entity_name]
             stop_func()
 
         entity = entity_dict.pop(entity_name)
         name_dict.pop(entity)
         entity.endObject()
+
         if entity_name in self._ref_entities:
             del self._ref_entities[entity_name]
 
@@ -390,8 +394,40 @@ class blenderapp(bee.drone):
             for collision_info in ended_collisions:
                 collision_list.remove(collision_info)
 
-    def register_process(self, process_name, stop_process):
-        self._registered_processes[process_name] = stop_process
+    def pause_process(self, process_name):
+        try:
+            pause_func = self._registered_pause_processes[process_name]
+        except KeyError:
+            return
+
+        pause_func()
+
+    def resume_process(self, process_name):
+        try:
+            resume_func = self._registered_resume_processes[process_name]
+        except KeyError:
+            return
+
+        resume_func()
+
+    def register_stop_process(self, process_name, stop_process):
+        self._registered_stop_processes[process_name] = stop_process
+
+    def register_resume_process(self, process_name, resume_process):
+        self._registered_resume_processes[process_name] = resume_process
+
+    def register_pause_process(self, process_name, pause_process):
+        self._registered_pause_processes[process_name] = pause_process
+
+    def unregister_process(self, process_name):
+        """Unregister registered process from registration dictionaries
+
+        :param process_name: name of process to unregister
+        """
+        for process_dict in (self._registered_pause_processes, self._registered_stop_processes,
+                             self._registered_resume_processes):
+            if process_name in process_dict:
+                process_dict.pop(process_name)
 
     def place(self):
         libcontext.socket("startupfunction", socket_container(self.addstartupfunction))
@@ -450,8 +486,12 @@ class blenderapp(bee.drone):
         libcontext.plugin(("entity", "collisions"), plugin_supplier(self.entity_get_collisions))
         libcontext.plugin(("entity", "material", "get"), plugin_supplier(self.entity_get_material))
 
-        libcontext.plugin(("process", "register"), plugin_supplier(self.register_process))
-        #libcontext.plugin(("process", "get"), plugin_supplier(self.get_process))
+        libcontext.plugin(("process", "register", "stop"), plugin_supplier(self.register_stop_process))
+        libcontext.plugin(("process", "register", "resume"), plugin_supplier(self.register_resume_process))
+        libcontext.plugin(("process", "register", "pause"), plugin_supplier(self.register_pause_process))
+        libcontext.plugin(("process", "unregister"), plugin_supplier(self.unregister_process))
+        libcontext.plugin(("process", "pause"), plugin_supplier(self.pause_process))
+        libcontext.plugin(("process", "resume"), plugin_supplier(self.resume_process))
 
         libcontext.plugin("exit", plugin_supplier(self.exit))
         libcontext.plugin("stop", plugin_supplier(self.exit))
