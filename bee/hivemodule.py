@@ -201,7 +201,9 @@ class emptyhivecontext(hivecontext_base):
                         n.beeimports[k] = self.beedict[v]
                         #for bee in self.configurebees:
         for bee in self.bees:
-            if not isinstance(bee[1], configureclass): continue
+            if not isinstance(bee[1], configureclass):
+                continue
+
             n = bee[1]
             n.set_parameters(bee[0], self._allparamvalues)
             self._current = bee[0]

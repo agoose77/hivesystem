@@ -11,7 +11,9 @@ def plocksortfunc(name):
             n, s = plocksortfunc(r)
             numbers += n
             strings += s
+
         ret = (numbers, strings)
+
     else:
         if isinstance(name, str): name = (name,)
         ret = ((-len(name),), name)
@@ -116,17 +118,24 @@ def matchmake(context, subcontexts, subcontextnames):
             con = sub.connect
             srcname = con.source.contextname
             srcname, evsrc = srcname[:-1], srcname[-1]
-            if len(srcname) == 1: srcname = srcname[0]
+            if len(srcname) == 1:
+                srcname = srcname[0]
+
             tarname = con.target.contextname
             tarname, evtar = tarname[:-1], tarname[-1]
-            if len(tarname) == 1: tarname = tarname[0]
+
+            if len(tarname) == 1:
+                tarname = tarname[0]
+
             src, tar = contextdict[srcname], contextdict[tarname]
             evconmap_fwd[src].append((evsrc, tar, tarname, evtar))
             evconmap_back[tar].append((evtar, src, srcname, evsrc))
 
             #resolve evcontexts (evexc)
+
     for snr, sub in enumerate(subcontexts):
-        if sub not in evcontexts: continue
+        if sub not in evcontexts:
+            continue
         pname, evname = sub.contextname[:-1], sub.contextname[-1]
         if evname != "evexc": continue
         if len(pname) == 1: pname = pname[0]

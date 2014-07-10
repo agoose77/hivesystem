@@ -107,6 +107,7 @@ def new_abscontextname(pattern):
         xrange = xrange
     except NameError:
         xrange = range
+
     for n in xrange(1, 100000):  #NOTE: should be range() in python3.x
         ext = "-" + str(n)
         name = add_contextnames(pattern[:-1], pattern[-1] + ext)
@@ -116,9 +117,12 @@ def new_abscontextname(pattern):
 def delete_context(contextname):
     c = encode_context(contextname)
     for k in list(_contexts.keys()):
-        if len(k) < len(c): continue
+        if len(k) < len(c):
+            continue
+
         for n in range(len(c)):
-            if k[n] != c[n]: break
+            if k[n] != c[n]:
+                break
         else:
             del _contexts[k]
 

@@ -5,9 +5,7 @@ from libcontext.pluginclasses import *
 
 
 class game_object(object):
-    """
-The Game Object assessor returns a Blender Game Engine game object (KX_GameObject)
-    """
+    """The Game Object assessor returns the blender game object (KX_GameObject)"""
     metaguiparams = {
         "idmode": "str",
         "autocreate": {"idmode": "bound"},
@@ -68,7 +66,7 @@ The Game Object assessor returns a Blender Game Engine game object (KX_GameObjec
                 if idmode == "bound":
                     libcontext.socket(("entity", "bound"), socket_single_required(self.set_get_entity_name))
 
-                libcontext.socket(("entity", "get"), socket_single_required(self.set_lookup_entity))
+                libcontext.socket(("entity", "get", "Blender"), socket_single_required(self.set_lookup_entity))
 
 
         return game_object

@@ -59,6 +59,10 @@ class eventdispatcher(binderdrone):
 class eventforwarder(eventdispatcher):
 
     def listener(self, event):
+        # As this is a plugin, it may be prematurely called
+        if not self.bindnames:
+            return
+
         event_forwarders = self.binderworker.event_handlers
         handler_states = self.binderworker.handler_states
 
@@ -92,4 +96,4 @@ class eventlistener(eventforwarder):
 class bind(bind_baseclass):
     dispatch_events = bindparameter("byhead")
     binder("dispatch_events", "byhead", eventdispatcher(), "bindname")
-    binder("dispatch_events", "toall", eventforwarder())
+    binder("dispatch_events", "toall", eventforwarder(), "bindname")

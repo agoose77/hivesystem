@@ -396,7 +396,9 @@ class context(object):
 
     def close(self):
         if self.closed: return
-        if self.subcontext != None: self.subcontext.__close__()
+        if self.subcontext != None:
+            self.subcontext.__close__()
+
         from . import _contexts as contexts, get_curr_contextname
 
         for f in self.preclose_functions:
@@ -517,7 +519,8 @@ class context(object):
         for f in self.postclose_functions:
             f()
         self._postclose()
-        if get_curr_contextname() == self.contextname: pop()
+        if get_curr_contextname() == self.contextname:
+            pop()
         self.closed = True
 
     def socket(self, keyword, socketinstance):

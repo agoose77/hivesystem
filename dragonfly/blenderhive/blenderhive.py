@@ -29,9 +29,6 @@ class blenderapp(bee.drone):
         self._ref_entities = {}
         self._entity_classes = {}
         self._animationdict = {}
-        self._registered_stop_processes = {}
-        self._registered_pause_processes = {}
-        self._registered_resume_processes = {}
 
         self._collision_dict = {}
         self._collision_callback_dict = {}
@@ -42,9 +39,11 @@ class blenderapp(bee.drone):
     def init(self):
         if self._init:
             return
+
         self.startupfunctions.sort(key=lambda func_and_priority: -func_and_priority[1])
         for function, priority in self.startupfunctions:
             function()
+
         self._init = True
 
     def on_tick(self):
@@ -189,9 +188,7 @@ class blenderapp(bee.drone):
             raise KeyError("No such entity '%s'" % entity_name)
 
         # Process management cleanup
-        if entity_name in self._registered_stop_processes and end_process:
-            stop_func = self._registered_stop_processes[entity_name]
-            stop_func()
+        self.stop_process(entity_name)
 
         entity = entity_dict.pop(entity_name)
         name_dict.pop(entity)
@@ -394,40 +391,8 @@ class blenderapp(bee.drone):
             for collision_info in ended_collisions:
                 collision_list.remove(collision_info)
 
-    def pause_process(self, process_name):
-        try:
-            pause_func = self._registered_pause_processes[process_name]
-        except KeyError:
-            return
-
-        pause_func()
-
-    def resume_process(self, process_name):
-        try:
-            resume_func = self._registered_resume_processes[process_name]
-        except KeyError:
-            return
-
-        resume_func()
-
-    def register_stop_process(self, process_name, stop_process):
-        self._registered_stop_processes[process_name] = stop_process
-
-    def register_resume_process(self, process_name, resume_process):
-        self._registered_resume_processes[process_name] = resume_process
-
-    def register_pause_process(self, process_name, pause_process):
-        self._registered_pause_processes[process_name] = pause_process
-
-    def unregister_process(self, process_name):
-        """Unregister registered process from registration dictionaries
-
-        :param process_name: name of process to unregister
-        """
-        for process_dict in (self._registered_pause_processes, self._registered_stop_processes,
-                             self._registered_resume_processes):
-            if process_name in process_dict:
-                process_dict.pop(process_name)
+    def set_stop_process(self, stop_process):
+        self.stop_process = stop_process
 
     def place(self):
         libcontext.socket("startupfunction", socket_container(self.addstartupfunction))
@@ -486,18 +451,12 @@ class blenderapp(bee.drone):
         libcontext.plugin(("entity", "collisions"), plugin_supplier(self.entity_get_collisions))
         libcontext.plugin(("entity", "material", "get"), plugin_supplier(self.entity_get_material))
 
-        libcontext.plugin(("process", "register", "stop"), plugin_supplier(self.register_stop_process))
-        libcontext.plugin(("process", "register", "resume"), plugin_supplier(self.register_resume_process))
-        libcontext.plugin(("process", "register", "pause"), plugin_supplier(self.register_pause_process))
-        libcontext.plugin(("process", "unregister"), plugin_supplier(self.unregister_process))
-        libcontext.plugin(("process", "pause"), plugin_supplier(self.pause_process))
-        libcontext.plugin(("process", "resume"), plugin_supplier(self.resume_process))
-
         libcontext.plugin("exit", plugin_supplier(self.exit))
         libcontext.plugin("stop", plugin_supplier(self.exit))
         libcontext.plugin("display", plugin_supplier(self.display))
         libcontext.plugin("watch", plugin_supplier(self.watch))
         libcontext.socket("pacemaker", socket_single_required(self.set_pacemaker))
+        libcontext.socket(("process", "stop"), socket_single_required(self.set_stop_process))
         # TODO remove or rename
         libcontext.plugin("doexit", plugin_supplier(lambda: self.doexit))
 
@@ -510,6 +469,7 @@ from ..time import simplescheduler
 from ..sys import exitactuator
 from ..io import keyboardsensor_trigger
 from ..time import pacemaker_simple
+from ..sys import processmanager
 
 
 class blenderpacemaker(pacemaker_simple):
@@ -606,8 +566,10 @@ class current_scene(bee.drone):
 from .blenderscene import blenderscene, entityloader, entityclassloader, cameraloader, animationloader
 from .near_drone import near_drone
 
+
 class blenderhive(bee.inithive):
     _hivecontext = hivemodule.appcontext(blenderapp)
+
     inputhandler = inputhandlerhive()
     connect(("inputhandler", "evout"), "evin")
     scheduler = simplescheduler()
@@ -619,10 +581,11 @@ class blenderhive(bee.inithive):
     entityclassloader()
     cameraloader()
     animationloader = animationloader()
+    processmanager = processmanager()
 
     near_drone = near_drone()
 
     exitactuator = exitactuator()
+    # TODO read key from API
     keyboardsensor_exit = keyboardsensor_trigger("ESCAPE")
     connect("keyboardsensor_exit", "exitactuator")
-    # TODO read key from API

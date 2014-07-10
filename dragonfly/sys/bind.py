@@ -1,6 +1,9 @@
 import libcontext
 from bee.bind import *
 
+from libcontext.pluginclasses import *
+from libcontext.socketclasses import *
+
 
 class stopforwarder(binderdrone):
 
@@ -10,7 +13,7 @@ class stopforwarder(binderdrone):
 
     def bind(self, binderworker, bindname):
         self.binderworker = binderworker
-        p = libcontext.pluginclasses.plugin_supplier(lambda: self.stopfunc(bindname))
+        p = plugin_supplier(lambda: self.stopfunc(bindname))
         libcontext.plugin("stop", p)
 
 
@@ -34,64 +37,62 @@ class processbinder(binderdrone):
     def set_resume_process(self, resume_process):
         self.resume_process = resume_process
 
-    def do_stop_process(self, bind_name):
-        self.binderworker.v_stop = bind_name
-        self.binderworker.m_stop()
-
-    def do_pause_process(self, bind_name):
-        self.binderworker.v_pause = bind_name
-        self.binderworker.m_pause()
-
-    def do_resume_process(self, bind_name):
-        self.binderworker.v_resume = bind_name
-        self.binderworker.m_resume()
+    def set_stop_process(self, stop_process):
+        self.stop_process = stop_process
 
     def bind(self, binderworker, bindname):
         self.binderworker = binderworker
 
-        # Local bound functions
-        def stop():
-            self.do_stop_process(bindname)
+        # Local pause and resume functions (used by processmanager drone)
+        def pause_process():
+            binderworker.v_pause = bindname
+            binderworker.m_pause()
 
-        def pause():
-            self.do_pause_process(bindname)
+        def resume_process():
+            binderworker.v_resume = bindname
+            binderworker.m_resume()
 
-        def resume():
-            self.do_resume_process(bindname)
-
-        # Register bound functions to process controller
-        self.register_stop_process(bindname, stop)
-        self.register_resume_process(bindname, resume)
-        self.register_pause_process(bindname, pause)
+        # Register bound functions to process manager
+        self.register_resume_process(bindname, resume_process)
+        self.register_pause_process(bindname, pause_process)
 
         # When this process is cleaned up, unregister from the registered processes
         libcontext.plugin("cleanupfunction",
-                          libcontext.pluginclasses.plugin_single_required(lambda: self.unregister_process(bindname)))
-        # Give bound class pause global plugin
-        libcontext.plugin(("process", "pause"), libcontext.pluginclasses.plugin_supplier(self.pause_process))
-        libcontext.plugin(("process", "resume"), libcontext.pluginclasses.plugin_supplier(self.resume_process))
+                          plugin_single_required(lambda: self.unregister_process(bindname)))
+
+        # Give bound class global plugins if they need to use them
+        libcontext.plugin(("process", "pause"), plugin_supplier(self.pause_process))
+        libcontext.plugin(("process", "resume"), plugin_supplier(self.resume_process))
+        libcontext.plugin(("process", "stop"), plugin_supplier(self.stop_process))
+
+        # Get this from the stop binder (requires stop to be bound) and inform process manager of our stop function
+        s = socket_single_required(lambda stop_func: self.register_stop_process(bindname, stop_func))
+        libcontext.socket("stop", s)
 
     def place(self):
         libcontext.socket(("process", "register", "stop"),
-                          libcontext.socketclasses.socket_single_required(self.set_register_stop_process))
+                          socket_single_required(self.set_register_stop_process))
         libcontext.socket(("process", "register", "pause"),
-                          libcontext.socketclasses.socket_single_required(self.set_register_pause_process))
+                          socket_single_required(self.set_register_pause_process))
         libcontext.socket(("process", "register", "resume"),
-                          libcontext.socketclasses.socket_single_required(self.set_register_resume_process))
+                          socket_single_required(self.set_register_resume_process))
         libcontext.socket(("process", "unregister"),
-                          libcontext.socketclasses.socket_single_required(self.set_unregister_process))
+                          socket_single_required(self.set_unregister_process))
 
+        # There is no point in binding locally the pause/resume functions
+        # As they are intended to be reversible, yet this hive would not be able to resume when paused
         libcontext.socket(("process", "pause"),
-                          libcontext.socketclasses.socket_single_required(self.set_pause_process))
+                          socket_single_required(self.set_pause_process))
         libcontext.socket(("process", "resume"),
-                          libcontext.socketclasses.socket_single_required(self.set_resume_process))
+                          socket_single_required(self.set_resume_process))
+        libcontext.socket(("process", "stop"),
+                          socket_single_required(self.set_stop_process))
 
 
 class bind(bind_baseclass):
     bind_exit = bindparameter(True)
     binder("bind_exit", False, None)
     binder("bind_exit", True, pluginbridge("exit"))
-    binder("bind_exit", "stop", stopforwarder(), "bindname")
 
     bind_stop = bindparameter(True)
     binder("bind_stop", False, None)
