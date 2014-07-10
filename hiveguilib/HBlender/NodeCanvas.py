@@ -3,7 +3,6 @@ from .NodeTrees import FakeLink
 from .BlendNodeTreeManager import HiveMapNodeTreeManager, WorkerMapNodeTreeManager, SpyderMapNodeTreeManager
 from . import Node, NodeSocket, NodeTrees, scalepos, unscalepos
 import logging
-import bpy
 
 
 def nullfunc(*args, **kwargs):

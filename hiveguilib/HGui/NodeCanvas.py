@@ -573,6 +573,8 @@ class NodeCanvas(HGui):
         self._folded_antennas[node_id][antenna_name] = variable_id
         self._folded_antenna_variables[variable_id] = node_id
 
+        self.select([node_id])
+
         return value
 
     def get_folded_variable(self, worker_id, antenna_name):

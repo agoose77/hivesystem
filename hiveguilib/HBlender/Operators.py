@@ -1,6 +1,63 @@
 import bpy
 
 from collections import defaultdict
+from . import scalepos, unscalepos
+
+
+class AddHiveNode(bpy.types.Operator):
+    bl_idname = "node.add_hive_node"
+    bl_label = "Add a Hive system node to the Node Editor"
+
+    type = bpy.props.StringProperty()
+
+    def modal(self, context, event):
+        if event.type == 'MOUSEMOVE':
+            region = context.region
+            x, y = event.mouse_region_x - (region.width / 2), event.mouse_region_y - (region.height / 2)
+            node = context.active_node
+            if node is None:
+                print("NO NODE")
+                return {'FINISHED'}
+
+            node.location = x, y
+
+        elif event.type == 'LEFTMOUSE':
+            print("LEFT STOP")
+            return {'FINISHED'}
+
+        elif event.type == 'RIGHTMOUSE':
+            context.active_node.location = 0, 0
+            return {'FINISHED'}
+
+        elif event.type == 'ESC':
+            nodetree = context.space_data.edit_tree
+            node = context.active_node
+            nodetree.nodes.remove(node)
+            return {'CANCELLED'}
+
+        return {'RUNNING_MODAL'}
+
+    def invoke(self, context, event):
+        # In Qt, dragged widgets generate their own events
+        #In Blender, we have to contact the clipboard directly
+        from . import BlendManager
+
+        nodetree_name = context.space_data.edit_tree.name
+
+        add_node = bpy.types.NODE_OT_add_node
+        add_node.store_mouse_cursor(context, event)
+
+        x, y = unscalepos(context.space_data.cursor_location)
+
+        blend_node_tree_manager = BlendManager.blendmanager.blend_nodetree_managers[nodetree_name]
+        pwc = blend_node_tree_manager.pwc
+        pwc._select_worker(tuple(self.type.split(".")))
+        clip = blend_node_tree_manager.clipboard
+        clip.drop_worker(x, y)
+
+        context.window_manager.modal_handler_add(self)
+
+        return {'RUNNING_MODAL'}
 
 
 class SynchroniseDataOperator(bpy.types.Operator):
@@ -160,9 +217,11 @@ def register():
     bpy.utils.register_class(SynchroniseDataOperator)
     bpy.utils.register_class(ChangeHiveLevel)
     bpy.utils.register_class(RemoveBoundUsers)
+    bpy.utils.register_class(AddHiveNode)
 
 
 def unregister():
     bpy.utils.unregister_class(SynchroniseDataOperator)
     bpy.utils.unregister_class(ChangeHiveLevel)
     bpy.utils.unregister_class(RemoveBoundUsers)
+    bpy.utils.unregister_class(AddHiveNode)

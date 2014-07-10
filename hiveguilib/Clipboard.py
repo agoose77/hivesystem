@@ -43,6 +43,7 @@ class Clipboard(object):
 
         else:
             return False
+
         self._workermanager.select([id_])
         self._dragboard = None, None
 

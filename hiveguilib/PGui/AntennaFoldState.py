@@ -85,6 +85,9 @@ class AntennaFoldState(object):
         if state is None:
             return
 
+        self._pAntennaFoldState.init_widget(workerid, widget, controller)
+        self._init_widget[workerid] = True
+
         for antenna_name in state:
             antenna = state[antenna_name]
 
@@ -98,12 +101,7 @@ class AntennaFoldState(object):
                 should_be_folded = antenna.initial_fold
 
             if not antenna.is_folded and should_be_folded:
-                self.fold(workerid, antenna_name)
-
-        #END COPY SECTION
-
-        self._init_widget[workerid] = True
-        self._pAntennaFoldState.init_widget(workerid, widget, controller)
+                self.fold(workerid, antenna_name, on_init=True)
 
         state = self.states[workerid]
         if state is None:
@@ -122,7 +120,7 @@ class AntennaFoldState(object):
         variable = self._nodecanvas().get_folded_variable(worker_id, member)
         self._workermanager()._update_variable(variable, value)
 
-    def fold(self, worker_id, member):
+    def fold(self, worker_id, member, on_init=False):
         antenna = self.states[worker_id][member]
         assert not antenna.is_folded
         if not antenna.foldable:
@@ -137,7 +135,7 @@ class AntennaFoldState(object):
 
         antenna.is_folded = True
 
-        if worker_id in self._init_widget:
+        if worker_id in self._init_widget and not on_init:
             self._pAntennaFoldState.p_fold(worker_id, member)
 
         self._pAntennaFoldState.p_set_value(worker_id, member, value)
