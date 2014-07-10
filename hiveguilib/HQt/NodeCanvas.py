@@ -274,6 +274,7 @@ class NodeCanvas(HQt):
     def set_attribute_value(self, id_, attribute, value):
         # nodes themselves are not modified!
         nodeUi = self._nodeuis[id_]
+        print(id_, attribute)
         attributeUi = nodeUi.getAttributeUi(attribute)
         attributeUi.setValue(str(value))
         nodeUi.updateLayout()

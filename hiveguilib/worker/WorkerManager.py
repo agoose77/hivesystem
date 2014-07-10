@@ -243,7 +243,6 @@ class WorkerManager(object):
                 if argument is not None:
                     paramter_values[parameter_name] = argument
 
-        print("SETTING WORKERPARAMS", worker_id)
         self._worker_parameters[worker_id] = [workertype, worker_instance.paramnames, worker_instance.paramtypelist, paramter_values, worker_instance.guiparams]
         if self._antennafoldstate is not None:
             gp = {}
@@ -312,7 +311,7 @@ class WorkerManager(object):
 
         widget, controller = self._pmanager.select_pwidget(worker_id, "params", params[1], params[2],  params[3],
                                                            update_function, [], form_manipulators)
-
+        print("SELCT")
         if widget is not None and self._antennafoldstate is not None:
             self._antennafoldstate.init_widget(worker_id, widget, controller)
 
@@ -501,6 +500,8 @@ class WorkerManager(object):
             worker = m[1]
 
     def remove(self, worker_id):
+        if not worker_id in self._antennafoldstate.states:
+            return
         self._remove(worker_id)
         self._wim.remove_workerinstance(worker_id)
 
@@ -568,7 +569,6 @@ class WorkerManager(object):
 
         self._wim.set_parameters(worker_id, parameters)
         self._worker_parameters[worker_id][3] = parameters
-        print(parameters)
 
     def _update_worker_metaparameters(self, worker_id, parameters):
         # print("UPM", worker_id, parameters)
@@ -610,7 +610,7 @@ class WorkerManager(object):
 
         for antenna_name in state:
             antenna = state[antenna_name]
-            if antenna.fold:
+            if antenna.is_folded:
                 continue
 
             expanded_variables.add(antenna_name)

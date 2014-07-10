@@ -68,12 +68,14 @@ def PGenerator(paramnames, paramtypelist, paramvalues,
     for subform in form._members.values():
         if subform.arraycount:
             subform.length = 10
+
     for buttonname, buttoncallback in buttons:
         form.add_button(buttonname, "before")
 
     for form_manipulator in form_manipulators:
         ret = form_manipulator(form)
-        if ret is not None: form = ret
+        if ret is not None:
+            form = ret
 
     m = model(typetree)
     con = controller(form, m)
@@ -87,7 +89,9 @@ def PGenerator(paramnames, paramtypelist, paramvalues,
 
     for pname in paramnames:
         pname2 = pname
-        if pname in reserved: pname2 = pname + "_"
+        if pname in reserved:
+            pname2 = pname + "_"
+
         f = form._members[pname2]
         tt = f._typetree
         if hasattr(f, "type") and f.type == "object" or \
@@ -97,6 +101,7 @@ def PGenerator(paramnames, paramtypelist, paramvalues,
 
     v = qtview.qtview(form)
     v._wrap(parwidget)
+    print(dir(v))
 
     for pname in paramnames:
         pname2 = pname

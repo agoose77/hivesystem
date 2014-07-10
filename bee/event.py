@@ -1,56 +1,76 @@
 class event(tuple):
+
     def __new__(self, *value):
         if len(value) == 1:
-            if isinstance(value, tuple): value = value[0]
-            if isinstance(value, str): value = (value,)
+            if isinstance(value, tuple):
+                value = value[0]
+            if isinstance(value, str):
+                value = (value,)
+
         ret = tuple.__new__(self, value)
         ret.processed = False
         return ret
 
     def add_leader(self, leader):
-        return type(self)(leader) + self
+        return self.__class__(leader) + self
 
     def add_head(self, head):
-        return type(self)(head, self)
+        return self.__class__(head, self)
 
     def grow_head(self, head):
-        pre = type(self)(head)
-        if len(self) == 0: return head
-        return type(self)(pre + type(self)(self[0]), *self[1:])
+        pre = self.__class__(head)
+        if len(self) == 0:
+            return head
+        return self.__class__(pre + self.__class__(self[0]), *self[1:])
 
     def match_leader(self, leader):
-        leader = type(self)(leader)
-        if len(leader) > len(self): return None
-        for s, p in zip(self, leader):
-            if s != p: return None
+        leader = self.__class__(leader)
+        if len(leader) > len(self):
+            return None
+
+        for this, that in zip(self, leader):
+            if this != that:
+                return None
+
         return self[len(leader):]
 
     def match(self, e):
-        return type(self)(e) == self
+        return self.__class__(e) == self
 
     def match_head(self, head):
-        if len(self) == 0: return None
-        myhead = type(self)(self[0])
+        if len(self) == 0:
+            return None
+
+        myhead = self.__class__(self[0])
+
         if myhead.match_leader(head) is not None:
-            ret = self[1:]
-            if len(self) == 2: ret = type(self)(self[1])
+            if len(self) == 2:
+                ret = self.__class__(self[1])
+
+            else:
+                ret = self[1:]
+
             return ret
+
         return None
 
-    def __getitem__(self, n):
-        if isinstance(n, slice):
-            return type(self)(tuple.__getitem__(self, n))
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            return self.__class__(tuple.__getitem__(self, index))
+
         else:
-            return tuple.__getitem__(self, n)
+            return tuple.__getitem__(self, index)
 
     def __getslice__(self, start, end):
-        return type(self)(tuple.__getslice__(self, start, end))
+        return self.__class__(tuple.__getslice__(self, start, end))
 
     def __add__(self, other):
-        return type(self)(tuple.__add__(self, other))
+        return self.__class__(tuple.__add__(self, other))
 
     def __str__(self):
-        if len(self) == 1: return self[0]
+        if len(self) == 1:
+            return self[0]
+
         return tuple.__str__(self)
 
 

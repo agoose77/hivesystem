@@ -567,12 +567,11 @@ class NodeCanvas(HGui):
         self._hNodeCanvas.hide_attribute(node_id, antenna_name)
 
         # Record which nodes were folded so deleting the parent node clears them
+
         if node_id not in self._folded_antennas:
             self._folded_antennas[node_id] = {}
         self._folded_antennas[node_id][antenna_name] = variable_id
         self._folded_antenna_variables[variable_id] = node_id
-
-        self.select([node_id])
 
         return value
 

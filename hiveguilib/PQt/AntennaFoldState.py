@@ -150,7 +150,7 @@ class AntennaFoldState(object):
         self._persisent_id_manager.change_temporary_with_temporary_id(workerid, newid)
 
     def p_set_value(self, workerid, member, value):
-        assert self._parent().states[workerid][member].fold == True, (workerid, member)
+        assert self._parent().states[workerid][member].is_folded == True, (workerid, member)
         init = self._parent()._init_widget.get(workerid, False)
         if value is None:
             if init:

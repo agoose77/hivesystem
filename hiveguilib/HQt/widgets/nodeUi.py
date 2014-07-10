@@ -82,7 +82,7 @@ class NodeUi(QtGui.QGraphicsWidget):
         self._build(attributes)
 
         self._lastPos = self.scenePos()
-
+        self._name=name
 
     def _magnifyAnimStep(self, frame):
         step = frame / NodeView._animSteps
@@ -273,6 +273,7 @@ class NodeUi(QtGui.QGraphicsWidget):
             else:
                 QtGui.QGraphicsWidget.setPos(self, self._lastPos)
             self._moving = False
+
         if self._doubleClicked:
             self._doubleClicked = False
             #self._openThis()
@@ -298,7 +299,11 @@ class NodeUi(QtGui.QGraphicsWidget):
 
     def getAttributeUi(self, name):
         for a in self._attributeUis:
-            if a._params.name == name: return a
+            if a._params.name == name:
+                return a
+        else:
+            print("SHIT COULDN@T FIND")
+            print([a._params.name for a in self._attributeUis])
+            print(name," missing", self._name)
+
             #raise KeyError(name) ###TODO
-      
-    

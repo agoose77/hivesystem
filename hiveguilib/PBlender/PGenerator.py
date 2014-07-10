@@ -73,7 +73,7 @@ def PGenerator(paramnames, paramtypelist, paramvalues, update_callback, buttons=
     #listen for model updates
     con._listen()
 
-    if not len(paramvalues):
+    if not paramvalues:
         #if there are no current param values, load the form defaults into the model
         con._sync_from_view()
 

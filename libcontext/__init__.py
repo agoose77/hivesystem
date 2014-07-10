@@ -1,4 +1,4 @@
-from .context import context, subcontext, decode_context, encode_context, connect
+from .context import context, subcontext, decode_context, encode_context, connect, clear as context_clear
 from .plugin_base import plugin_base
 from .socket_base import socket_base
 from . import pluginclasses, socketclasses, pluginmixins, socketmixins
@@ -10,6 +10,15 @@ _contexts = {}  # TODO some kind of weakref system
 _contextstack = []
 _curr_context = None
 _all_connections = set()
+
+
+def clear():
+    context_clear()
+    _contexts.clear()
+    _contextstack.clear()
+    _all_connections.clear()
+    global _curr_context
+    _curr_context = None
 
 
 def add_contextnames(context1, context2):

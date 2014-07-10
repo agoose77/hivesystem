@@ -80,7 +80,7 @@ class AntennaFoldState(object):
         if workerid in self._init_widget:
             return
 
-    # COPTY SECTION
+        # COPY SECTION
         state = self.states[workerid]
         if state is None:
             return
@@ -100,7 +100,7 @@ class AntennaFoldState(object):
             if not antenna.is_folded and should_be_folded:
                 self.fold(workerid, antenna_name)
 
-    #END COPY SECTION
+        #END COPY SECTION
 
         self._init_widget[workerid] = True
         self._pAntennaFoldState.init_widget(workerid, widget, controller)
@@ -129,6 +129,7 @@ class AntennaFoldState(object):
             return
 
         try:
+            # Be careful, any select() operation will have this called again if we're initialising
             value = self._nodecanvas().fold_antenna_connection(worker_id, member, antenna.typ)
 
         except RuntimeWarning:
@@ -142,6 +143,7 @@ class AntennaFoldState(object):
         self._pAntennaFoldState.p_set_value(worker_id, member, value)
 
     def gui_folds(self, workerid, member):
+        print("GUI FOLD")
         self.fold(workerid, member)
 
     def gui_expands(self, workerid, member):
@@ -160,30 +162,3 @@ class AntennaFoldState(object):
 
     def p(self):
         return self._pAntennaFoldState
-
-    def sync(self, workerid):
-        """Synchronizes initial fold state once all connections are created
-        If a folded antenna has a connection:
-          Retrieve the variable and update the parameter GUI
-        If not:
-          Create a new variable based on the parameter GUI
-        """
-        state = self.states[workerid]
-        if state is None:
-            return
-
-        for antenna_name in state:
-            antenna = state[antenna_name]
-
-            if not antenna.foldable:
-                continue
-
-            # Set the antenna.fold value from the GUI ( if at 0,0 its folded else not)
-            should_be_folded = self._nodecanvas().check_default_folded(workerid, antenna_name)
-
-            if should_be_folded is None:
-                should_be_folded = antenna.initial_fold
-
-            if not antenna.is_folded and should_be_folded:
-                self.fold(workerid, antenna_name)
-                print("DEFAULT FOLD")

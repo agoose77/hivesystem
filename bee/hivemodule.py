@@ -133,21 +133,26 @@ class emptyhivecontext(hivecontext_base):
     beewrappers = []
     guiparams = {}
     parameters = []
-    # def __init__(self, **beeimports):
-    #  self.beeimports = beeimports
+
     def __init__(self, *args, **kwargs):
         kwargs = kwargs.copy()
         __parent__ = kwargs.pop("__parent__", None)
+
         if __parent__ is not None:
             self.parent = __parent__
+
         try:
             param0, paramvalues, unmatched = types.parse_parameters([], self.parameters, args, kwargs, exactmatch=False)
+
         except TypeError as e:
             raise
-            if self.parent is None or isinstance(self.parent, tuple): raise
+            if self.parent is None or isinstance(self.parent, tuple):
+                raise
+
             beename = self.parent._current
             args = tuple(beename) + e.args
             raise TypeError(*args)
+
         self.beeimports = unmatched
         self._paramvalues = paramvalues
         self._allparamvalues = dict(paramvalues)
@@ -158,16 +163,20 @@ class emptyhivecontext(hivecontext_base):
         self.placemodifiers = []
         self.configured = False
 
-        for bee in self.beewrappers:
-            if not isinstance(bee[1], bee_attribute): continue
-            bee[1].set_parent(self)
+        for bee_item in self.beewrappers:
+            if not isinstance(bee_item, bee_attribute):
+                continue
+
+            bee_item[1].set_parent(self)
 
         for bee in self.beewrappers:
             if hasattr(bee, "combine") and not isinstance(bee.combine, tuple) and not isinstance(bee, configureclass):
                 continue
+
             if isinstance(bee[1], bee_parameter): continue
             if isinstance(bee[1], bee_attribute):
                 b = bee[1]
+
             else:
                 assert hasattr(bee[1], "set_parameters") and not isinstance(bee[1].set_parameters, tuple), bee[1]
                 bee[1].set_parameters(bee[0], self._paramvalues)
@@ -238,11 +247,13 @@ class emptyhivecontext(hivecontext_base):
             if hasattr(n, "set_parent"):
                 if not isinstance(n.set_parent, tuple):
                     n.set_parent(self)
+
         for bee in self.bees:
             try:
                 from .spyderhive.spyderhive import spyderconfigureplaceclass as scpc
 
-                if isinstance(bee[1], configureclass) and not isinstance(bee[1], scpc): continue
+                if isinstance(bee[1], configureclass) and not isinstance(bee[1], scpc):
+                    continue
                 n = bee[1]
                 if hasattr(n, "build"):
                     n.build(bee[0])
@@ -258,51 +269,62 @@ class emptyhivecontext(hivecontext_base):
     def __place__(self):
         from . import io
 
-        for p in self.placemodifiers: p(self)
+        for p in self.placemodifiers:
+            p(self)
 
-        if not self.configured: self.configure()
+        if not self.configured:
+            self.configure()
 
         self.__place2__()
-        for bee in self.bees:
-            if isinstance(bee[1], bee_attribute): continue
-            posterior1 = isinstance(bee[1], beehelper) or isinstance(bee[1], io.antenna_io) or isinstance(bee[1],
-                                                                                                          io.output_io)
-            #posterior2 = isinstance(bee[1], hiveio)
-            if posterior1:
-                if isinstance(bee[1], io.antenna_io) or isinstance(bee[1], io.output_io):
-                    bee[1].place0()
-                continue
-            if isinstance(bee[1], configureclass): continue
-            n = bee[1]
-            n.place()
-            if isinstance(bee[0], str):
-                if hasattr(n, "bee") and not isinstance(n.bee, tuple):
-                    setattr(self, bee[0], n.bee)
-                else:
-                    setattr(self, bee[0], n)
-        for bee in self.bees:
-            posterior1 = isinstance(bee[1], beehelper) or isinstance(bee[1], io.antenna_io) or isinstance(bee[1],
-                                                                                                          io.output_io)
-            from .spyderhive.spyderhive import spyderconfigureplaceclass as scpc
 
-            if isinstance(bee[1], configureclass) and not isinstance(bee[1], scpc): continue
-            if not posterior1: continue
-            n = bee[1]
-            n.place()
-        """
-        for bee in self.bees:
-          posterior2 = isinstance(bee[1], hiveio)
-          if not posterior2: continue
-          n = bee[1]
-          n.place()
-        """
+        for bee_name, bee in self.bees:
+
+            if isinstance(bee, bee_attribute):
+                continue
+
+            is_helper = isinstance(bee, beehelper)
+            is_io = isinstance(bee, io._io)
+
+            if is_helper or is_io:
+                if is_io:
+                    bee[1].place0()
+
+                continue
+
+            if isinstance(bee, configureclass):
+                continue
+
+            bee.place()
+
+            if isinstance(bee_name, str):
+                if hasattr(bee, "bee") and not isinstance(bee.bee, tuple):
+                    setattr(self, bee_name, bee.bee)
+
+                else:
+                    setattr(self, bee_name, bee)
+
+        from .spyderhive.spyderhive import spyderconfigureplaceclass as scpc
+
+        for bee_name, bee in self.bees:
+            posterior1 = isinstance(bee, (beehelper, io.antenna_io, io.output_io))
+
+            if isinstance(bee, configureclass) and not isinstance(bee, scpc):
+                continue
+
+            if not posterior1:
+                continue
+
+            bee.place()
+
         self.connect_contexts = []
-        for beename, bee in self.bees:
+        for bee_name, bee in self.bees:
             try:
                 if hasattr(bee, "connect_contexts") and bee.connect_contexts != None and len(bee.connect_contexts) and \
                                 bee.connect_contexts[-1] != "connect_contexts":
                     for context in bee.connect_contexts: self.connect_contexts.append(context)
             except TypeError:
+                # TODO remove len(bee.connect_contexts)
+                print("TYPEERROR")
                 pass
 
     def __close__(self):
@@ -313,20 +335,30 @@ class emptyhivecontext(hivecontext_base):
     def __get_beename__(self_or_class):
         from . import BuildError
 
-        if self_or_class.built is not True: raise BuildError
+        # Changed from "is not True"
+        if not self_or_class.built:
+            raise BuildError
+
         return self_or_class.beename
 
-    def hive_init(self, beedict=None):
-        for bee in self.bees:
-            if not isinstance(bee[1], configureclass):
-                if not hasattr(bee[1], "_hivecontext"):  continue
-                if isinstance(bee[1]._hivecontext, tuple):  continue
-            n = bee[1]
+    def hive_init(self, bee_dict=None): # removed beedict parameter
+        all_parameter_values = self._allparamvalues
+        bee_dictionary = self.beedict
+
+        for bee_name, bee in self.bees:
+            if not isinstance(bee, configureclass):
+                if not hasattr(bee, "_hivecontext"):
+                    continue
+
+                if isinstance(bee._hivecontext, tuple):
+                    continue
+
             from .spyderhive.spyderhive import spyderconfigureplaceclass as scpc
 
-            if isinstance(bee[1], configureclass) and not isinstance(bee[1], scpc):
-                n.set_parameters(bee[0], self._allparamvalues)
-            n.hive_init(self.beedict)
+            if isinstance(bee, configureclass) and not isinstance(bee, scpc):
+                bee.set_parameters(bee_name, all_parameter_values)
+
+            bee.hive_init(bee_dictionary)
 
 
 class hivecontext(emptyhivecontext):
@@ -335,34 +367,43 @@ class hivecontext(emptyhivecontext):
         from .connect import connect
 
         mx = 0
-        for bee in self.bees:
-            if isinstance(bee[0], int): mx = max(mx, bee[0])
         beelist = list(self.bees)
-        for bee in beelist:
-            if isinstance(bee[0], int): continue
-            n = bee[1]
-            if (isinstance(n, hivecontext_base) and n._has_exc) or isinstance(n, workerframe):
-                c = connect((bee[0], "evexc"), "evexc").getinstance()
+
+        for bee_name, bee in beelist:
+            if isinstance(bee_name, int):
+                mx = max(mx, bee_name)
+
+        for bee_name, bee in beelist:
+            if isinstance(bee_name, int):
+                continue
+
+            if (isinstance(bee, hivecontext_base) and bee._has_exc) or isinstance(bee, workerframe):
+                c = connect((bee_name, "evexc"), "evexc").getinstance()
                 self.bees.append((mx, c))
                 mx += 1
+
         if self.hivename == "m":  # ##
             ppp = []
             for beename, bee in self.bees:
                 if isinstance(bee, connect) and not isinstance(bee.target, tuple) and isinstance(bee.source, tuple) and \
                                 bee.source[1] == "evexc":
-                    nam = bee.source[0]
-                    if not isinstance(nam, str): nam = nam.beename
-                    if nam in ("b", "g", "k"):
-                        ppp.append((beename, nam, bee.target))
+                    name = bee.source[0]
+                    if not isinstance(name, str):
+                        name = name.beename
+
+                    if name in ("b", "g", "k"):
+                        ppp.append((beename, name, bee.target))
 
 
 def get_reg_beehelper(fr, dicvalues):
     ret = []
-    for d in dicvalues:
+    for value in dicvalues:
         try:
-            allreg.add(d)
+            allreg.add(value)
+
         except TypeError:  # cannot weakref everything
             pass
+
     if fr in reg_beehelper.reg:
         for a in reg_beehelper.reg[fr]:
             if hasattr(a, "place"):
@@ -416,14 +457,14 @@ class _hivebuilder(reg_beehelper):
         bases0 = bases
         bases = []
         combobee_bases = []
-        for b in bases0:
-            if hasattr(b, "_wrapped_hive") and not isinstance(b._wrapped_hive, tuple) and b._wrapped_hive != None:
-                bases.append(b._wrapped_hive)
-                bases += b._wrapped_hive.__mro__[1:]
-                combobee_bases += b._combobee_bases
-                combobee_bases.append(b._combobees)
+        for base_cls in bases0:
+            if hasattr(base_cls, "_wrapped_hive") and not isinstance(base_cls._wrapped_hive, tuple) and base_cls._wrapped_hive != None:
+                bases.append(base_cls._wrapped_hive)
+                bases += base_cls._wrapped_hive.__mro__[1:]
+                combobee_bases += base_cls._combobee_bases
+                combobee_bases.append(base_cls._combobees)
             else:
-                bases.append(b)
+                bases.append(base_cls)
         bases = tuple(bases)
 
         rbases = list(bases)
@@ -432,49 +473,68 @@ class _hivebuilder(reg_beehelper):
         args = []
         hivedic = {}
 
-        for b in rbases:
-            if hasattr(b, "__helpers__") and isinstance(b.__helpers__, list):
-                args += b.__helpers__
-        for b in rbases:
-            if hasattr(b, "__hivedic__") and isinstance(b.__hivedic__, dict):
-                hivedic.update(b.__hivedic__)
+        # More often than not, these tets value
+        for base_cls in rbases:
+            #
+            if hasattr(base_cls, "__helpers__") and isinstance(base_cls.__helpers__, list):
+                args += base_cls.__helpers__
+
+        for base_cls in rbases:
+            if hasattr(base_cls, "__hivedic__") and isinstance(base_cls.__hivedic__, dict):
+                hivedic.update(base_cls.__hivedic__)
 
         #fix to preserve bee.attribute, even if overridden
-        opat = "overridden_attribute"
-        overridden_attribute = [a[len(opat):] for a in hivedic if a.startswith(opat)]
+        overriden_prefix = "overridden_attribute"
+        overridden_attribute = [a[len(overriden_prefix):] for a in hivedic if a.startswith(overriden_prefix)]
         overridden_attribute = [a[1:] for a in overridden_attribute if a.startswith("_")]
         max_overridden = 0
-        for a in overridden_attribute:
-            try:
-                m = int(a)
-                if m > max_overridden: max_overridden = m
-            except ValueError:
-                pass
-        for a in list(hivedic.keys()):
-            if a not in dic: continue
-            if a in ("_hivecontext", "__module__"): continue
-            if not isinstance(hivedic[a], bee_attribute): continue
+
+        try:
+            max_overridden = max((int(x) for x in overridden_attribute))
+
+        except ValueError:
+            pass
+
+        for key, value in list(hivedic.items()):
+            if key not in dic:
+                continue
+
+            if key == "_hivecontext" or key == "__module__":
+                continue
+
+            if not isinstance(value, bee_attribute):
+                continue
+
             max_overridden += 1
-            hivedic["%s_%d" % (opat, max_overridden)] = hivedic[a]
+            hivedic["%s_%d" % (overriden_prefix, max_overridden)] = value
 
         hivedic.update(dic)
-        if "_hivecontext" not in dic and "_hivecontext" in hivedic: hivedic.pop("_hivecontext")
+        if "_hivecontext" not in dic and "_hivecontext" in hivedic:
+            hivedic.pop("_hivecontext")
+
         dic = hivedic
         fr = inspect.currentframe()
         if len(specialmethods) == 0:  #KLUDGE: see pin/pin.py
             fr = fr.f_back
+
         else:
             fr = fr.f_back.f_back
+
         fr = id(fr)
         regargs = []
         for register in metacls.__registers__:
             newargs = register(fr, dic.values())
-            if not newargs: newargs = []
+            if not newargs:
+                newargs = []
             regargs += newargs
+
         unregisters = []
-        for a in args + regargs + list(dic.values()):
-            if unregister is None: continue
-            if isinstance(a, unregister): unregisters.append(a.value)
+        for key in args + regargs + list(dic.values()):
+            if unregister is None:
+                continue
+            if isinstance(key, unregister):
+                unregisters.append(key.value)
+
         regargs = [a for a in regargs if not isinstance(a, unregister)]
         args += regargs
 
@@ -484,15 +544,20 @@ class _hivebuilder(reg_beehelper):
             return type.__new__(metacls, name, bases, dict(dic))
 
         bees = []
-        for n in dic.items():
-            assert n[0] not in reservedbeenames, n[0]
-            if n[0] == "_hivecontext": continue
-            for filt in metacls.__registerfilters__:
-                nn = filt(n[1])
-                if nn != None:
-                    bees.append((n[0], nn))
+        for key, value in dic.items():
+            assert key not in reservedbeenames, key
+
+            if key == "_hivecontext":
+                continue
+
+            for filter_ in metacls.__registerfilters__:
+                filtered_value = filter_(value)
+
+                if filtered_value is not None:
+                    bees.append((key, filtered_value))
                     break
-        bees.sort(key=lambda n: n[0])
+
+        bees.sort(key=lambda entry: entry[0])
         minarg = max([0] + [bee[0] for bee in bees if isinstance(bee[0], int)])
         bees = bees + [(nr + minarg + 1, a) for nr, a in enumerate(args)]
         bees_ev = [n for n in bees if n[0] in evbeenames]
@@ -502,14 +567,20 @@ class _hivebuilder(reg_beehelper):
 
         guiparams = {"__beename__": name, "__ev__": []}
         for beename, bee in bees:
-            if isinstance(bee, evwrapper): guiparams["__ev__"].append(bee.evname)
+            if isinstance(bee, evwrapper):
+                guiparams["__ev__"].append(bee.evname)
+
         parameters = []
         for beename, bee in bees:
             if isinstance(bee, bee_parameter):
                 parameters.append((beename, bee.parameterclass, bee.gui_defaultvalue))
                 v = None
-                if bee.gui_defaultvalue != "no-defaultvalue": v = bee.gui_defaultvalue
-                if "parameters" not in guiparams: guiparams["parameters"] = {}
+                if bee.gui_defaultvalue != "no-defaultvalue":
+                    v = bee.gui_defaultvalue
+
+                if "parameters" not in guiparams:
+                    guiparams["parameters"] = {}
+
                 guiparams["parameters"][beename] = (bee.parameterclass, v)
                 continue
 
@@ -538,9 +609,9 @@ class _hivebuilder(reg_beehelper):
             if g in dic:
                 rdic[g] = dic[g]
             else:
-                for b in bases:
-                    if hasattr(b, g):
-                        rdic[g] = getattr(b, g)
+                for base_cls in bases:
+                    if hasattr(base_cls, g):
+                        rdic[g] = getattr(base_cls, g)
                         break
                 else:
                     raise TypeError(g)
@@ -552,10 +623,11 @@ class _hivebuilder(reg_beehelper):
 
         if "_hivecontext" in dic:
             _hivecontext = dic["_hivecontext"]
+
         else:
-            for b in bases:
-                if hasattr(b, "_hivecontext"):
-                    _hivecontext = getattr(b, "_hivecontext")
+            for base_cls in bases:
+                if hasattr(base_cls, "_hivecontext"):
+                    _hivecontext = getattr(base_cls, "_hivecontext")
                     break
                 dic["_hivecontext"] = _hivecontext
             else:
@@ -570,13 +642,15 @@ class _hivebuilder(reg_beehelper):
 
         rhive = mytype(hivecontextname + ":" + name, (_hivecontext,), rdic)
         combobee_bases_unique = []
-        for b in combobee_bases:
+        for base_cls in combobee_bases:
             ok = True
             for bb in combobee_bases_unique:
-                if b is bb:
+                if base_cls is bb:
                     ok = False
                 break
-            if ok: combobee_bases_unique.append(b)
+            if ok:
+                combobee_bases_unique.append(base_cls)
+
         hivedict0 = {"_wrapped_hive": rhive, "guiparams": guiparams, "__metaclass__": metacls.__thisclass__,
                      "_combobees": [], "_combobee_bases": combobee_bases_unique, "__hivecombined__": False}
         beedictlist = [b for b in bees if isinstance(b[0], str)]
@@ -586,15 +660,19 @@ class _hivebuilder(reg_beehelper):
         beedictlist = [b for b in beedictlist if not isinstance(b[1], io.antenna) and not isinstance(b[1], io.output)]
         hivedict = dict(beedictlist)
         hivedict.update(hivedict0)
+
         for n in dic:  #non-bee attributes
-            if n in unregisters: continue
+            if n in unregisters:
+                continue
             if n not in beenames and n not in hivedict: hivedict[n] = dic[n]
+
         for k in beenames:
             if k.startswith("@"):
                 kk = k[1:]
                 if kk in hivedict:
                     hivedict["$" + kk] = hivedict[kk]
                     del hivedict[kk]
+
         hivedict["__hivebases__"] = hivebases
         hivedict["__allhivebases__"] = bases
         ret = type.__new__(metacls, name, (metacls.__hivewrapper__,), hivedict)

@@ -17,6 +17,15 @@ def report(*args):
     pass
 
 
+def clear():
+    # TODO is this safe
+    plugincontextdict.clear()
+    socketcontextdict.clear()
+    pluginnamedict.clear()
+    socketnamedict.clear()
+    _plugids.clear()
+
+
 def matchreport(*args):
     # print(*args)
     #print("SOCKET", args[0].contextname, args[1],file=matchf)
@@ -38,10 +47,13 @@ def namesortfunc(name):
             numbers += n
             strings += s
         ret = (numbers, strings)
+
     else:
         name = encode_context(name)
-        if isinstance(name, str): name = (name,)
+        if isinstance(name, str):
+            name = (name,)
         ret = ((len(name),), name)
+
     # if len(ret[0]) == 1 and ret[1] == ("evexc",):
     #  return (maxtup, ("evexc",))
     return ret
@@ -520,15 +532,19 @@ class context(object):
             socketnamedict[socketinstance] = keyword
         return ret
 
-    def plugin(self, keyword, pluginstance):
-        assert isinstance(pluginstance, plugin_base) or pluginstance == None
+    def plugin(self, keyword, pluginstance, _plugids=_plugids):
+        assert isinstance(pluginstance, plugin_base)# or pluginstance == None
         ret = False
-        if keyword not in self.plugins: self.plugins[keyword] = []
+        if keyword not in self.plugins:
+            self.plugins[keyword] = []
+
         if pluginstance not in self.plugins[keyword]:
             if pluginstance not in _plugids:
                 _plugids[pluginstance] = len(list(_plugids.values()))
+
             self.plugins[keyword].append(pluginstance)
             ret = True
+
         if pluginstance not in plugincontextdict:
             plugincontextdict[pluginstance] = self
             pluginnamedict[pluginstance] = keyword
@@ -547,17 +563,26 @@ class context(object):
         assert isinstance(contextinstance, context)
         assert contextinstance is not self
         ret = False
-        if newname == None: newname = name
+        if newname == None:
+            newname = name
+
         n = (contextinstance, name, newname, optional)
         if n not in self.socket_imports:
             self.socket_imports.append(n)
             ret = True
+
         try:
             r = self.retrieved_sockets[newname]
-            if r is None: r = []
+            if r is None:
+                r = []
+
             for c in contextinstance.retrieved_sockets[name]:
-                if c not in r: r.append(c)
-            if r: self.retrieved_sockets[newname] = r
+                if c not in r:
+                    r.append(c)
+
+            if r:
+                self.retrieved_sockets[newname] = r
+
         except KeyError:
             pass
         return ret
@@ -681,4 +706,3 @@ class subcontext(object):
 
     def close(self):
         self.context.close()
-    

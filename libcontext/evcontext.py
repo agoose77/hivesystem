@@ -31,6 +31,7 @@ class evcontext(context):
             nsock = (self._evcontextname,) + nsock
             #print("NSOCK", nsock)
             parent.import_socket(self, sock, nsock)
+
         for plug in sorted(self.plugins.keys(), key=namesortfunc):
             nplug = plug if isinstance(plug, tuple) else (plug,)
             nplug = (self._evcontextname,) + nplug
@@ -42,7 +43,8 @@ class evcontext(context):
             nsock = (sock[2],)
             nsock = (self._evcontextname,) + nsock
             s = (self, sock[2], nsock, sock[3])
-            if s in parent.socket_imports: continue
+            if s in parent.socket_imports:
+                continue
             parent.socket_imports.append(s)
 
         for plug in self.plugin_imports:
@@ -51,7 +53,8 @@ class evcontext(context):
             nplug = (plug[2],)
             nplug = (self._evcontextname,) + nplug
             p = (self, plug[2], nplug, plug[3])
-            if p in parent.plugin_imports: continue
+            if p in parent.plugin_imports:
+                continue
             #print("NPLUG", nplug, parent.contexts[-1].contextname)
             parent.plugin_imports.append(p)
 
@@ -67,36 +70,44 @@ class evcontext(context):
             if myname in contexts:
                 parent = contexts[myname]
                 break
-        if not parent: raise Exception
+
+        if not parent:
+            raise Exception
 
         parent2 = parent
-        parent_old = parent
-
-        # print("PARENT-IMPORT-EV", self.contextname, parent_old.contextname)
-        #print(list(parent.plugins.keys()), [p[2] for p in parent.plugin_imports])
-        #print(list(parent.sockets.keys()), [p[2] for p in parent.socket_imports])
-        #print("")
 
         for sock in sorted(parent.sockets.keys(), key=namesortfunc):
-            if not isinstance(sock, tuple): continue
-            if sock[0] != self._evcontextname: continue
+            if not isinstance(sock, tuple):
+                continue
+
+            if sock[0] != self._evcontextname:
+                continue
+
             newsock = sock[1:]
             if len(newsock) == 1 and isinstance(newsock[0], str):
                 newsock = newsock[0]
+
             self.import_socket(parent2, sock, newsock)
 
         for plug in sorted(parent.plugins.keys(), key=namesortfunc):
-            if not isinstance(plug, tuple): continue
-            if plug[0] != self._evcontextname: continue
+            if not isinstance(plug, tuple):
+                continue
+
+            if plug[0] != self._evcontextname:
+                continue
+
             newplug = plug[1:]
             if len(newplug) == 1 and isinstance(newplug[0], str):
                 newplug = newplug[0]
+
             self.import_plugin(parent2, plug, newplug)
 
         for sock in parent.socket_imports:
             if sock[0] is self: continue
-            if not isinstance(sock[2], tuple): continue
-            if sock[2][0] != self._evcontextname: continue
+            if not isinstance(sock[2], tuple):
+                continue
+            if sock[2][0] != self._evcontextname:
+                continue
             newsock = sock[2][1:]
             if len(newsock) == 1 and isinstance(newsock[0], str):
                 newsock = newsock[0]
