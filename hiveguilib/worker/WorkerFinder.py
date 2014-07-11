@@ -292,7 +292,6 @@ class WorkerFinder(object):
             try:
                 if module not in sys.modules:
                     __import__(module)
-                    print("OPEN", module)
 
                 mod = sys.modules[module]
                 if mod.__file__.endswith(".spy"):

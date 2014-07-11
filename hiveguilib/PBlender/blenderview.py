@@ -14,8 +14,11 @@ reserved = (
 
 
 def get_formtype(form, name):
-    if form.arraycount > 0: return None, None
-    if form.get_membernames(): return None, None
+    if form.arraycount > 0:
+        return None, None
+
+    if form.get_membernames():
+        return None, None
 
     if form.typename is None:
         typnam = "None" + "Array" * form.arraycount
@@ -26,8 +29,10 @@ def get_formtype(form, name):
         typ = getattr(Spyder, form.typename)
     except AttributeError:
         typ = Spyder.String
+
     formtype = "text"
     formsubtype = None
+
     if issubclass(typ, Spyder.File):
         if form.arraycount > 0:
             raise TypeError("Cannot generate Blender layout for \"%s\"(%s): array of files" % (name, typnam))
@@ -39,6 +44,7 @@ def get_formtype(form, name):
             raise TypeError(
                 "Cannot generate Blender layout for \"%s\"(%s): file elements cannot have options" % (name, typnam))
         formtype = "file"
+
     elif issubclass(typ, Spyder.Integer) or issubclass(typ, Spyder.Float):
         formtype = "spin"
         if issubclass(typ, Spyder.Integer):
@@ -134,29 +140,33 @@ class blenderview:
 
         if isinstance(obj, Object):
             form = obj._form()
+
         elif isinstance(obj, spyder.core.spyderform):
             form = obj
+
         else:
-            ok = False
             try:
                 if issubclass(obj, Object):
                     form = obj._form()
-                    ok = True
             except TypeError:
-                pass
-            if not ok: raise TypeError(obj)
+                raise TypeError(obj)
 
         if parent is None:
             arraymanager_dynamic.add_buttons(form)
 
         if hasattr(form, "value"):
             defaultvalue = form.value
+
         elif value is not None:
             defaultvalue = value
+
         elif hasattr(form, "default"):
             defaultvalue = form.default
+
         else:
             defaultvalue = None
+
+        advanced = getattr(form, "advanced", False)
 
         self.buttons = find_buttons(form)
         self._getters = {}
@@ -168,19 +178,27 @@ class blenderview:
         self._parent = None
         if self.typename is not None and validvar2(self.typename):
             self.type = getattr(Spyder, self.typename + "Array" * form.arraycount)
+
         self._listen_callbacks = None
         pw = None
-        if parent is not None: pw = parent.widget
+        if parent is not None:
+            pw = parent.widget
+
         if parent is None or not len(self.buttons):
-            self.widget = BlenderLayoutWidget(pw, self._name, self.buttons)
-            for b in self.buttons: b.setParent(self.widget)
+            self.widget = BlenderLayoutWidget(pw, self._name, self.buttons, advanced=advanced)
+            for b in self.buttons:
+                b.setParent(self.widget)
             widget = self.widget
+
         else:
-            self._pwidget = BlenderLayoutWidget(pw, self._name, self.buttons)
-            for b in self.buttons: b.setParent(self._pwidget)
-            self.widget = BlenderLayoutWidget(self._pwidget, self._name, [])
+            self._pwidget = BlenderLayoutWidget(pw, self._name, self.buttons, advanced=advanced)
+            for b in self.buttons:
+                b.setParent(self._pwidget)
+
+            self.widget = BlenderLayoutWidget(self._pwidget, self._name, [], advanced=advanced)
             self._pwidget.children.append(self.widget)
             widget = self._pwidget
+
         if parent is not None:
             parent.widget.children.append(widget)
         self._setup(defaultvalue)
@@ -190,7 +208,8 @@ class blenderview:
             ret = []
             for n in range(self._form.length):
                 v = self._getters.get(str(n), None)
-                if v is not None: v = v.value
+                if v is not None:
+                    v = v.value
                 ret.append(v)
         else:
             ret = {}
@@ -260,6 +279,7 @@ class blenderview:
                     if defaultvalue is not None:
                         mobj = getattr(defaultvalue, formname)
                     formvalues.append(mobj)
+
             elif form.arraycount > 0:
                 if not hasattr(form, "length") or form.length is None: raise ValueError(form.typename)
                 formnames = [str(v) for v in range(form.length)]
@@ -270,8 +290,10 @@ class blenderview:
                         mobj = defaultvalue[nr]
                     formvalues.append(mobj)
                 getfunc = lambda v: form.__getitem__(int(v))
+
             else:
                 raise ValueError(self._name)
+
         self._subformfunc = getfunc
         for formname, formvalue in zip(formnames, formvalues):
             mform = getfunc(formname)
@@ -343,9 +365,11 @@ class blenderview:
             getprop, setprop, proplis = widget.get, widget.set, widget.listen
             viewbuttons = find_buttons(mform)
             widget2 = widget
+
             if len(viewbuttons):
-                widget2 = BlenderLayoutWidget(self.widget, name, viewbuttons)
-                for b in viewbuttons: b.setParent(widget2)
+                widget2 = BlenderLayoutWidget(self.widget, name, viewbuttons, advanced=advanced)
+                for b in viewbuttons:
+                    b.setParent(widget2)
                 widget2.children.append(widget)
             self.widget.children.append(widget2)
             view = blenderview_primary(getprop, setprop, proplis, widget)

@@ -106,75 +106,83 @@ def get_paramtypelist(workername, paramdic):
     """
     ret = []
     paramnames = sorted(paramdic.keys())
-    for p in list(paramnames):
-        if not isinstance(p, str): continue
-        if p.startswith("__"): continue
-        ok = False
-        pp = paramdic[p]
-        if isinstance(pp, str):
-            pp = stringtupleparser2(pp)
-        desc = None
-        if typetuple(pp):  # WorkerGUI, variable segments
-            print("Warning: Tuple variable segments do not have editable values: %s" % str(pp))
-            paramnames.remove(p)
+    for parameter_name in list(paramnames):
+        if not isinstance(parameter_name, str):
             continue
-        elif isinstance(pp, tuple) and len(pp) == 2:  # 1,3,4
-            ppp = pp[0]
+
+        if parameter_name.startswith("__"):
+            continue
+
+        ok = False
+        parameter_object = paramdic[parameter_name]
+        if isinstance(parameter_object, str):
+            parameter_object = stringtupleparser2(parameter_object)
+
+        desc = None
+        if typetuple(parameter_object):  # WorkerGUI, variable segments
+            print("Warning: Tuple variable segments do not have editable values: %s" % str(parameter_object))
+            paramnames.remove(parameter_name)
+            continue
+
+        elif isinstance(parameter_object, tuple) and len(parameter_object) == 2:  # 1,3,4
+            ppp = parameter_object[0]
             if isinstance(ppp, tuple) and len(ppp) in (2, 3):  #1
                 if isinstance(ppp[0], str):
                     ok = True
-                    desc = pp
+                    desc = parameter_object
                 elif isinstance(ppp[0], tuple):  #HiveGUI, parameter segments
                     print("Warning: Tuple parameter segments not supported: %s" % str(ppp[0]))
-            elif isinstance(pp[0], str):
+
+            elif isinstance(parameter_object[0], str):
                 ok = True
-                if callable(pp[1]):  #3
-                    desc = (pp, None)
+                if callable(parameter_object[1]):  #3
+                    desc = (parameter_object, None)
+
                 else:  #4
-                    head = (pp[0], str)
-                    if pp[0] in _objecttypes:
-                        head = ("object",) + pp[1:]
-                        pp = (head, None)
-                    elif pp[0] in _parametertypes:
-                        head = _parametertypes[pp[0]]
-                    elif spyder.validvar(pp[0]):
-                        cls = getattr(Spyder, pp[0])
+                    head = (parameter_object[0], str)
+                    if parameter_object[0] in _objecttypes:
+                        head = ("object",) + parameter_object[1:]
+                        parameter_object = (head, None)
+                    elif parameter_object[0] in _parametertypes:
+                        head = _parametertypes[parameter_object[0]]
+                    elif spyder.validvar(parameter_object[0]):
+                        cls = getattr(Spyder, parameter_object[0])
                         cons = partial(spyderparse, cls)
-                        head = (pp, cons)
-                    elif pp[0] in typemap:
+                        head = (parameter_object, cons)
+                    elif parameter_object[0] in typemap:
                         pass
                     else:
                         ok = False
-                    desc = (head, pp[1])
+                    desc = (head, parameter_object[1])
         if not ok:
-            if isinstance(pp, tuple):  # 2a
+            if isinstance(parameter_object, tuple):  # 2a
                 ok = True
-                head = (pp[0], str)
-                if pp[0] in _objecttypes:
-                    head = ("object",) + pp[1:]
-                elif pp[0] in _parametertypes:
-                    head = _parametertypes[pp[0]]
-                elif spyder.validvar(pp[0]):
-                    cls = getattr(Spyder, pp[0])
+                head = (parameter_object[0], str)
+                if parameter_object[0] in _objecttypes:
+                    head = ("object",) + parameter_object[1:]
+                elif parameter_object[0] in _parametertypes:
+                    head = _parametertypes[parameter_object[0]]
+                elif spyder.validvar(parameter_object[0]):
+                    cls = getattr(Spyder, parameter_object[0])
                     cons = partial(spyderparse, cls)
-                    head = (pp, cons)
-                elif pp[0] in typemap:
+                    head = (parameter_object, cons)
+                elif parameter_object[0] in typemap:
                     pass
                 else:
                     ok = False
                 desc = (head, None)
-            elif isinstance(pp, str):  # 2
+            elif isinstance(parameter_object, str):  # 2
                 ok = True
-                head = pp
-                if pp in _objecttypes:
+                head = parameter_object
+                if parameter_object in _objecttypes:
                     head = "object"
-                elif pp in _parametertypes:
-                    head = _parametertypes[pp]
-                elif spyder.validvar2(pp):
-                    cls = getattr(Spyder, pp)
+                elif parameter_object in _parametertypes:
+                    head = _parametertypes[parameter_object]
+                elif spyder.validvar2(parameter_object):
+                    cls = getattr(Spyder, parameter_object)
                     cons = partial(spyderparse, cls)
-                    head = (pp, cons)
-                elif pp in typemap:
+                    head = (parameter_object, cons)
+                elif parameter_object in typemap:
                     pass
                 else:
                     ok = False
@@ -182,7 +190,7 @@ def get_paramtypelist(workername, paramdic):
         if ok:
             ret.append(desc)
         if not ok:
-            print("Warning: cannot interpret %s due to parameter '%s': '%s'" % (workername, p, pp))
+            print("Warning: cannot interpret %s due to parameter '%s': '%s'" % (workername, parameter_name, parameter_object))
             return None, None
     return paramnames, ret
 
