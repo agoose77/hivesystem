@@ -1,10 +1,10 @@
 import bee
 from bee.segments import *
-import bee.segments.variable
+import bee.segments.variable as segment_variable
 
 
 class variable(bee.worker):
-    v = bee.segments.variable("object")
-    parameter(v)
+    value = segment_variable("object")
+    parameter(value)
     outp = output("pull", "object")
-    connect(v, outp)
+    connect(value, outp)
