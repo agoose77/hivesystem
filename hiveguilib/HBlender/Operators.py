@@ -50,6 +50,7 @@ class AddHiveNode(bpy.types.Operator):
 
         blend_node_tree_manager = BlendManager.blendmanager.blend_nodetree_managers[nodetree_name]
         pwc = blend_node_tree_manager.pwc
+
         pwc._select_worker(tuple(self.type.split(".")))
         clip = blend_node_tree_manager.clipboard
         clip.drop_worker(x, y)

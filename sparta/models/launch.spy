@@ -1,0 +1,26 @@
+Type Launch:Degenerate {
+  Bool bind_event = True
+  Bool bind_hivereg = True
+  Bool bind_io = True
+  Bool bind_sys = True
+  Bool bind_scene = True
+  Bool bind_time = True
+  *String hivemap
+  *Enum dispatch_event("byhead", "toall") = "byhead"
+  *Bool bind_doexit = True
+  *Enum bind_keyboard("no","direct","indirect") = "direct"
+  *Enum bind_mouse("no","direct","indirect") = "direct"
+  *Bool bind_display = True
+  *Bool bind_watch = True
+  *Enum bind_matrix("no","yes","relative","camera") = "yes"
+  Bool bind_entity = True
+  *Enum bind_exit("no","yes","stop") = "yes"
+  *Bool bind_stop = True
+  *Enum bind_pacemaker("transmit",) = "transmit"
+  *Enum transmit_tick("no", "evin") = "evin"
+  validate {
+    if hivemap is not None: assert bind_hivereg == False
+  }
+}
+
+Method make_launch(Launch) make_launch

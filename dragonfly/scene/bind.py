@@ -31,7 +31,7 @@ class matrix_binder(binderdrone):
         # TODO: add (unmodified) plugins for ("get_entity", "view", "local") and all other views
 
     def place(self):
-        libcontext.socket("get_entity", socket_single_required(self.set_matrix_function))
+        libcontext.socket(("entity", "matrix"), socket_single_required(self.set_matrix_function))
 
         libcontext.socket(("entity", "matrix", "Blender"), socket_single_required(self.set_matrix_function_blender))
         libcontext.socket(("entity", "matrix", "NodePath"), socket_single_required(self.set_matrix_function_nodepath))
@@ -94,6 +94,7 @@ class actorbinder(binderdrone):
 
     def bind(self, binderworker, bindname):
         libcontext.plugin("actor", plugin_supplier(lambda: self._get_actor(bindname)))
+        libcontext.plugin("get_actor", plugin_supplier(self._get_actor))
 
     def place(self):
         libcontext.socket("get_actor", socket_single_required(self.set_actorfunc))
@@ -110,6 +111,8 @@ class actoroptionalbinder(binderdrone):
             pass
         else:
             libcontext.plugin("actor", plugin_supplier(lambda: self._get_actor(bindname)))
+
+        libcontext.plugin("get_actor", plugin_supplier(self._get_actor))
 
     def place(self):
         libcontext.socket("get_actor", socket_single_required(self.set_actorfunc))
@@ -203,6 +206,8 @@ class entity_binder(binderdrone):
                           plugin_supplier(lambda name: self.get_material(bindname, name)))
         libcontext.plugin(("entity", "bound", "collisions"), plugin_supplier(lambda: self.get_collisions(bindname)))
         libcontext.plugin(("entity", "bound", "remove"), plugin_supplier(lambda: self.remove_entity(bindname)))
+        libcontext.plugin(("entity", "bound", "show"), plugin_supplier(lambda: self.show(bindname)))
+        libcontext.plugin(("entity", "bound", "hide"), plugin_supplier(lambda: self.hide(bindname)))
 
         # Unbound functions
         libcontext.plugin(("entity", "parent", "set"), plugin_supplier(self.set_parent))
@@ -213,6 +218,8 @@ class entity_binder(binderdrone):
         libcontext.plugin(("entity", "collisions"), plugin_supplier(self.get_collisions))
         libcontext.plugin(("entity", "remove"), plugin_supplier(self.remove_entity))
         libcontext.plugin(("entity", "get"), plugin_supplier(self.get_entity))
+        libcontext.plugin(("entity", "show"), plugin_supplier(self.show))
+        libcontext.plugin(("entity", "hide"), plugin_supplier(self.hide))
 
     def place(self):
         libcontext.socket(("entity", "parent", "set"), socket_single_required(self.set_set_parent))

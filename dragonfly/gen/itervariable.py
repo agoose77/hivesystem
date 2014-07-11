@@ -4,7 +4,7 @@ import bee.segments.variable
 
 
 class itervariable(bee.worker):
-    v = bee.segments.variable(("object", "iterable"))
-    parameter(v)
+    variable = bee.segments.variable(("object", "iterable"))
+    parameter(variable)
     outp = output("pull", ("object", "iterable"))
-    connect(v, outp)
+    connect(variable, outp)

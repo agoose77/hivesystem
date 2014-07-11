@@ -1,6 +1,6 @@
 import logging
 
-
+# TODO instead of using PDronecreator with a separate panel, use PTree
 class PTree(object):
 
     def __init__(self, parent=None, on_select=None):

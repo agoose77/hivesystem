@@ -293,6 +293,9 @@ class WorkerInstanceManager(object):
             mp = pmapping[p]
             if mp is None:
                 continue
+            if not mp in params:
+                continue
             mparams[p] = params[mp]
+
         for p, v in mparams.items():
             self._canvas.set_attribute_value(workerid, p, v)

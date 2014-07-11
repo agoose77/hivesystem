@@ -28,7 +28,7 @@ class Clipboard(object):
     def drop_worker(self, x, y):
         assert self._workermanager is not None
         typ, name = self._dragboard
-
+        print(name)
         if typ == "worker":
             id_ = self._workermanager.get_new_workerid(name)
             id_ = self._workermanager.create(id_, name, x, y)

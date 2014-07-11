@@ -5,6 +5,7 @@ from .anyQt.QtGui import QTreeWidgetItem
 
 
 class PTree(object):
+
     def __init__(self, parent=None, on_select=None):
         self._widget = QtGui.QTreeWidget(parent)
         self._widget.setColumnCount(1)

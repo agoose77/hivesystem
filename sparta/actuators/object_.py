@@ -15,9 +15,14 @@ class object_(bee.worker):
     trig = antenna("push", "trigger")
     class_ = antenna("pull", ("str", "identifier"))
     placement = antenna("pull", ("object", "matrix"))
-    outp = output("pull", ("str", "identifier"))
-    v_outp = variable(("str", "identifier"))
-    connect(v_outp, outp)
+
+    output_entity = output("pull", ("str", "identifier"))
+    v_output_entity = variable(("str", "identifier"))
+    connect(v_output_entity, output_entity)
+
+    output_process = output("pull", ("str", "identifier"))
+    v_output_process = variable(("str", "identifier"))
+    connect(v_output_process, output_process)
 
     subprocess = variable("bool")
     parameter(subprocess, True)
@@ -27,8 +32,9 @@ class object_(bee.worker):
         "trig": {"name": "Trigger"},
         "class_": {"name": "Object Class", "fold": True},
         "placement": {"name": "Object Placement"},
-        "outp": {"name": "Output"},
-        "_memberorder": ["trig", "class_", "placement", "outp"],
+        "output_entity": {"name": "Output"},
+        "output_process": {"name": "Output"},
+        "_memberorder": ["trig", "class_", "placement", "output_process", "output_entity"],
     }
 
     # Method to manipulate the parameter form as it appears in the GUI

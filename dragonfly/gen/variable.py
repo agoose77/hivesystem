@@ -4,7 +4,7 @@ import bee.segments.variable as segment_variable
 
 
 class variable(bee.worker):
-    value = segment_variable("object")
-    parameter(value)
+    v = segment_variable("object")
+    parameter(v)
     outp = output("pull", "object")
-    connect(value, outp)
+    connect(v, outp)

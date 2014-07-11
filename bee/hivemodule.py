@@ -289,7 +289,7 @@ class emptyhivecontext(hivecontext_base):
 
             if is_helper or is_io:
                 if is_io:
-                    bee[1].place0()
+                    bee.place0()
 
                 continue
 

@@ -190,13 +190,6 @@ def build_worker_default(beename, antennas, outputs, ev, paramnames, paramtypeli
 
     has_value = False
     valuetype = None
-    if not ("value" in paramnames and "v" in paramnames):
-        for vv in "value", "v":
-            if vv in paramnames:
-                has_value = True
-                d = dict(zip(paramnames, paramtypelist))
-                valuetype = d[vv][0][0]
-                pmap[vv] = "value"
 
     for pname, io, pval in attrs:
         if io == "antenna" and pname == "inp":

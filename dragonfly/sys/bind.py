@@ -40,6 +40,12 @@ class processbinder(binderdrone):
     def set_stop_process(self, stop_process):
         self.stop_process = stop_process
 
+    def set_get_hive(self, get_hive):
+        self.get_hive = get_hive
+
+    def set_register_hive(self, register_hive):
+        self.register_hive = register_hive
+
     def bind(self, binderworker, bindname):
         self.binderworker = binderworker
 
@@ -64,6 +70,14 @@ class processbinder(binderdrone):
         libcontext.plugin(("process", "pause"), plugin_supplier(self.pause_process))
         libcontext.plugin(("process", "resume"), plugin_supplier(self.resume_process))
         libcontext.plugin(("process", "stop"), plugin_supplier(self.stop_process))
+        libcontext.plugin(("process", "unregister"), plugin_supplier(self.unregister_process))
+
+        libcontext.plugin(("process", "register", "pause"), plugin_supplier(self.register_pause_process))
+        libcontext.plugin(("process", "register", "stop"), plugin_supplier(self.register_stop_process))
+        libcontext.plugin(("process", "register", "resume"), plugin_supplier(self.register_resume_process))
+
+        libcontext.plugin("register_hive", plugin_supplier(self.register_hive))
+        libcontext.plugin("get_hive", plugin_supplier(self.get_hive))
 
         # Get this from the stop binder (requires stop to be bound) and inform process manager of our stop function
         s = socket_single_required(lambda stop_func: self.register_stop_process(bindname, stop_func))
@@ -87,6 +101,11 @@ class processbinder(binderdrone):
                           socket_single_required(self.set_resume_process))
         libcontext.socket(("process", "stop"),
                           socket_single_required(self.set_stop_process))
+
+        libcontext.socket("get_hive",
+                          socket_single_required(self.set_get_hive))
+        libcontext.socket("register_hive",
+                          socket_single_required(self.set_register_hive))
 
 
 class bind(bind_baseclass):

@@ -93,7 +93,7 @@ def build_segment_full(beename, antennas, outputs, ev, paramnames, paramtypelist
     attrs.sort(key=lambda i: i[0])
 
     inmap, outmap, pmap = mapping.inmap, mapping.outmap, mapping.pmap
-
+    #print(beename, antennas, paramnames)
     d = dict(zip(paramnames, paramtypelist))
     if "val" in paramnames and "val" in d:
         valuetype = d["val"][0][0]
@@ -137,7 +137,6 @@ from ..HGui import Attribute
 
 def add_value(attribs, mapping, paramnames, paramtypelist):
     inmap, outmap, pmap = mapping.inmap, mapping.outmap, mapping.pmap
-
     d = dict(zip(paramnames, paramtypelist))
     if "val" in paramnames and "val" in d:
         valuetype = d["val"][0][0]

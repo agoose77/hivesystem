@@ -120,6 +120,7 @@ class WorkerManager(object):
         for spydermapworkername in sorted(spydermapworkers.keys()):
             spydermapworker = spydermapworkers[spydermapworkername]
             self._pworkercreator.append(spydermapworkername)
+
         if self._pdronecreator is not None:
             drones = wf.drones
             for dronename in sorted(drones.keys()):

@@ -23,10 +23,13 @@ class PWorkerCreator(object):
             workertype = self._spydermapworkers[workertype0]
             self._clipboard.set_dragboard_value("spydermap", workertype)
             return
+
         if workertype0 in self._hivemapworkers:
             workertype = self._hivemapworkers[workertype0]
+
         else:
             workertype = ".".join(workertype0)
+
         self._clipboard.set_dragboard_value("worker", workertype)
 
     def append(self, workername):
