@@ -34,67 +34,80 @@ from .reference import reference
 import spyder
 
 
-def stringtupleparser(*v):
-    if len(v) == 1: v = v[0]
-    value = str(v).strip()
-    if not len(value): return ""
-    if value[0] == "(" and value[-1] == ")":
-        value = value[1:-1]
-    parenth = 0
+def stringtupleparser(*tokens):
+    if len(tokens) == 1:
+        tokens = tokens[0]
+
+    string_value = str(tokens).strip()
+    if not string_value:
+        return ""
+
+    # String outer parenthesis
+    if string_value[0] == "(" and string_value[-1] == ")":
+        string_value = string_value[1:-1]
+
+    parenthesis = 0
     quote = None
     tokens = []
     last = 0
     found = False
     skip = 0
-    for lnr, l in enumerate(value):
-        if l == "," and quote is None:
-            if parenth == 0:
-                tokens.append(value[last:lnr - skip])
-                last = lnr + 1
+    for index, character in enumerate(string_value):
+        if character == "," and quote is None:
+            if parenthesis == 0:
+                tokens.append(string_value[last:index - skip])
+                last = index + 1
                 continue
 
         skip = 0
-        if l == "(":
-            parenth += 1
+        if character == "(":
+            parenthesis += 1
             found = True
             # if lnr == last: last += 1
-        elif l == ")":
-            parenth -= 1
-        elif (l == "'" or l == '"') and parenth == 0:
-            if quote is None and last == lnr:
+        elif character == ")":
+            parenthesis -= 1
+
+        elif (character == "'" or character == '"') and not parenthesis:
+            if quote is None and last == index:
                 last += 1
-                quote = l
-            elif quote == l:
+                quote = character
+
+            elif quote == character:
                 quote = None
                 skip = 1
-        elif l == " " and quote is None and last == lnr:
+
+        elif character == " " and quote is None and last == index:
             last += 1
-    if parenth > 0: return value
-    if last < len(value) - skip:
+
+    if parenthesis > 0:
+        return string_value
+
+    if last < len(string_value) - skip:
         # print("FINALTOK", value[last:len(value)-skip], last, skip)
-        tokens.append(value[last:len(value) - skip])
+        tokens.append(string_value[last:len(string_value) - skip])
 
     # print("TOKENS",v, tokens)
     if not found and len(tokens) == 1:
         return tokens[0]
+
     ret = []
-    for tok in tokens:
-        ret.append(stringtupleparser(tok))
+    for token in tokens:
+        ret.append(stringtupleparser(token))
+
     return tuple(ret)
 
 
-def eventparser(e):
-    if isinstance(e, str):
-        ee = e
-    elif isinstance(e, tuple):
-        ee = stringtupleparser(*e)
-    return event(e)
+eventparser = event
 
 
-def boolparser(v):
-    if v in (False, "False", 0, "0", ""): return False
-    if v in (True, "True", 1, "1"): return True
-    raise ValueError(v)
+def boolparser(value):
+    if value in (False, "False", 0, "0", ""):
+        return False
+
+    if value in (True, "True", 1, "1"):
+        return True
+
+    raise ValueError(value)
 
 
 def spyderparser(spydertypename, value):
@@ -103,39 +116,54 @@ def spyderparser(spydertypename, value):
     spyclass = getattr(Spyder, spydertypename)
     if not isinstance(value, str):
         return spyclass(value)
+
     try:
         typ, parsed = spyder.core.parse(value)
-        if typ != spydertypename: raise TypeError
+        if typ != spydertypename:
+            raise TypeError
+
         return spyclass.fromdict(parsed)
+
     except:
         return spyclass(value)
 
 
-def generic_constructor(t=None):
-    if t is None:
-        def generic_constructor1(v):
+def generic_constructor(type_=None):
+
+    if type_ is None:
+        def generic_constructor(v):
             from .beewrapper import beewrapper
 
-            if isinstance(v, beewrapper): return v
-            if isinstance(v, reference): return v.obj
+            if isinstance(v, beewrapper):
+                return v
+
+            if isinstance(v, reference):
+                return v.obj
+
             try:
                 return type(v)(v)
+
             except TypeError:
                 return v
 
-        return generic_constructor1
-    else:
-        def generic_constructor2(v):
-            from .beewrapper import beewrapper
+        return generic_constructor
 
-            if isinstance(v, beewrapper): return v
-            if isinstance(v, reference): return v.obj
-            try:
-                return t(v)
-            except TypeError:
-                return v
+    def generic_constructor(v):
+        from .beewrapper import beewrapper
 
-        return generic_constructor2
+        if isinstance(v, beewrapper):
+            return v
+
+        if isinstance(v, reference):
+            return v.obj
+
+        try:
+            return type_(v)
+
+        except TypeError:
+            return v
+
+    return generic_constructor
 
 
 _parametertypes = {

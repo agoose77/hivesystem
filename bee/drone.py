@@ -7,49 +7,61 @@ class dronebuilder(reg_beehelper):
     __droneclassname__ = "Drone"
     __reqdronefunc__ = "place"
 
-    def __init__(self, name, bases, dic, *args, **kargs):
-        mytype.__init__(self, name, bases, dic)
+    def __init__(self, name, bases, cls_dict, *args, **kargs):
+        mytype.__init__(self, name, bases, cls_dict)
 
-    def __new__(metacls, name, bases, dic, **kargs):
+    def __new__(metacls, name, bases, cls_dict, **kargs):
         if emptyclass in bases:
-            # print("emptyclass", name)
             bases = tuple([b for b in bases if b != emptyclass])
-            return type.__new__(metacls, name, bases, dict(dic))
+            return type.__new__(metacls, name, bases, dict(cls_dict))
 
-        bases0 = bases
-        bases = []
-        extrabases = []
-        for b in bases0:
-            if hasattr(b, "_wrapped_hive") and not isinstance(b._wrapped_hive, tuple):
-                bases.append(b._wrapped_hive)
-                extrabases.append(b._wrapped_hive)
-                extrabases += b._wrapped_hive.__mro__[1:]
+        new_bases = []
+        extra_bases = []
+
+        for cls in bases:
+            if hasattr(cls, "_wrapped_hive") and not isinstance(cls._wrapped_hive, tuple):
+                new_bases.append(cls._wrapped_hive)
+                extra_bases.append(cls._wrapped_hive)
+                extra_bases += cls._wrapped_hive.__mro__[1:]
+
             else:
-                bases.append(b)
-                extrabases.append(b)
-        bases = tuple(bases)
+                new_bases.append(cls)
+                extra_bases.append(cls)
 
-        if metacls.__reqdronefunc__ not in dic:
-            ok = False
-            for b in extrabases:
-                if hasattr(b, metacls.__reqdronefunc__):
-                    at = getattr(b, metacls.__reqdronefunc__)
-                    if not isinstance(at, tuple):
-                        ok = True
-                        break
-            if ok == False:
+        new_bases = tuple(new_bases)
+
+        if metacls.__reqdronefunc__ not in cls_dict:
+
+            for cls in extra_bases:
+                if not hasattr(cls, metacls.__reqdronefunc__):
+                    continue
+
+                at = getattr(cls, metacls.__reqdronefunc__)
+                if not isinstance(at, tuple):
+                    break
+
+            else:
                 raise Exception("%s '%s' (or its base classes) must define a %s method" % (
-                metacls.__droneclassname__, name, metacls.__reqdronefunc__))
-        if "__beename__" not in dic: dic["__beename__"] = name
-        if "guiparams" not in dic:
-            d = {}
-            for b in extrabases:
-                if hasattr(b, "guiparams"): d.update(b.guiparams)
-            dic["guiparams"] = d
-        dic["guiparams"]["__beename__"] = dic["__beename__"]
-        edrone = type.__new__(metacls, name + "&", bases, dict(dic))
-        return type.__new__(metacls, name, (beewrapper,),
-                            {"_wrapped_hive": edrone, "guiparams": dic["guiparams"], "__metaclass__": dronebuilder})
+                    metacls.__droneclassname__, name, metacls.__reqdronefunc__))
+
+        if "__beename__" not in cls_dict:
+            cls_dict["__beename__"] = name
+
+        if "guiparams" not in cls_dict:
+            inherited_guiparams = {}
+
+            for cls in extra_bases:
+                if hasattr(cls, "guiparams"):
+                    inherited_guiparams.update(cls.guiparams)
+
+            cls_dict["guiparams"] = inherited_guiparams
+
+        cls_dict["guiparams"]["__beename__"] = cls_dict["__beename__"]
+
+        edrone = type.__new__(metacls, name + "&", new_bases, dict(cls_dict))
+
+        return type.__new__(metacls, name, (beewrapper,), {"_wrapped_hive": edrone, "guiparams": cls_dict["guiparams"],
+                                                           "__metaclass__": dronebuilder})
 
 
 class drone(emptyclass):
@@ -66,16 +78,27 @@ class combodrone(emptyclass):
 
 
 def combodronewrapper(*args, **kwargs):
-    for k in kwargs:
-        if k not in ("combolist", "combodict"):
-            raise TypeError("Unknown keyword argument '%s'" % k)
+    """Here be dragons"""
+
+    for key in kwargs:
+        if key not in ("combolist", "combodict"):
+            raise TypeError("Unknown keyword argument '%s'" % key)
+
     combolist, combodict = None, None
-    if "combolist" in kwargs: combolist = kwargs["combolist"]
-    if "combodict" in kwargs: combodict = kwargs["combodict"]
+
+    if "combolist" in kwargs:
+        combolist = kwargs["combolist"]
+
+    if "combodict" in kwargs:
+        combodict = kwargs["combodict"]
 
     count = len(args) + (combolist != None) + (combodict != None)
-    if count < 1: raise TypeError("Too few arguments for combodronewrapper")
-    if count > 2: raise TypeError("Too many arguments for combodronewrapper")
+    if count < 1:
+        raise TypeError("Too few arguments for combodronewrapper")
+
+    if count > 2:
+        raise TypeError("Too many arguments for combodronewrapper")
+
     clist, cdict = [], {}
     exc1 = TypeError("Combolist must be list instance")
     exc2 = TypeError("Combodict must be dict instance")
@@ -84,36 +107,64 @@ def combodronewrapper(*args, **kwargs):
     exc5 = TypeError("First argument must be list or dict instance")
     exc6 = TypeError("Second argument must be list or dict instance")
     exc7 = TypeError("First and second arguments must be list and dict instances")
-    if len(args) == 0:
-        if combolist != None:
-            if not isinstance(combolist, list): raise exc1
+
+    if not args:
+        if combolist is not None:
+            if not isinstance(combolist, list):
+                raise exc1
+
             clist = combolist
-        if combodict != None:
-            if not isinstance(combodict, dict): raise exc2
+
+        if combodict is not None:
+            if not isinstance(combodict, dict):
+                raise exc2
+
             cdict = combodict
+
     elif len(args) == 1:
-        if combolist != None:
-            if not isinstance(combolist, list): raise exc1
+        if combolist is not None:
+            if not isinstance(combolist, list):
+                raise exc1
+
             clist = combolist
-            if not isinstance(args[0], dict): raise exc4
+
+            if not isinstance(args[0], dict):
+                raise exc4
+
             cdict = args[0]
-        elif combodict != None:
-            if not isinstance(combodict, dict): raise exc2
+
+        elif combodict is not None:
+            if not isinstance(combodict, dict):
+                raise exc2
+
             cdict = combodict
-            if not isinstance(args[0], list): raise exc3
+            if not isinstance(args[0], list):
+                raise exc3
+
             clist = args[0]
+
         else:
-            if not isinstance(args[0], list) and not isinstance(args[0], dict): raise exc5
-            if isinstance(args[0], list):
+            if not isinstance(args[0], (list, dict)):
+                raise exc5
+
+            elif isinstance(args[0], list):
                 clist = args[0]
+
             else:
                 cdict = args[0]
+
     else:  # len(args) == 2
         l1, d1 = isinstance(args[0], list), isinstance(args[0], dict)
         l2, d2 = isinstance(args[1], list), isinstance(args[1], dict)
-        if not l1 and not d1: raise exc5
-        if not l2 and not d2: raise exc6
-        if l1 == l2: raise exc7
+
+        if not l1 and not d1:
+            raise exc5
+
+        if not l2 and not d2:
+            raise exc6
+
+        if l1 == l2:
+            raise exc7
 
         if l1:
             clist = args[0]
@@ -136,10 +187,13 @@ def combodronewrapper(*args, **kwargs):
     for item in clist + list(cdict.values()):
         if isinstance(item, list):
             it = item
+
         elif isinstance(item, dict):
             it = list(item.values())
+
         else:
             it = [item]
+
         for i in it:
             try:
                 allreg.add(i)
@@ -153,8 +207,12 @@ def combodronewrapper(*args, **kwargs):
 
     fr = id(inspect.currentframe().f_back)
     fr2 = id(inspect.currentframe().f_back.f_back)
-    if fr not in reg: reg[fr] = []
-    if fr2 not in reg: reg[fr2] = []
+    if fr not in reg:
+        reg[fr] = []
+
+    if fr2 not in reg:
+        reg[fr2] = []
+
     reg[fr].remove(ret)
     reg[fr2].append(ret)
 
@@ -164,17 +222,27 @@ def combodronewrapper(*args, **kwargs):
 import libcontext
 
 
-def dummydrone(plugindict={}, socketdict={}):
+def dummydrone(plugindict=None, socketdict=None):
+
     class dummydrone(drone):
+
         def place(self):
-            for pluginname, plugin in self.plugindict.items():
-                libcontext.plugin(pluginname, plugin)
-            for socketname, socket in self.socketdict.items():
-                libcontext.socket(socketname, socket)
+            for name, plugin in self.plugindict.items():
+                libcontext.plugin(name, plugin)
+
+            for name, socket in self.socketdict.items():
+                libcontext.socket(name, socket)
+
+    if plugindict is None:
+        plugindict = {}
+
+    if socketdict is None:
+        socketdict = {}
 
     ret = dummydrone()
     ret._wrapped_hive.plugindict = plugindict
     ret._wrapped_hive.socketdict = socketdict
+
     return ret
         
   

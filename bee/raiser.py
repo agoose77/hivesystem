@@ -9,15 +9,16 @@ from .segments import *
 
 
 class WorkerError(SystemError):
+
     def __init__(self, error):
         if isinstance(error, WorkerError):
             self.error = error.error
+
         else:
             self.error = error
 
     def __str__(self):
-        return "\n  Context : " + str(self.error[0]) + "\n  " + str(self.error[1][0].__name__) + " : " + str(
-            self.error[1][1])
+        return "\n Context: {}\n {}: {}".format(self.error[0], self.error[1][0].__name__, self.error[1][1])
 
     def __repr__(self):
         return self.__str__()
@@ -30,12 +31,15 @@ class raiser(worker):
 
     @modifier
     def raising(self):
-        if not self.raiser_active(): return
+        if not self.raiser_active():
+            return
+
         tb = sys.exc_info()[2]
         self.v_inp.cleared = True
         if self.v_inp[1][0] == WorkerError:
             if python2:
                 exec("raise WorkerError, self.v_inp[1][1], tb")
+
             else:
                 e2 = WorkerError(self.v_inp[1][1])
                 e2.__traceback__ = tb
@@ -43,6 +47,7 @@ class raiser(worker):
         else:
             if python2:
                 exec("raise WorkerError, WorkerError(self.v_inp), tb")
+
             else:
                 e2 = WorkerError(self.v_inp)
                 e2.__traceback__ = tb
