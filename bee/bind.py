@@ -273,6 +273,7 @@ class bindbuilder(mytype):
 
                     try:
                         hive = self.hives.pop(stopped_name)
+
                     except KeyError:
                         print("Couldn't find hive %s to stop" % stopped_name)
 
@@ -338,6 +339,9 @@ class bindbuilder(mytype):
 
                     for b in self.prebinderinstances:
                         b.place()
+
+                    libcontext.plugin("cleanupfunction",
+                      libcontext.pluginclasses.plugin_single_required(self.m_stop_all))
 
             return bindhiveworker(*args, **kwargs)
 

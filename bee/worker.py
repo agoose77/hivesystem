@@ -172,7 +172,8 @@ class workerbuilder(reg_beehelper):
         moduledict = {"_runtime_segment_classes": runtime_segment_classes, "parameters": parameters}
 
         for segmentname, segment in segments:
-            if segmentname in metacls.__workerframeclass__.__filtered_segmentnames__: continue
+            if segmentname in metacls.__workerframeclass__.__filtered_segmentnames__:
+                continue
             if hasattr(segment, "bind") and hasattr(segment.bind, "__call__"):
                 segment.bind(name, dic)
             if hasattr(segment, "connect") and hasattr(segment.connect, "__call__"):
