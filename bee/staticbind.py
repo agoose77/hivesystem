@@ -193,7 +193,7 @@ class staticbindbuilder(bindbuilder):
                 def place(self):
                     self.hives = {}
                     self.eventfuncs = []
-                    self.binderinstances = []
+                    self.binder_instances = []
                     self.startupfunctions = []
 
                     handled_parameters = set()
@@ -209,9 +209,9 @@ class staticbindbuilder(bindbuilder):
                             continue
 
                         handled_parameters.add(params)
-                        self.binderinstances.append(inst)
+                        self.binder_instances.append(inst)
 
-                    for binder in self.binderinstances:
+                    for binder in self.binder_instances:
                         if getattr(self, binder.parameter_name) != binder.parameter_value:
                             continue
 

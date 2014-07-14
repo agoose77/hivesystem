@@ -133,7 +133,7 @@ class bindbuilder(mytype):
                 connect(bind, v_bind)
 
                 def on_place(self):
-                    for binder_ in self.binderinstances:
+                    for binder_ in self.binder_instances:
                         if getattr(self, binder_.parameter_name) != binder_.parameter_value:
                             continue
 
@@ -151,7 +151,7 @@ class bindbuilder(mytype):
                     for name, value in zip(bindantennas, vb):
                         self.bindantennavalues[name[0]] = value
 
-                    for prebinder in self.prebinderinstances:
+                    for prebinder in self.pre_binder_instances:
                         values = {}
                         for antennaname in prebinder.antennanames:
                             values[antennaname] = self.bindantennavalues[antennaname]
@@ -311,26 +311,26 @@ class bindbuilder(mytype):
                     self.handler_states = {}
                     self.event_handlers = {}
 
-                    self.binderinstances = []
-                    self.prebinderinstances = []
+                    self.binder_instances = []
+                    self.pre_binder_instances = []
 
                     for binder_instance in binders:
                         inst = binder_instance.getinstance()
                         if inst != None:
-                            self.binderinstances.append(inst)
+                            self.binder_instances.append(inst)
 
                     for binder_instance in prebinders:
                         inst = binder_instance.getinstance()
                         if inst != None:
-                            self.prebinderinstances.append(inst)
+                            self.pre_binder_instances.append(inst)
 
-                    for binder_instance in self.binderinstances:
+                    for binder_instance in self.binder_instances:
                         if getattr(self, binder_instance.parameter_name) != binder_instance.parameter_value:
                             continue
 
                         binder_instance.place()
 
-                    for binder_instance in self.prebinderinstances:
+                    for binder_instance in self.pre_binder_instances:
                         binder_instance.place()
 
                     libcontext.plugin("cleanupfunction",

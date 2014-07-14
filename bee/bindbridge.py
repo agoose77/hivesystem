@@ -7,10 +7,10 @@ class bindbridge(drone):
         self.bindobject = bindobject
 
     def place(self):
-        for binder in self.bindobject.binderinstances:
+        for binder in self.bindobject.binder_instances:
             if getattr(self.bindobject, binder.parameter_name) != binder.parameter_value:
                 continue
-            # print binder.parametername, binder.parametervalue, str(binder.binder_drone_instance.__beename__), tuple(binder.antennanames)
+            # print binder.parameter_name, binder.parametervalue, str(binder.binder_drone_instance.__beename__), tuple(binder.antennanames)
             if len(binder.antenna_names):
                 if binder.antenna_names != ["bindname"]:
                     raise TypeError("Static binder worker cannot provide bindantennas %s" % list(binder.antenna_names))
