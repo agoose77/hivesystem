@@ -12,8 +12,8 @@ Type Launch:Degenerate {
   *Enum bind_mouse("no","direct","indirect") = "direct"
   *Bool bind_display = True
   *Bool bind_watch = True
-  *Enum bind_matrix("no","yes","relative","camera") = "yes"
-  Bool bind_entity = True
+  *Enum bind_matrix("no","yes","relative","camera") = "no"
+  Bool bind_entity = False
   *Enum bind_exit("no","yes","stop") = "yes"
   *Bool bind_stop = True
   *Enum bind_pacemaker("transmit",) = "transmit"
@@ -21,6 +21,7 @@ Type Launch:Degenerate {
   validate {
     if hivemap is not None: assert bind_hivereg == False
   }
+
 }
 
 Method make_launch(Launch) make_launch

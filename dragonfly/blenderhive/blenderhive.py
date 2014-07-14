@@ -162,8 +162,12 @@ class blenderapp(bee.drone):
         return entityclassdict[entityclassname]
 
     def spawn_entity(self, entityclassname, entityname, entity_dict=None, entityclassdict=None):
-        if entity_dict is None: entity_dict = self._entities
-        if entityclassdict is None: entityclassdict = self._entity_classes
+        if entity_dict is None:
+            entity_dict = self._entities
+
+        if entityclassdict is None:
+            entityclassdict = self._entity_classes
+
         entityclass, nodepath = entityclassdict[entityclassname]
         scene = self.get_scene()
         ent = scene.addObject(entityclass, entityclass, 0)
@@ -260,33 +264,33 @@ class blenderapp(bee.drone):
     def entity_get_collisions(self, entity_name, entity_dict=None, camera=None):
         return [collision_info[1] for collision_info in self._collision_dict[entity_name]]
 
-    def entity_get_property(self, entity_name, property_name):
+    def entity_get_property(self, entity_name, property_name, entity_dict=None):
         """Get property from entity
 
         :param entity_name: name of entity
         :param property_name: name of property
         """
-        entity = self.get_entity_blender(entity_name)
+        entity = self.get_entity_blender(entity_name, entity_dict=entity_dict)
         return entity[property_name]
 
-    def entity_set_property(self, entity_name, property_name, property_value):
+    def entity_set_property(self, entity_name, property_name, property_value, entity_dict=None):
         """Set property on entity
 
         :param entity_name: name of entity
         :param property_name: name of property
         :param property_value: value of property
         """
-        entity = self.get_entity_blender(entity_name)
+        entity = self.get_entity_blender(entity_name, entity_dict=entity_dict)
         entity[property_name] = property_value
 
-    def entity_get_material(self, entity_name, material_name):
+    def entity_get_material(self, entity_name, material_name, entity_dict=None):
         """Get material from entity
 
         :param entity_name: name of entity
         :param material_name: name of material
         """
         #TODO add material proxy
-        entity = self.get_entity_blender(entity_name)
+        entity = self.get_entity_blender(entity_name, entity_dict=entity_dict)
         name_to_material = {mesh.getMaterialName(material.material_index) for mesh in entity.meshes
                             for material in mesh.materials}
         return name_to_material[material_name]
@@ -394,11 +398,18 @@ class blenderapp(bee.drone):
     def set_stop_process(self, stop_process):
         self.stop_process = stop_process
 
+    def get_hivemap_name_for_entity(self, entity_name):
+        return self._entities[entity_name]["hivemap"]
+
+    def get_hivemap_name_for_entity_class(self, entity_class_name):
+        return self._entity_classes[entity_class_name]["hivemap"]
+
     def place(self):
         libcontext.socket("startupfunction", socket_container(self.addstartupfunction))
         libcontext.socket("cleanupfunction", socket_container(self.addcleanupfunction))
         libcontext.socket(("evin", "event"), socket_single_required(self.set_eventfunc))
 
+        # Registration accessors
         libcontext.socket(("blender", "register_actor"), socket_container(self._register_actor))
         libcontext.plugin(("blender", "actor-register"), plugin_supplier(self._register_actor))
         libcontext.plugin(("remove", "actor"), plugin_supplier(self.remove_actor))
@@ -417,9 +428,7 @@ class blenderapp(bee.drone):
         libcontext.plugin(("blender", "entity-register"), plugin_supplier(self._register_entity))
         libcontext.plugin(("entity", "remove"), plugin_supplier(self.remove_entity))
 
-        libcontext.plugin(("entity", "get"), plugin_supplier(self.get_entity_blender))
-        libcontext.plugin(("entity", "get", "Blender"), plugin_supplier(self.get_entity_blender))
-
+        # Matrix methods
         libcontext.plugin(("entity", "matrix",), plugin_supplier(self.get_entity))
         libcontext.plugin(("entity", "matrix", "Blender"), plugin_supplier(self.get_entity_blender))
         libcontext.plugin(("entity", "matrix", "AxisSystem"), plugin_supplier(self.get_entity_axissystem))
@@ -438,10 +447,25 @@ class blenderapp(bee.drone):
         libcontext.socket(("blender", "register_entityclass"), socket_container(self._register_entity_class))
         libcontext.plugin(("blender", "entityclass-register"), plugin_supplier(self._register_entity_class))
         libcontext.plugin(("blender", "get_entityclass"), plugin_supplier(self.get_entity_class))
-        libcontext.plugin(("spawn", "entity"), plugin_supplier(self.spawn_entity))
+        libcontext.plugin(("entity", "spawn"), plugin_supplier(self.spawn_entity))
 
-        libcontext.plugin("get_entity_names", plugin_supplier(self.get_entity_names))
+        # Get entity class
+        libcontext.plugin(("entity", "class"), plugin_supplier(self.get_entity_class))
+        libcontext.plugin(("entity", "class", "blender"), plugin_supplier(self.get_entity_class))
 
+        # Entity accessors
+        libcontext.plugin(("entity", "get"), plugin_supplier(self.get_entity_blender))
+        libcontext.plugin(("entity", "get", "Blender"), plugin_supplier(self.get_entity_blender))
+
+
+        # Get entity names
+        libcontext.plugin(("entity", "names"), plugin_supplier(self.get_entity_names))
+
+        # Get bound hivemaps
+        libcontext.plugin(("entity", "hivemap"), plugin_supplier(self.get_hivemap_name_for_entity))
+        libcontext.plugin(("entity", "class", "hivemap"), plugin_supplier(self.get_hivemap_name_for_entity_class))
+
+        # Entity methods
         libcontext.plugin(("entity", "parent", "set"), plugin_supplier(self.entity_parent_to))
         libcontext.plugin(("entity", "parent", "remove"), plugin_supplier(self.entity_unparent))
         libcontext.plugin(("entity", "show"), plugin_supplier(self.entity_show))
@@ -451,12 +475,14 @@ class blenderapp(bee.drone):
         libcontext.plugin(("entity", "collisions"), plugin_supplier(self.entity_get_collisions))
         libcontext.plugin(("entity", "material", "get"), plugin_supplier(self.entity_get_material))
 
+        # System methods
         libcontext.plugin("exit", plugin_supplier(self.exit))
         libcontext.plugin("stop", plugin_supplier(self.exit))
         libcontext.plugin("display", plugin_supplier(self.display))
         libcontext.plugin("watch", plugin_supplier(self.watch))
         libcontext.socket("pacemaker", socket_single_required(self.set_pacemaker))
         libcontext.socket(("process", "stop"), socket_single_required(self.set_stop_process))
+
         # TODO remove or rename
         libcontext.plugin("doexit", plugin_supplier(lambda: self.doexit))
 

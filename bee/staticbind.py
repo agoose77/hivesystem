@@ -98,7 +98,7 @@ class staticbindbuilder(bindbuilder):
 
         binders = [n[1] for n in bind_helpers if isinstance(n[1], binder)]
         for base_cls_ in binders:
-            assert base_cls_.parametername in bind_parameter_names, base_cls_.parametername
+            assert base_cls_.parameter_name in bind_parameter_names, base_cls_.parameter_name
 
         # Check for prebinders
         for helper_name, helper in bind_helpers:
@@ -203,8 +203,8 @@ class staticbindbuilder(bindbuilder):
                         if inst is None:
                             continue
 
-                        params = inst.parametername, inst.parametervalue, str(
-                            inst.binderdroneinstance.__beename__), tuple(inst.antennanames)
+                        params = inst.parameter_name, inst.parameter_value, str(
+                            inst.binder_drone_instance.__beename__), tuple(inst.antenna_names)
                         if params in handled_parameters:
                             continue
 
@@ -212,7 +212,7 @@ class staticbindbuilder(bindbuilder):
                         self.binderinstances.append(inst)
 
                     for binder in self.binderinstances:
-                        if getattr(self, binder.parametername) != binder.parametervalue:
+                        if getattr(self, binder.parameter_name) != binder.parameter_value:
                             continue
 
                         binder.place()

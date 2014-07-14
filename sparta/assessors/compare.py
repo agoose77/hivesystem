@@ -4,9 +4,9 @@ from bee.types import stringtupleparser
 
 
 class compare(object):
-    """
-    The compare assessor compares two input values
-    """
+
+    """The compare assessor compares two input values"""
+
     metaguiparams = {
         "type_": "str",
         "autocreate": {"type_": "bool"},
@@ -52,10 +52,13 @@ class compare(object):
             def do_compare(self):
                 if self.mode == "equal":
                     result = (self.b_inp1 == self.b_inp2)
+
                 elif self.mode == "greater":
                     result = (self.b_inp1 > self.b_inp2)
+
                 elif self.mode == "lesser":
                     result = (self.b_inp1 < self.b_inp2)
+
                 self.result = result
 
             pretrigger(result, do_compare)
@@ -75,4 +78,3 @@ class compare(object):
             }
 
         return compare
-    

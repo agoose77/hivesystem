@@ -16,13 +16,18 @@ class _python_base(bee.worker):
 
 
 class python(object):
+
     """Snippet of custom Python code.
-Python assessors may have any number of pull inputs. When the assessor is evaluated (on demand), the values of the inputs is made available to the code, as variables of the same name.
-Once the code has executed, the value of the output is determined, based on the syntax mode.
-Parameters
-(Advanced) output pull type (bool by default)
-(Advanced) Syntax mode: "expression", "function" or "generator". "expression" (default) is a single Python expression, "function" uses return, "generator" uses yield.
-(Advanced) Advanced input mode: If enabled, inputs must be explicitly pulled using v(), where v is the name of the input."""
+    Python assessors may have any number of pull inputs. When the assessor is evaluated (on demand), the values of the
+    inputs is made available to the code, as variables of the same name.
+    Once the code has executed, the value of the output is determined, based on the syntax mode.
+    Parameters
+    (Advanced) output pull type (bool by default)
+    (Advanced) Syntax mode: "expression", "function" or "generator". "expression" (default) is a single Python
+    expression, "function" uses return, "generator" uses yield.
+    (Advanced) Advanced input mode: If enabled, inputs must be explicitly pulled using v(), where v is the name of the input.
+    """
+
     metaguiparams = {
         "inputs": "NodeIOArray",
         "output_type": "str",

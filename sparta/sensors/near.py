@@ -5,24 +5,17 @@ from libcontext.pluginclasses import *
 
 
 class near(object):
-    """
-    The near sensor detects other objects that are nearby
-    The other objects can be filtered by material, property or identifier
-    """
+
+    """The near sensor detects other objects that are nearby
+    The other objects can be filtered by material, property or identifier"""
+
     metaguiparams = {
-        "sensormode": "str",
         "idmode": "str",
-        "autocreate": {"sensormode": "normal", "idmode": "bound"},
+        "autocreate": {"idmode": "bound"},
     }
 
     @classmethod
     def form(cls, f):
-        f.sensormode.name = "Sensor mode"
-        f.sensormode.type = "option"
-        f.sensormode.options = "normal", "ray"
-        f.sensormode.default = "normal"
-        f.sensormode.optiontitles = "Normal", "Ray"
-
         f.idmode.name = "ID mode"
         f.idmode.advanced = True
         f.idmode.type = "option"
@@ -30,8 +23,7 @@ class near(object):
         f.idmode.default = "bound"
         f.idmode.optiontitles = "Unbound", "Bound"
 
-    def __new__(cls, sensormode, idmode):
-        assert sensormode in ("normal", "ray"), sensormode
+    def __new__(cls, idmode):
         assert idmode in ("bound", "unbound"), idmode
 
         class near(bee.worker):
@@ -71,13 +63,6 @@ class near(object):
 
             trigger_inputs = triggerfunc(b_filtervalue)
 
-            if sensormode == "ray":
-                #What is the direction axis of the sensor
-                axis = antenna("pull", "Coordinate")
-                b_axis = buffer("pull", "Coordinate")
-                connect(axis, b_axis)
-                trigger(b_filtervalue, b_axis)
-
             #What distance causes a near event (enter/leave)?
             distance = antenna("pull", "float")
             b_distance = buffer("pull", "float")
@@ -99,12 +84,28 @@ class near(object):
             def do_near(self):
                 self.trigger_inputs()
                 node = self.create_sphere_node(self.b_distance, True)
-                result = self.contact_test(self.entity_name, node)
-                found_results = bool(result.contacts)
-                self.is_active = found_results
-                # TODO Panda?
-                self.v_near_id = result.contacts[0].node_b if found_results else ""
 
+                # Get entity name of the caller
+                entity_name = self.entity_name
+
+                # Get start position
+                source_position = self.get_matrix(entity_name).origin
+
+                # Test for material / property / ID
+                filter_func = self.get_filter_func()
+                # Don't test for self
+                name_filter = lambda name: name != entity_name
+
+                callback = lambda value: name_filter(value) and filter_func(value)
+
+                result = self.contact_test(source_position, node, filter_func=callback)
+                found_results = bool(result.contacts)
+
+                self.is_active = found_results
+
+                # TODO Panda?
+                if found_results:
+                    self.v_near_id = result.contacts[0].node_b
 
             pretrigger(v_near_id, do_near)
             pretrigger(is_active, do_near)
@@ -127,12 +128,61 @@ class near(object):
             guiparams = {
                 "identifier": {"name": "Identifier", "fold": True},
                 "filtervalue": {"name": "Filter value", "fold": True},
-                "axis": {"name": "Axis", "tooltip": "Projection axis", "fold": True},
                 "distance": {"name": "Distance", "fold": True},
                 "active": {"name": "Active"},
                 "near_id": {"name": "Near ID", "advanced": True},
-                "_memberorder": ["filtervalue", "identifier", "axis", "distance", "near_id", "active"],
+                "_memberorder": ["filtervalue", "identifier", "distance", "near_id", "active"],
             }
+
+            def get_filter_func(self):
+                """Find an appropriate filter function"""
+                filter_mode = self.filtermode
+                if filter_mode == "material":
+                    return self.match_material
+
+                if filter_mode == "property":
+                    return self.match_property
+
+                if filter_mode == "id":
+                    return self.match_identifier
+
+            def match_material(self, entity_name, filter_value):
+                """Determine if the entity has a matching material
+
+                :param entity_name: name of filtered entity
+                :param filter_value: required material name
+                """
+
+                try:
+                    self.get_material(entity_name, filter_value)
+
+                except KeyError:
+                    return False
+
+                return True
+
+            @staticmethod
+            def match_identifier(entity_name, filter_value):
+                """Determine if the entity identifier matches the filter identifier
+
+                :param entity_name: name of filtered entity
+                :param filter_value: required entity identifier
+                """
+                return entity_name == filter_value
+
+            def match_property(self, entity_name, filter_value):
+                """Determine if the entity has a matching property
+
+                :param entity_name: name of filtered entity
+                :param filter_value: required property name
+                """
+                try:
+                    self.get_property(entity_name, filter_value)
+
+                except KeyError:
+                    return False
+
+                return True
 
             def set_create_sphere_node(self, func):
                 self.create_sphere_node = func
@@ -140,13 +190,24 @@ class near(object):
             def set_contact_test(self, func):
                 self.contact_test = func
 
+            def set_get_matrix(self, func):
+                self.get_matrix = func
+
+            def set_get_property(self, get_property):
+                self.get_property = get_property
+
+            def set_get_material(self, get_material):
+                self.get_material = get_material
+
             def place(self):
                 if idmode == "bound":
                     libcontext.socket(("entity", "bound"), socket_single_required(self.set_get_entity_name))
 
+                libcontext.socket(("entity", "matrix", "AxisSystem"), socket_single_required(self.set_get_matrix))
                 libcontext.socket(("collision", "create_node", "sphere"),
                                   socket_single_required(self.set_create_sphere_node))
-                libcontext.socket(("collision", "contact_test"),
-                                  socket_single_required(self.set_contact_test))
+                libcontext.socket(("collision", "contact_test"), socket_single_required(self.set_contact_test))
+                libcontext.socket(("entity", "property", "get"), socket_single_required(self.set_get_property))
+                libcontext.socket(("entity", "material", "get"), socket_single_required(self.set_get_property))
 
         return near

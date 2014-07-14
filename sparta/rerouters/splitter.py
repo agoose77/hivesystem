@@ -4,9 +4,9 @@ from bee.types import stringtupleparser
 
 
 class splitter(object):
-    """
-    The splitter splits push or trigger output into three
-    """
+
+    """The splitter splits push or trigger output into three"""
+
     metaguiparams = {
         "type_": "str",
         "autocreate": {"type_": "trigger"},
@@ -16,8 +16,12 @@ class splitter(object):
     def form(cls, f):
         f.type_.name = "Type"
         f.type_.type = "option"
-        f.type_.options = "trigger", "bool", "int", "float", "(str,identifier)", "(str,action)", "(str,keycode)", "(str,message)", "(str,property)", "(str,process)", "str", "(object,matrix)", "(object,bge)", "object", "custom"
-        f.type_.optiontitles = "Trigger", "Bool", "Integer", "Float", "ID String", "Action String", "Key String", "Message String", "Property String", "Process ID String", "Generic String", "Matrix Object", "BGE Object", "Generic Object", "Custom"
+        f.type_.options = "trigger", "bool", "int", "float", "(str,identifier)", "(str,action)", "(str,keycode)",\
+                          "(str,message)", "(str,property)", "(str,process)", "str", "(object,matrix)", "(object,bge)",\
+                          "object", "custom"
+        f.type_.optiontitles = "Trigger", "Bool", "Integer", "Float", "ID String", "Action String", "Key String",\
+                               "Message String", "Property String", "Process ID String", "Generic String",\
+                               "Matrix Object", "BGE Object", "Generic Object", "Custom"
         f.type_.default = "trigger"
 
     def __new__(cls, type_):
@@ -44,4 +48,3 @@ class splitter(object):
             }
 
         return splitter
-    

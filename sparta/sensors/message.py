@@ -5,10 +5,9 @@ from libcontext.pluginclasses import *
 
 
 class message(object):
-    """
-    The message sensor reports any messages that were sent to a specific object during the last tick
-    
-    """
+
+    """The message sensor reports any messages that were sent to a specific object during the last tick"""
+
     metaguiparams = {
         "idmode": "str",
         "autocreate": {"idmode": "bound"},

@@ -6,9 +6,9 @@ from ..models.range_ import IntRange, FloatRange
 
 
 class between(object):
-    """
-    The between assessor tests if an input value is in between two other values
-    """
+
+    """The between assessor tests if an input value is in between two other values"""
+
     metaguiparams = {
         "type_": "str",
         "autocreate": {"type_": "int"},
@@ -32,10 +32,13 @@ class between(object):
             inp = antenna("pull", type_)
             if type_ == "int":
                 spydertype = "IntRange"
+
             elif type_ == "float":
                 spydertype = "FloatRange"
+
             range_ = antenna("pull", spydertype)
-            # One output value returning the result of the comparision
+
+            # One output value returning the result of the comparison
             outp = output("pull", "bool")
             result = variable("bool")
             connect(result, outp)
@@ -52,11 +55,7 @@ class between(object):
             # ...and then compare the values
             @modifier
             def do_compare(self):
-                if self.b_inp >= self.b_range.minimum and self.b_inp <= self.b_range.maximum:
-                    result = True
-                else:
-                    result = False
-                self.result = result
+                self.result = self.b_range.minimum <= self.b_inp <= self.b_range.maximum
 
             pretrigger(result, do_compare)
 
@@ -67,4 +66,3 @@ class between(object):
             }
 
         return between
-    

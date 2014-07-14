@@ -3,9 +3,8 @@ from bee.segments import *
 
 
 class if_(bee.worker):
-    """
-    The if processor has a trigger and an input. When it is triggered, it forwards the trigger only if the input is True.
-    """
+    """The if processor has a trigger and an input. When it is triggered, it forwards the trigger only if the input is
+    True."""
 
     inp = antenna("pull", "bool")
     b_inp = buffer("pull", "bool")

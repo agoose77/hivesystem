@@ -4,9 +4,9 @@ from bee.types import stringtupleparser
 
 
 class hop_in(object):
-    """
-    The hop_in rerouter forwards an output to hop_out rerouters of the same name
-    """
+
+    """The hop_in rerouter forwards an output to hop_out rerouters of the same name"""
+
     metaguiparams = {
         "mode": "str",
         "type_": "str",
@@ -23,8 +23,11 @@ class hop_in(object):
 
         f.type_.name = "Type"
         f.type_.type = "option"
-        f.type_.options = "bool", "int", "float", "(str,identifier)", "(str,action)", "(str,keycode)", "(str,message)", "(str,property)", "(str,process)", "str", "(object,matrix)", "(object,bge)", "object", "custom"
-        f.type_.optiontitles = "Bool", "Integer", "Float", "ID String", "Action String", "Key String", "Message String", "Property String", "Process ID String", "Generic String", "Matrix Object", "BGE Object", "Generic Object", "Custom"
+        f.type_.options = "bool", "int", "float", "(str,identifier)", "(str,action)", "(str,keycode)", "(str,message)",\
+                          "(str,property)", "(str,process)", "str", "(object,matrix)", "(object,bge)", "object", "custom"
+        f.type_.optiontitles = "Bool", "Integer", "Float", "ID String", "Action String", "Key String", "Message String",\
+                               "Property String", "Process ID String", "Generic String", "Matrix Object", "BGE Object",\
+                               "Generic Object", "Custom"
         f.type_.default = "bool"
 
     def __new__(cls, mode, type_):
@@ -53,4 +56,3 @@ class hop_in(object):
                 raise NotImplementedError("sparta.assessors.hop_in is not designed for use outside of the Hive GUI")
 
         return hop_in
-    

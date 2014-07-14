@@ -390,11 +390,13 @@ class NodeCanvas(HGui):
         for node_id in selected_node_id_sequence:
             assert node_id in self._nodes, node_id
             assert node_id not in self._folded_antenna_variables, node_id
+
         self._hNodeCanvas.select(selected_node_id_sequence)
 
     def gui_selects(self, node_id_sequence):
         if self._busy:
             return
+
         for ob in self.observers_selection:
             ob(node_id_sequence)
         return True
@@ -443,16 +445,13 @@ class NodeCanvas(HGui):
 
     def gui_removes_nodes(self, node_id_sequence):
         if self._busy:
-            import logging
-            logging.debug("BUSY, COULD NOT REMOVE")
             return
 
         for node_id in node_id_sequence:
             import logging
             if node_id in self._folded_antenna_variables:
-                logging.debug("DONT REMOVE THESE ANTENANE")
+                logging.debug("Will not remove folded variables")
                 continue
-            logging.debug(str(self) + "CALLING REMOVE FROM GUI_REMOVES_NODES" + node_id)
 
             self._remove_node(node_id)
 
@@ -462,7 +461,9 @@ class NodeCanvas(HGui):
         return True
 
     def gui_moves_node(self, node_id, position):
-        if self._busy: return
+        if self._busy:
+            return
+
         node = self._nodes[node_id]
         node.position = position
         return True
@@ -484,6 +485,7 @@ class NodeCanvas(HGui):
         :param node_id: ID of node
         :param antenna_name: name of antenna
         """
+        print(self._connection_ids, node_id, antenna_name)
         for connection_id_ in self._connection_ids:
             connection = self._connections[connection_id_]
 
@@ -492,7 +494,7 @@ class NodeCanvas(HGui):
 
             variable_id = connection.start_node
             worker_descriptor = self.workermanager.get_worker_descriptor(variable_id)
-
+            print(variable_id, node_id, antenna_name)
             # Nodes as 0, 0 are folded nodes!
             x, y = worker_descriptor[2], worker_descriptor[3]
             return (x == y == 0)

@@ -6,9 +6,9 @@ from libcontext.pluginclasses import *
 
 
 class change(object):
-    """
-    The change trigger fires every tick if its input is different from the previous tick
-    """
+
+    """The change trigger fires every tick if its input is different from the previous tick"""
+
     metaguiparams = {
         "type_": "str",
         "autocreate": {"type_": "bool"},

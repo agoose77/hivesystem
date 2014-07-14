@@ -19,14 +19,19 @@ class _python_base(bee.worker):
 
 
 class python(object):
+
     """A snippet of custom Python code.
-Activated by trigger. Can have any number of pull inputs and any number of outputs, which can be push, pull or trigger.
-When the Python processor is activated, all inputs are pulled in, and made available to the code as variables of the same name.
-If persistent, previous pull output values are likewise added.
-After the code has run, its locals() are inspected for output variables.
-All pull output variables must be set (unless persistent).
-If a push output variable has been set, it is fired towards its targets when the processor has finished.
-If a trigger output variable has been set to True, it is fired towards its targets when the processor has finished"""
+    Activated by trigger. Can have any number of pull inputs and any number of outputs, which can be push, pull or
+    trigger.
+    When the Python processor is activated, all inputs are pulled in, and made available to the code as variables of the
+    same name.
+    If persistent, previous pull output values are likewise added.
+    After the code has run, its locals() are inspected for output variables.
+    All pull output variables must be set (unless persistent).
+    If a push output variable has been set, it is fired towards its targets when the processor has finished.
+    If a trigger output variable has been set to True, it is fired towards its targets when the processor has finished
+    """
+
     metaguiparams = {
         "inputs": "NodeIOArray",
         "outputs": "AdvancedNodeIOArray",

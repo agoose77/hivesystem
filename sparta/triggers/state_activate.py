@@ -3,9 +3,8 @@ from bee.segments import *
 
 
 class state_activate(bee.worker):
-    """
-    The state_activate trigger fires when the hive gets activated by a state change
-    """
+
+    """The state_activate trigger fires when the hive gets activated by a state change"""
 
     trig = output("push", "trigger")
     trigfunc = triggerfunc(trig)

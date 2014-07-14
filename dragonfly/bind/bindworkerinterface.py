@@ -30,20 +30,14 @@ class bindworkerinterface(bee.worker):
     connect(v_hivemap, hivemap_name)
     connect(v_process_class, process_identifier)
 
-    def do_bind(self, hivemap_name, process_identifier):
-        """Trigger bindworker with hivemap name and process identifier"""
+    def do_bind(self, process_class_identifier, process_identifier):
+        """Trigger bindworker with hivemap name and process identifier
 
-        # Check if it is registered
-        try:
-            self.get_func(hivemap_name)
+        :param process_class_identifier: identifier of process class
+        :param process_identifier: identifier of process to launch
+        """
 
-        # Else register it so the dragonfly.bind mixin can access it
-        except KeyError:
-            hivemap_ = Spyder.Hivemap.fromfile(hivemap_name)
-            wrapper_hive = type(hivemap_name, (hivemapinithive,), dict(hivemap=hivemap_))
-            self.register_func(hivemap_name, wrapper_hive)
-
-        self.v_hivemap = hivemap_name
+        self.v_hivemap = process_class_identifier
         self.v_process_class = process_identifier
 
         # Trigger bindworker

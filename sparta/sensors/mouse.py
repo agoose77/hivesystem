@@ -5,9 +5,8 @@ from libcontext.pluginclasses import *
 
 
 class mouse(bee.worker):
-    """
-    The mouse sensor reports any mouse input during the last tick
-    """
+
+    """The mouse sensor reports any mouse input during the last tick"""
 
     # What kind of mouse click events are we listening for?
     mode = variable("str")

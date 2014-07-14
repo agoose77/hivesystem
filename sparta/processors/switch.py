@@ -3,9 +3,8 @@ from bee.segments import *
 
 
 class switch(bee.worker):
-    """
-    The switch processor's state can be triggered on and off
-    """
+
+    """The switch processor's state can be triggered on and off"""
 
     state = variable("bool")
     parameter(state)
@@ -41,5 +40,3 @@ class switch(bee.worker):
     @classmethod
     def form(cls, f):
         f.state.name = "Initial state"
-              
-      

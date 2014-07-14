@@ -7,10 +7,10 @@ from ..models.range_ import IntRange, FloatRange
 from random import random as rand_float, uniform as rand_range_float, randint as rand_range_int, seed as set_seed
 
 class random_(object):
-    """
-    The random sensor contains a random value every tick: it is True or False with a certain probability, or contains a value within a certain range
-    
-    """
+
+    """The random sensor contains a random value every tick: it is True or False with a certain probability, or
+    contains a value within a certain range"""
+
     metaguiparams = {
         "mode": "str",
         "autocreate": {"mode": "bool"},

@@ -5,9 +5,10 @@ from libcontext.pluginclasses import *
 
 
 class always(bee.worker):
-    """
-    The always trigger fires on all ticks
-    Skip: A poll evaluates one tick, then skips the next Skip ticks.
+
+    """The always trigger fires on all ticks.
+
+    Skip: A poll evaluates one tick, then skips the next Skip ticks
     """
 
     trig = output("push", "trigger")

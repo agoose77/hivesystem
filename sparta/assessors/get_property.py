@@ -6,6 +6,7 @@ from bee.types import stringtupleparser
 
 
 class get_property(object):
+
     """The get_property returns a named property"""
 
     metaguiparams = {
@@ -52,7 +53,7 @@ class get_property(object):
                 trigger_identifier_buffer = triggerfunc(identifier_buffer)
 
                 @modifier
-                def get_property_value(self):
+                def read_property_value(self):
                     self.trigger_property_name()
                     self.trigger_identifier_buffer()
                     self.property_value_variable = self.get_property_for(self.identifier_buffer,
@@ -63,14 +64,14 @@ class get_property(object):
 
             else:
                 @modifier
-                def get_property_value(self):
+                def read_property_value(self):
                     self.trigger_property_name()
                     self.property_value_variable = self.get_property(self.property_name_buffer)
 
                 def set_get_property(self, get_property):
                     self.get_property = get_property
 
-            pretrigger(property_value_variable, get_property_value)
+            pretrigger(property_value_variable, read_property_value)
 
             # Name the inputs and outputs
             guiparams = {
@@ -82,9 +83,11 @@ class get_property(object):
 
             def place(self):
                 if idmode == "bound":
-                    libcontext.socket(("entity", "bound", "property", "get"), socket_single_required(self.set_get_property))
+                    libcontext.socket(("entity", "bound", "property", "get"),
+                                      socket_single_required(self.set_get_property))
 
                 else:
-                    libcontext.socket(("entity", "property", "get"), socket_single_required(self.set_get_property_for))
+                    libcontext.socket(("entity", "property", "get"),
+                                      socket_single_required(self.set_get_property_for))
 
         return get_property

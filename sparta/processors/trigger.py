@@ -5,9 +5,8 @@ from libcontext.pluginclasses import *
 
 
 class trigger(bee.worker):
-    """
-    The trigger processor becomes True for the rest of the tick after it receives a trigger 
-    """
+
+    """The trigger processor becomes True for the rest of the tick after it receives a trigger """
 
     # Has a trigger been received during the last tick?
     is_active = variable("bool")

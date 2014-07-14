@@ -3,9 +3,8 @@ from bee.segments import *
 
 
 class not_(bee.worker):
-    """
-    The not assessor returns True if its input is False
-    """
+
+    """The not assessor returns True if its input is False"""
 
     outp = output("pull", "bool")
     inp = antenna("pull", "bool")

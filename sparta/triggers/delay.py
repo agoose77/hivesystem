@@ -5,11 +5,12 @@ from bee.segments import *
 
 
 class delay(object):
-    """
-    The delay trigger receives a signal and forwards it after a delay
+
+    """The delay trigger receives a signal and forwards it after a delay
     In single mode, receiving a new signal during the delay period resets it
     In multi mode, each signal is treated independently
     """
+
     metaguiparams = {
         "mode": "str",
         "autocreate": {"mode": "frames"},
@@ -58,6 +59,7 @@ class delay(object):
             guiparams = {
                 "delay": {"name": "delay", "fold": True},
                 "trig": {"name": "Trigger"},
+                "trig_deferred": {"name": "Trigger"},
             }
 
             @staticmethod

@@ -5,9 +5,9 @@ from libcontext.pluginclasses import *
 
 
 class view(object):
-    """
-The view assessor returns a view matrix, that can be manipulated to re-position an object in 3D space
-    """
+
+    """The view assessor returns a view matrix, that can be manipulated to re-position an object in 3D space"""
+
     metaguiparams = {
         "idmode": "str",
         "autocreate": {"idmode": "bound"},

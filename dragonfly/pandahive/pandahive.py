@@ -122,17 +122,23 @@ class pandaapp(bee.drone):
     def spawn_entity(self, entityclassname, entityname, entity_dict=None, entityclassdict=None):
         from panda3d.core import NodePath
 
-        if entity_dict is None: entity_dict = self._entities
-        if entityclassdict is None: entityclassdict = self._entityclasses
+        if entity_dict is None:
+            entity_dict = self._entities
+        if entityclassdict is None:
+            entityclassdict = self._entityclasses
+
         entityclass, nodepath = entityclassdict[entityclassname]
         entityclass.load()
+
         if nodepath is not None:
             import copy
 
             newnodepath = copy.copy(nodepath)
             entityclass.node.reparentTo(newnodepath)
+
         else:
             newnodepath = entityclass.node
+
         ent = self.window.render.attachNewNode("")
         newnodepath.reparentTo(ent)
         entity_dict[entityname] = ent

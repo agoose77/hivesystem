@@ -8,7 +8,7 @@ from ..HBlender.BlenderWidgets import *
 from ..HBlender.BlenderTextWidget import BlenderTextWidget
 
 reserved = (
-    "type", "default", "typename", "members",
+    "type", "default", "value", "typename", "members",
     "arraycount", "default_expr", "is_default"
 )
 

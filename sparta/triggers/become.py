@@ -5,9 +5,8 @@ from libcontext.pluginclasses import *
 
 
 class become(bee.worker):
-    """
-    The become trigger fires every tick if its input has just become True
-    """
+
+    """The become trigger fires every tick if its input has just become True"""
 
     inp = antenna("pull", "bool")
     b_inp = buffer("pull", "bool")

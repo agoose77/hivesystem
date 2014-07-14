@@ -48,26 +48,25 @@ from . import mytype
 
 class bindbuilder(mytype):
 
-    def __new__(cls, name, bases, dic):
+    def __new__(metacls, name, bases, cls_dict):
         if name.endswith("bind_baseclass"):
-            return mytype.__new__(cls, name, bases, dic)
+            return mytype.__new__(metacls, name, bases, cls_dict)
 
         rdic = {"bindname": bindantenna("id")}
-        rbases = list(bases)
-        rbases.reverse()
 
         bindhelpers_nameless = []
-        for b in bases:
-            if hasattr(b, "__bindhelpers__"):
-                for h in b.__bindhelpers__:
-                    if h not in bindhelpers_nameless: bindhelpers_nameless.append(h)
+        for cls in bases:
+            for bind_helper in getattr(cls, "__bindhelpers__", ()):
+                if bind_helper not in bindhelpers_nameless:
+                    bindhelpers_nameless.append(bind_helper)
 
-        for b in rbases:
-            rdic.update(b.__dict__)
+        for cls in reversed(bases):
+            rdic.update(cls.__dict__)
+
         oldbindparameters = {}
         for k in rdic:
             if isinstance(rdic[k], bindparameter): oldbindparameters[k] = rdic[k]
-        rdic.update(dic)
+        rdic.update(cls_dict)
 
         fr = id(inspect.currentframe().f_back)
         bindhelpers_nameless += get_reg_bindhelper(fr, rdic.values())
@@ -80,7 +79,7 @@ class bindbuilder(mytype):
                 bindhelpers.append((k, a))
         bindparameters = [h for h in bindhelpers if isinstance(h[1], bindparameter)]
 
-        dicitems = [(k, dic[k]) for k in sorted(dic.keys())]
+        dicitems = [(k, cls_dict[k]) for k in sorted(cls_dict.keys())]
         morebindparameters = [(h[0], bindparameter(h[1])) for h in dicitems if
                               h not in bindparameters and h[0] in oldbindparameters]
         bindparameters += morebindparameters
@@ -99,8 +98,8 @@ class bindbuilder(mytype):
         bindhelpers += [((nr + 1), a) for nr, a in enumerate(bindhelpers_nameless)]
 
         binders = [n[1] for n in bindhelpers if isinstance(n[1], binder)]
-        for b in binders:
-            assert b.parametername in bindparameternames, b.parametername
+        for cls in binders:
+            assert cls.parameter_name in bindparameternames, cls.parameter_name
 
         prebinders = [n[1] for n in bindhelpers if isinstance(n[1], prebinder)]
 
@@ -135,14 +134,14 @@ class bindbuilder(mytype):
 
                 def on_place(self):
                     for binder_ in self.binderinstances:
-                        if getattr(self, binder_.parametername) != binder_.parametervalue:
+                        if getattr(self, binder_.parameter_name) != binder_.parameter_value:
                             continue
 
                         values = {}
-                        for antenna_name in binder_.antennanames:
+                        for antenna_name in binder_.antenna_names:
                             values[antenna_name] = self.bindantennavalues[antenna_name]
 
-                        binder_.binderdroneinstance.bind(self, **values)
+                        binder_.binder_drone_instance.bind(self, **values)
 
                 @modifier
                 def parse_bindantennas(self):
@@ -151,18 +150,12 @@ class bindbuilder(mytype):
                     self.bindantennavalues = {}
                     for name, value in zip(bindantennas, vb):
                         self.bindantennavalues[name[0]] = value
-                    """
-                    for b in prebinders:
-                      values = {}
-                      for antennaname in b.antennanames:
-                        values[antennaname] = self.bindantennavalues[antennaname]
-                      b.prebinderfunc(self, **values)
-                    """
+
                     for prebinder in self.prebinderinstances:
                         values = {}
                         for antennaname in prebinder.antennanames:
                             values[antennaname] = self.bindantennavalues[antennaname]
-                        prebinder.binderdroneinstance.bind(self, **values)
+                        prebinder.binder_drone_instance.bind(self, **values)
 
                 @modifier
                 def do_bind(self):
@@ -321,24 +314,24 @@ class bindbuilder(mytype):
                     self.binderinstances = []
                     self.prebinderinstances = []
 
-                    for b in binders:
-                        inst = b.getinstance()
+                    for binder_instance in binders:
+                        inst = binder_instance.getinstance()
                         if inst != None:
                             self.binderinstances.append(inst)
 
-                    for b in prebinders:
-                        inst = b.getinstance()
+                    for binder_instance in prebinders:
+                        inst = binder_instance.getinstance()
                         if inst != None:
                             self.prebinderinstances.append(inst)
 
-                    for b in self.binderinstances:
-                        if getattr(self, b.parametername) != b.parametervalue:
+                    for binder_instance in self.binderinstances:
+                        if getattr(self, binder_instance.parameter_name) != binder_instance.parameter_value:
                             continue
 
-                        b.place()
+                        binder_instance.place()
 
-                    for b in self.prebinderinstances:
-                        b.place()
+                    for binder_instance in self.prebinderinstances:
+                        binder_instance.place()
 
                     libcontext.plugin("cleanupfunction",
                       libcontext.pluginclasses.plugin_single_required(self.m_stop_all))
@@ -346,7 +339,8 @@ class bindbuilder(mytype):
             return bindhiveworker(*args, **kwargs)
 
         rdic["worker"] = staticmethod(lambda *args, **kwargs: get_bindhiveworker(*args, **kwargs))
-        return type.__new__(cls, name, (bind_baseclass,), rdic)
+
+        return type.__new__(metacls, name, (bind_baseclass,), rdic)
 
 
 from .segments._helpersegment import reg_helpersegment
@@ -355,17 +349,21 @@ from . import myobject
 
 
 class bind_baseclass(myobject):
+
     __metaclass__ = bindbuilder
+
     hive = None  #make some prebinders that change self.hive if you need dynamic binding
     worker = None
 
 
 class reg_bindhelper(reg_helpersegment):
+
     def __new__(metacls, name, bases, dic, **kargs):
         return reg_helpersegment.__new__(metacls, name, bases, dic, **kargs)
 
 
 class bindhelper(myobject):
+
     __metaclass__ = reg_bindhelper
 
 
@@ -386,6 +384,8 @@ class binderdronewrapper(binderdrone):
 
 
 class pluginbridge(binderdrone):
+    """Place a socket for a plugin in the parent context, re-declaring it for the bound child context"""
+
     def __init__(self, pluginname, plugintype=libcontext.pluginclasses.plugin_supplier):
         self.pluginname = pluginname
         self.plugintype = plugintype
@@ -402,51 +402,52 @@ class pluginbridge(binderdrone):
 
 
 class binder(bindhelper):
+
     class binderinstance(object):
-        def __init__(self, parametername, parametervalue, binderdroneinstance, antennanames):
-            self.parametername = parametername
-            self.parametervalue = parametervalue
-            self.binderdroneinstance = binderdroneinstance
-            self.antennanames = antennanames
+
+        def __init__(self, parameter_name, parameter_value, binder_drone_instance, antenna_names):
+            self.parameter_name = parameter_name
+            self.parameter_value = parameter_value
+            self.binder_drone_instance = binder_drone_instance
+            self.antenna_names = antenna_names
 
         def place(self):
-            self.binderdroneinstance.place()
+            self.binder_drone_instance.place()
             #when placing the "bind" drone, call binderdrone.place()
             #when placing the new hive, call binderdrone.bind(bind object, ...) with the values of the specified antennanames
 
-    def __init__(self, parametername, parametervalue, drone, antennanames=[]):
-        if isinstance(antennanames, str): antennanames = [antennanames]
-        self.parametername = parametername
-        self.parametervalue = parametervalue
+    def __init__(self, parameter_name, parameter_value, drone, antenna_names=None):
+        if antenna_names is None:
+            antenna_names = []
+
+        if isinstance(antenna_names, str):
+            antenna_names = [antenna_names]
+
+        self.parameter_name = parameter_name
+        self.parameter_value = parameter_value
         assert drone is None or issubclass(drone._wrapped_hive, binderdrone._wrapped_hive)
         self.drone = drone
-        self.antennanames = antennanames
+        self.antenna_names = antenna_names
 
     def getinstance(self, __parent__=None):
-        if self.drone is None: return
-        binderdroneinstance = self.drone.getinstance(__parent__)
-        return self.binderinstance(self.parametername, self.parametervalue, binderdroneinstance, self.antennanames)
+        if self.drone is None:
+            return
 
-
-"""
-class prebinder(bindhelper):
-  def __init__(self,  prebinderfunc, antennanames=[]):
-    if isinstance(antennanames, str): antennanames = [antennanames]  
-    self.prebinderfunc = prebinderfunc
-    self.antennanames = antennanames
-    #signature: prebinderfunc(bind object, ...)
-    #this function is called before the binding process begins, so that parameters and the hive attribute can be changed
-"""
+        binder_drone_instance = self.drone.getinstance(__parent__)
+        return self.binderinstance(self.parameter_name, self.parameter_value, binder_drone_instance, self.antenna_names)
 
 
 class prebinder(bindhelper):
+
+    """ Called before the binding process begins, in order to modify bind antennas and have attributes"""
+
     class binderinstance(object):
-        def __init__(self, binderdroneinstance, antennanames):
-            self.binderdroneinstance = binderdroneinstance
+        def __init__(self, binder_drone_instance, antennanames):
+            self.binder_drone_instance = binder_drone_instance
             self.antennanames = antennanames
 
         def place(self):
-            self.binderdroneinstance.place()
+            self.binder_drone_instance.place()
             #when placing the "bind" drone, call binderdrone.place()
             #before placing the new hive, call binderdrone.bind(bind object, ...) with the values of the specified antennanames
 
@@ -458,17 +459,18 @@ class prebinder(bindhelper):
 
     def getinstance(self, __parent__=None):
         if self.drone is None: return
-        binderdroneinstance = self.drone.getinstance(__parent__)
-        return self.binderinstance(binderdroneinstance, self.antennanames)
+        binder_drone_instance = self.drone.getinstance(__parent__)
+        return self.binderinstance(binder_drone_instance, self.antennanames)
 
 
 class bindparameter(bindhelper):  #bindhelper, just to know the order
+
     def __init__(self, value=None):
         self.value = value
 
 
 class bindantenna(bindhelper):  #bindhelper, just to know the order
+
     def __init__(self, type):
         assert type in types, type
         self.type = type
-      

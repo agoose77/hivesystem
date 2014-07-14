@@ -4,10 +4,9 @@ from bee.types import stringtupleparser
 
 
 class push_buffer(object):
-    """
-    The push buffer holds a single value
-    Whenever the buffer is triggered, the value is pushed out
-    """
+
+    """The push buffer holds a single value. Whenever the buffer is triggered, the value is pushed out"""
+
     metaguiparams = {
         "type_": "str",
         "autocreate": {"type_": "bool"},
@@ -17,8 +16,12 @@ class push_buffer(object):
     def form(cls, f):
         f.type_.name = "Type"
         f.type_.type = "option"
-        f.type_.options = "bool", "int", "float", "(str,identifier)", "(str,action)", "(str,keycode)", "(str,message)", "(str,property)", "(str,process)", "str", "(object,matrix)", "(object,bge)", "object", "custom"
-        f.type_.optiontitles = "Bool", "Integer", "Float", "ID String", "Action String", "Key String", "Message String", "Property String", "Process ID String", "Generic String", "Matrix Object", "BGE Object", "Generic Object", "Custom"
+        f.type_.options = "bool", "int", "float", "(str,identifier)", "(str,action)", "(str,keycode)", "(str,message)",\
+                          "(str,property)", "(str,process)", "str", "(object,matrix)", "(object,bge)", "object",\
+                          "custom"
+        f.type_.optiontitles = "Bool", "Integer", "Float", "ID String", "Action String", "Key String", "Message String",\
+                               "Property String", "Process ID String", "Generic String", "Matrix Object", "BGE Object",\
+                               "Generic Object", "Custom"
         f.type_.default = "bool"
 
     def __new__(cls, type_):
@@ -49,4 +52,3 @@ class push_buffer(object):
             }
 
         return push_buffer
-    

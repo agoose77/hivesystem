@@ -4,6 +4,7 @@ from bee.segments import *
 
 
 class stop(bee.worker):
+
     """The stop trigger fires when the hive gets stopped"""
 
     trig = output("push", "trigger")

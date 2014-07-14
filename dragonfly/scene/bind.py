@@ -258,7 +258,7 @@ class bind(bind_baseclass):
     binder("bind_camera", "entity", camerabinder(), "bindname")
 
     bind_spawn = bindparameter(True)
-    binder("bind_spawn", True, pluginbridge(("spawn", "entity")))
+    binder("bind_spawn", True, pluginbridge(("entity", "spawn")))
 
     bind_collision_api = bindparameter(True)
     binder("bind_collision_api", True, pluginbridge(("collision", "contact_test")))

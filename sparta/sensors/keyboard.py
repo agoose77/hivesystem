@@ -6,9 +6,8 @@ from dragonfly.keycodes import *
 
 
 class keyboard(bee.worker):
-    """
-    The keyboard sensor reports any keyboard input during the last tick
-    """
+
+    """The keyboard sensor reports any keyboard input during the last tick"""
 
     # Which key are we listening for?
     keycode = variable(("str", "keycode"))

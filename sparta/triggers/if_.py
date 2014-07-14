@@ -5,9 +5,8 @@ from libcontext.pluginclasses import *
 
 
 class if_(bee.worker):
-    """
-    The if trigger fires every tick if its input is True
-    """
+
+    """The if trigger fires every tick if its input is True"""
 
     inp = antenna("pull", "bool")
     b_inp = buffer("pull", "bool")

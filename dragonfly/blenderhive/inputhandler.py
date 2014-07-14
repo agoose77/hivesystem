@@ -111,6 +111,7 @@ def init():
 
 
 class inputhandler(bee.drone):
+
     def __init__(self):
         self.targets = []
         self.just_pressed = set()

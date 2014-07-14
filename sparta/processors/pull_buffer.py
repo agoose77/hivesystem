@@ -4,10 +4,9 @@ from bee.types import stringtupleparser
 
 
 class pull_buffer(object):
-    """
-    The pull buffer holds a single value
-    Whenever the buffer is triggered, a new value is pulled in
-    """
+
+    """The pull buffer holds a single value. Whenever the buffer is triggered, a new value is pulled in"""
+
     metaguiparams = {
         "type_": "str",
         "autocreate": {"type_": "bool"},
@@ -49,4 +48,3 @@ class pull_buffer(object):
             }
 
         return pull_buffer
-    

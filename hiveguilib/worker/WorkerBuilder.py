@@ -159,8 +159,17 @@ def build_worker_plain(beename, antennas, outputs, ev, paramnames, paramtypelist
             inmap[pname] = None
         else:
             outmap[pname] = None
+
+    data = dict(zip(paramnames, paramtypelist))
     for paramname in paramnames:
-        pmap[paramname] = None
+        pmap[paramname] = paramname
+        attribute = Attribute(
+            paramname,
+            None, None,
+            label=paramname,
+            type=data[paramname][0][0]
+        )
+        attribs.append(attribute)
     mapping.inmap, mapping.outmap, mapping.pmap = inmap, outmap, pmap
     return attribs, mapping
 
@@ -173,6 +182,7 @@ def build_worker_default(beename, antennas, outputs, ev, paramnames, paramtypeli
     attrs = [(pname, "antenna", pval) for pname, pval in antennas.items()] + \
             [(pname, "output", pval) for pname, pval in outputs.items()]
     memberorder = guiparams.get("guiparams", {}).get("_memberorder", {})
+
     attrs.sort(key=functools.partial(keyfunc, memberorder))
 
     names = {}
@@ -190,6 +200,15 @@ def build_worker_default(beename, antennas, outputs, ev, paramnames, paramtypeli
 
     has_value = False
     valuetype = None
+
+    # These are interchangable
+    if not ("value" in paramnames and "v" in paramnames):
+        for vv in "value", "v":
+            if vv in paramnames:
+                has_value = True
+                d = dict(zip(paramnames, paramtypelist))
+                valuetype = d[vv][0][0]
+                pmap[vv] = "value"
 
     for pname, io, pval in attrs:
         if io == "antenna" and pname == "inp":
@@ -210,6 +229,7 @@ def build_worker_default(beename, antennas, outputs, ev, paramnames, paramtypeli
     if has_value:
         a_value = Attribute("value", type=valuetype)
         attribs.append(a_value)
+
     for pname, io, pval in attrs:
         mode, type_ = pval
         h = Hook(mode, type_)
@@ -224,9 +244,11 @@ def build_worker_default(beename, antennas, outputs, ev, paramnames, paramtypeli
             if has_value and pname == "outp":
                 a_value.outhook = h
                 outmap[pname] = "value"
+
                 continue
             inh, outh = None, h
             outmap[pname] = pname
+
         a = Attribute(
             pname,
             inh, outh,
@@ -633,6 +655,8 @@ class WorkerBuilder(object):
         manipulator = None
         if hasattr(metaworker, "form") and callable(metaworker.form):
             manipulator = metaworker.form
+
+        #print(metaworker.guiparams, manipulator, id_)
         self._form_manipulators[id_] = make_form_manipulators(metaworker.metaguiparams, manipulator)
 
     def get_metaworker(self, id_):
@@ -686,6 +710,7 @@ class WorkerBuilder(object):
         assert workertype in self._form_manipulators, workertype
         if metaparams is None:
             return self._form_manipulators[workertype]
+
         assert workertype in self._metaworkers
         key = workertype, freeze(metaparams.items())
         return self._form_manipulators[key]

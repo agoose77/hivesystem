@@ -231,7 +231,7 @@ class WorkerManager(object):
 
         self._wim.add_workerinstance(worker_id, worker_instance, x, y)
 
-        paramter_values = {}
+        parameter_values = {}
         if paramvalues is not None:
             argument_list = []
             for parameter_name in worker_instance.paramnames:
@@ -242,9 +242,9 @@ class WorkerManager(object):
 
             for parameter_name, argument in zip(worker_instance.paramnames, arguments):
                 if argument is not None:
-                    paramter_values[parameter_name] = argument
+                    parameter_values[parameter_name] = argument
 
-        self._worker_parameters[worker_id] = [workertype, worker_instance.paramnames, worker_instance.paramtypelist, paramter_values, worker_instance.guiparams]
+        self._worker_parameters[worker_id] = [workertype, worker_instance.paramnames, worker_instance.paramtypelist, parameter_values, worker_instance.guiparams]
         if self._antennafoldstate is not None:
             gp = {}
             pullantennas = []
@@ -254,7 +254,7 @@ class WorkerManager(object):
                 pullantennas = get_param_pullantennas(antennas)
             self._antennafoldstate.create_worker(worker_id, pullantennas, gp)
 
-        self._wim.set_parameters(worker_id, paramter_values)
+        self._wim.set_parameters(worker_id, parameter_values)
 
         self._persistent_id_manager.create_persistent_id(worker_id)
 
@@ -423,18 +423,24 @@ class WorkerManager(object):
             worker_id = self.get_new_workerid(workertype)
 
         self.instantiate(worker_id, workertype, x, y, metaparamvalues)
-
         if already_existed:
             for connection in worker_connections:
                 con_id = self.get_new_connection_id("con")
+
                 start = connection.start_node
                 end = connection.end_node
+
                 try:
                     self._wim.add_connection(con_id, (start, connection.start_attribute),
                                              (end, connection.end_attribute), connection.interpoints)
                 except KeyError:
+                    import traceback
+                    traceback.print_exc()
                     continue
 
+                else:
+                    print(start, end, "NEW")
+        print("DONE")
         self.select([worker_id])
 
     def _meta_autocreate(self, workertype, worker_id, x, y):

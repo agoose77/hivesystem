@@ -4,6 +4,11 @@ import spyder.formtools
 import spyder.qtform
 from spyder.qtform.anyQt.QtCore import QBuffer
 from spyder.qtform.anyQt.QtUiTools import QUiLoader
+
+from spyder.qtform import qtview, reserved as reserved0
+reserved = set(reserved0)
+reserved.add("value")
+
 from spyder.qtform import qtview, reserved
 from spyder.formtools import model, controller
 import functools

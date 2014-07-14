@@ -36,15 +36,16 @@ class near_drone(bee.drone):
     def create_sphere(self, radius, is_ghost):
         return PsuedoCollisionSphereShape(radius)
 
-    def contact_test(self, entity_name, node):
+    def contact_test(self, position, node, filter_func=None):
         contacts = []
-        source_position = self.get_entity_matrix(entity_name).get_proxy("Blender").worldPosition
 
+        source_position = mathutils.Vector((position.x, position.y, position.z))
         for distance, node in self.kd_tree.nn_range_search(source_position, node.radius):
             position = node.position
             entity_name_ = position.data
-            if entity_name_ == entity_name:
-                continue
+            if filter_func is not None:
+                if not filter_func(entity_name_):
+                    continue
 
             contact = PsuedoHitContact(distance, position, position, node, entity_name_)
             contacts.append(contact)
@@ -79,7 +80,7 @@ class near_drone(bee.drone):
     def place(self):
         libcontext.plugin(("collision", "contact_test"), plugin_supplier(self.contact_test))
         libcontext.plugin(("collision", "create_node", "sphere"), plugin_supplier(self.create_sphere))
-        libcontext.socket("get_entity_names", socket_single_required(self.set_get_entity_names))
+        libcontext.socket(("entity", "names"), socket_single_required(self.set_get_entity_names))
         libcontext.socket(("entity", "matrix"), socket_single_required(self.set_get_entity_matrix))
 
         # Add a high-priority deactivate() listener on every tick

@@ -3,9 +3,8 @@ from bee.segments import *
 
 
 class all_(bee.worker):
-    """
-    The all assessor returns True if all of its inputs are True
-    """
+
+    """The all assessor returns True if all of its inputs are True"""
 
     outp = output("pull", "bool")
     inp1 = antenna("pull", "bool")
@@ -28,9 +27,7 @@ class all_(bee.worker):
     # Evaluation function
     @modifier
     def evaluate(self):
-        outp = False
-        if self.b_inp1 and self.b_inp2 and self.b_inp3 and self.b_inp4: outp = True
-        self.v_outp = outp
+        self.v_outp = (self.b_inp1 and self.b_inp2 and self.b_inp3 and self.b_inp4)
 
     # Whenever the output is requested: update the inputs and evaluate
     pretrigger(v_outp, b_inp1)

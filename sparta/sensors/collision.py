@@ -5,10 +5,10 @@ from libcontext.pluginclasses import *
 
 
 class collision(object):
-    """
-    The collision sensor reports collisions between a specific object and all other objects
-    The other objects can be filtered by material, property or identifier
-    """
+
+    """The collision sensor reports collisions between a specific object and all other objects
+    The other objects can be filtered by material, property or identifier"""
+
     metaguiparams = {
         "idmode": "str",
         "autocreate": {"idmode": "bound"},
@@ -97,7 +97,8 @@ class collision(object):
                     collision_identifier = None
 
                 # Set outputs
-                self.collision_id_variable = collision_identifier
+                if collision_identifier is not None:
+                    self.collision_id_variable = collision_identifier
                 self.is_active = collision_identifier is not None
 
             def get_filter_func(self):

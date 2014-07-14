@@ -12,6 +12,13 @@ Current TODO
   * Implement tooltips for workers
   * Simplify Hive Binding
   * Clean code internals
+  
+  * Fix pmap value stuff
+  * Cleanup blenderview
+  * Implement object actuator, action actuator
+  * Look at how to forward unbound plugins
+  * Clean guiparams of various workers
+  * Document hive internals
 
 Hive Launch actuator
 ====================
@@ -19,3 +26,5 @@ Hive Launch actuator
   * Provide __advanced__ configuration options
   * Support non-static hivemap name (as an antenna)
   * Output the process ID
+
+

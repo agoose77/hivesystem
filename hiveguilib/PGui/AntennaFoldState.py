@@ -80,7 +80,6 @@ class AntennaFoldState(object):
         if workerid in self._init_widget:
             return
 
-        # COPY SECTION
         state = self.states[workerid]
         if state is None:
             return

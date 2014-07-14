@@ -8,14 +8,15 @@ class bindbridge(drone):
 
     def place(self):
         for binder in self.bindobject.binderinstances:
-            if getattr(self.bindobject, binder.parametername) != binder.parametervalue: continue
-            # print binder.parametername, binder.parametervalue, str(binder.binderdroneinstance.__beename__), tuple(binder.antennanames)
-            if len(binder.antennanames):
-                if binder.antennanames != ["bindname"]:
-                    raise TypeError("Static binder worker cannot provide bindantennas %s" % list(binder.antennanames))
-                binder.binderdroneinstance.bind(self.bindobject, bindname=self.bindobject.b_bindname)
+            if getattr(self.bindobject, binder.parameter_name) != binder.parameter_value:
+                continue
+            # print binder.parametername, binder.parametervalue, str(binder.binder_drone_instance.__beename__), tuple(binder.antennanames)
+            if len(binder.antenna_names):
+                if binder.antenna_names != ["bindname"]:
+                    raise TypeError("Static binder worker cannot provide bindantennas %s" % list(binder.antenna_names))
+                binder.binder_drone_instance.bind(self.bindobject, bindname=self.bindobject.b_bindname)
             else:
-                binder.binderdroneinstance.bind(self.bindobject)
+                binder.binder_drone_instance.bind(self.bindobject)
         s = libcontext.socketclasses.socket_supplier(lambda f: self.bindobject.startupfunctions.append(f))
         libcontext.socket("startupfunction", s)
 

@@ -4,9 +4,8 @@ from bee.segments import *
 
 
 class start(bee.worker):
-    """
-    The start trigger fires on the first tick (start event)
-    """
+
+    """The start trigger fires on the first tick (start event)"""
 
     trig = output("push", "trigger")
     trigfunc = triggerfunc(trig)

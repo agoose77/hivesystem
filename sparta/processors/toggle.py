@@ -3,9 +3,8 @@ from bee.segments import *
 
 
 class toggle(bee.worker):
-    """
-    The toggle processor toggles its state when triggered
-    """
+
+    """The toggle processor toggles its state when triggered"""
 
     state = variable("bool")
     parameter(state)
@@ -17,10 +16,7 @@ class toggle(bee.worker):
 
     @modifier
     def toggle_state(self):
-        if self.state:
-            self.state = False
-        else:
-            self.state = True
+        self.state = not self.state
 
     trigger(trig, toggle_state)
 
