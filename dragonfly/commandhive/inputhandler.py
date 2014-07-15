@@ -26,7 +26,7 @@ class inputhandler(bee.drone):
             while not event.is_set():
                 try:
                     com = raw_input(">>>")
-                    if com != None:
+                    if com is not None:
                         addcomfunc(com)
                         time.sleep(0.2)
                 except EOFError:

@@ -70,7 +70,7 @@ class beewrapper(beehelper):
 
     def __getattr__(self, attr):
         try:
-            if self.instance != None:
+            if self.instance is not None:
                 ret = getattr(self.instance, attr)
             else:
                 ret = getattr(self._wrapped_hive, attr)

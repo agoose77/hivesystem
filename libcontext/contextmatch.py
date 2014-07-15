@@ -19,7 +19,7 @@ def import_sockets(context, socket_imports, plugin_imports, sockets_original, im
     for nwname in newsockets:
         currsockets = []
         for contextinstance, name, newname, optional in newsockets[nwname]:
-            if name != None:
+            if name is not None:
                 currsockets0 = retrieve_sockets(contextinstance, name)
                 if currsockets0 is None:
                     if not optional:
@@ -51,7 +51,7 @@ def import_plugins(context, plugin_imports, socket_imports, plugins_original, im
         count += 1
         currplugins = []
         for contextinstance, name, newname, optional in newplugins[nwname]:
-            if name != None:
+            if name is not None:
                 # report("!", count, name, contextinstance.contextname)
                 currplugins0 = retrieve_plugins(contextinstance, name)
                 #report("!!")
@@ -105,7 +105,7 @@ def contextmatch(
         for p in plugs:
             if name not in sockets \
                     and p not in import_origins_plugins \
-                    and p != None:
+                    and p is not None:
                 try:
                     p.unfilled()
                 except Exception as e:
@@ -142,7 +142,7 @@ def contextmatch(
         if name in filled_sockets: continue
         try:
             for s in sockets[name]:
-                if s not in import_origins_sockets and s != None:
+                if s not in import_origins_sockets and s is not None:
                     s.unfilled()
         except Exception as e:
             from . import add_contextnames

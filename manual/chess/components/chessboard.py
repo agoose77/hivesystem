@@ -64,7 +64,7 @@ class chessboard(TutChessboard.World):
         dest = 8 * dest[1] + dest[0]
 
         def remove_(dest):
-            if dest in self.pieces and self.pieces[dest] != None and self.pieces[dest].obj != None:
+            if dest in self.pieces and self.pieces[dest] is not None and self.pieces[dest].obj is not None:
                 self.pieces[dest].obj.hide()
                 self.pieces[dest].obj.setPos(-100, -100, -100)
                 self.pieces[dest] = None

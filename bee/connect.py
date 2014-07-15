@@ -202,7 +202,7 @@ class connect(beehelper):
                 else:
                     return
             self.source_name = beename
-            if self.source_io != None:
+            if self.source_io is not None:
                 self.source = (self.source_name, self.source_io)
             else:
                 self.source = self.source_name
@@ -216,7 +216,7 @@ class connect(beehelper):
                 else:
                     return
             self.target_name = beename
-            if self.target_io != None:
+            if self.target_io is not None:
                 self.target = (self.target_name, self.target_io)
             else:
                 self.target = self.target_name
@@ -224,7 +224,7 @@ class connect(beehelper):
 
     def get_source_candidates(self, sourcecontext):
         source_plugin_candidates, source_socket_candidates = [], []
-        if self.source_io != None:
+        if self.source_io is not None:
             found = False
             if self.source_io in sourcecontext.plugins:
                 source_plugin_candidates = [self.source_io]
@@ -296,7 +296,7 @@ class connect(beehelper):
 
     def get_target_candidates(self, targetcontext):
         target_plugin_candidates, target_socket_candidates = [], []
-        if self.target_io != None:
+        if self.target_io is not None:
             found = False
             if self.target_io in targetcontext.plugins:
                 target_plugin_candidates = [self.target_io]

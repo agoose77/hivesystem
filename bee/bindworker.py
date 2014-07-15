@@ -29,7 +29,7 @@ class bindworkerwrapper(beewrapper):
     def getinstance(self, __parent__=None):
         ret = beewrapper.getinstance(self, __parent__)
         bindworkerinstancehive = None
-        if self.hive != None:
+        if self.hive is not None:
             class bindworkerinstancehive(self.hive):
                 pass
         self.instance.hive = bindworkerinstancehive

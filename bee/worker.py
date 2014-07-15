@@ -12,28 +12,34 @@ from .resolve import resolve
 
 
 class workerframe(libcontext.subcontext):
+
+    __filtered_segmentnames__ = []
+
     bee = None
     guiparams = {}
-    __filtered_segmentnames__ = []
 
     def __init__(self, *args, **kargs):
         self.args = args
-        self.kargs = kargs
+        self.kwargs = kargs
         self.built = False
         self._catch_targets = []
         self._ev = libcontext.evsubcontext(libcontext.evexccontext, "evexc", lambda: self.context)
 
     def build(self, beename):
-        self.beename = beename
+        self.bee_name = beename
         args = [resolve(a) for a in self.args]
-        kargs = {}
-        for k in self.kargs:
-            kargs[k] = resolve(self.kargs[k])
+        kwargs = {}
+
+        for key in self.kwargs:
+            kwargs[key] = resolve(self.kwargs[key])
+
         try:
-            self.bee = self.bee(self.beename, *args, **kargs)
+            self.bee = self.bee(self.bee_name, *args, **kwargs)
             self.bee.parent = self.parent
+
         except TypeError as e:
-            raise TypeError(self.beename, *e.args)
+            raise TypeError(self.bee_name, *e.args)
+
         libcontext.subcontext.__init__(self, beename, hive=False, import_parent_skip=["evexc"])
         self.built = True
 
@@ -41,11 +47,13 @@ class workerframe(libcontext.subcontext):
         self._catch_targets.append(catch_target)
 
     def catch(self, segmentname, exc_type, exc_value):
-        e = exception((self.beename, segmentname), (exc_type, exc_value))
-        for c in self._catch_targets:
-            c(e)
-            if e.cleared: break
-        return e
+        exc = exception((self.bee_name, segmentname), (exc_type, exc_value))
+        for catch_targets in self._catch_targets:
+            catch_targets(exc)
+            if exc.cleared:
+                break
+
+        return exc
 
     def __place__(self):
         from libcontext.socketclasses import socket_container
@@ -99,9 +107,11 @@ class runtime_worker(object):
 
         self._context = libcontext.get_curr_context()
         self.place()
+
         for segment in self._runtime_segments:
             segment.place()
-        if self.catchfunc != None:
+
+        if self.catchfunc is not None:
             for segment in self._runtime_segments:
                 segment.set_catchfunc(functools.partial(self.catchfunc, segment.segmentname))
 

@@ -274,7 +274,7 @@ def build_hivemap(hm, *args, **kwargs):
             if _wdtype == "worker":
                 _worker = _wd
 
-                if _worker.metaparameters != None:
+                if _worker.metaparameters is not None:
                     _mp = __makehivemap_workers__[_worker.workertype].metaguiparams
                     metaparamdict = dict([(_p.pname, _p.pvalue) for _p in _worker.metaparameters])
                     for _k in list(metaparamdict.keys()):
@@ -292,7 +292,7 @@ def build_hivemap(hm, *args, **kwargs):
 
                 __makehivemap_p = {}
                 _p = __makehivemap_worker.guiparams
-                if _worker.parameters != None:
+                if _worker.parameters is not None:
                     _param = None
 
                     for _param in _worker.parameters:

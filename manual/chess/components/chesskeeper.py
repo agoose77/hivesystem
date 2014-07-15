@@ -95,7 +95,7 @@ class chesskeeper(object):
         ret = []
         for xx, yy in line:
             v = self._grid[(xx, yy)]
-            if v != None:
+            if v is not None:
                 if v[1] != self.turn:
                     ret.append((xx, yy))
                 break
@@ -202,7 +202,7 @@ class chesskeeper(object):
             #-no pieces between king and rook
             empty = False
             for xx in dx:
-                if self._grid[(xx, y)] != None: break
+                if self._grid[(xx, y)] is not None: break
             else:
                 empty = True
             if not empty: continue
@@ -271,7 +271,7 @@ class chesskeeper(object):
         if special is None: special = ""
         c = "-"
         if start not in self._grid or dest not in self._grid: raise ValueError
-        if self._grid[dest] != None or special == "ep": c = "x"
+        if self._grid[dest] is not None or special == "ep": c = "x"
         if self._grid[start] is None: raise ValueError
         p = self._grid[start][0]
         if p == "p":

@@ -68,7 +68,7 @@ class hivewrapper(beewrapper):
         for beename, bee in combobees:
             for filt in self.__metaclass__.__registerfilters__:
                 fbee = filt(bee)
-                if fbee != None:
+                if fbee is not None:
                     m += 1
                     b.append(("combobee" + str(m), fbee))
                     try:
@@ -321,7 +321,7 @@ class emptyhivecontext(hivecontext_base):
         self.connect_contexts = []
         for bee_name, bee in self.bees:
             try:
-                if hasattr(bee, "connect_contexts") and bee.connect_contexts != None and len(bee.connect_contexts) and \
+                if hasattr(bee, "connect_contexts") and bee.connect_contexts is not None and len(bee.connect_contexts) and \
                                 bee.connect_contexts[-1] != "connect_contexts":
                     for context in bee.connect_contexts: self.connect_contexts.append(context)
             except TypeError:
@@ -460,7 +460,7 @@ class _hivebuilder(reg_beehelper):
         bases = []
         combobee_bases = []
         for base_cls in bases0:
-            if hasattr(base_cls, "_wrapped_hive") and not isinstance(base_cls._wrapped_hive, tuple) and base_cls._wrapped_hive != None:
+            if hasattr(base_cls, "_wrapped_hive") and not isinstance(base_cls._wrapped_hive, tuple) and base_cls._wrapped_hive is not None:
                 bases.append(base_cls._wrapped_hive)
                 bases += base_cls._wrapped_hive.__mro__[1:]
                 combobee_bases += base_cls._combobee_bases

@@ -30,7 +30,7 @@ class complexscheduler(simplescheduler):
         loop = True
         while loop:
             for enr, e in enumerate(self.events):
-                if e[2] != None:
+                if e[2] is not None:
                     mode, value = e[2]
                     if mode == "ticks" and value <= self.pacemaker.count: continue
                     if mode == "time" and value < self.pacemaker.time: continue

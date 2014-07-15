@@ -316,12 +316,12 @@ class bindbuilder(mytype):
 
                     for binder_instance in binders:
                         inst = binder_instance.getinstance()
-                        if inst != None:
+                        if inst is not None:
                             self.binder_instances.append(inst)
 
                     for binder_instance in prebinders:
                         inst = binder_instance.getinstance()
-                        if inst != None:
+                        if inst is not None:
                             self.pre_binder_instances.append(inst)
 
                     for binder_instance in self.binder_instances:

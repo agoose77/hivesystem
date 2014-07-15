@@ -22,7 +22,7 @@ class get_parameter(object):
         try:
             ret = params[self.name]
         except KeyError:
-            if parent != None:
+            if parent is not None:
                 raise KeyError("%s does not contain parameter '%s'" % (parent, self.name))
             else:
                 raise KeyError("Parameters '%s' do not contain parameter '%s'" % (params.keys(), self.name))

@@ -43,7 +43,7 @@ class pandaresource(object):
         if matrix is not None:
             mat = get_matrix4(pos, x, y, z)
             self.node.setMat(mat)
-        if material != None:
+        if material is not None:
             self.node.setMaterial(material, priority=1)
         return self.node
 
@@ -112,7 +112,7 @@ class eggactorclass(pandaresource):
         if panda3d is None: raise ImportError("Cannot locate Panda3D")
         self.actor = Actor(self.eggname, self.animations)
         self.node = self.actor
-        if self.material != None: self.node.setMaterial(self.material, priority=1)
+        if self.material is not None: self.node.setMaterial(self.material, priority=1)
         self.loaded = False  #for every new use, re-load the Actor
 
 
@@ -123,7 +123,7 @@ class eggmodelclass(pandaresource):
 
     def load_model(self, modelloader, material):
         self.model = modelloader(self.eggname)
-        if material != None:
+        if material is not None:
             self.model.setMaterial(material, priority=1)
 
     def load(self):
@@ -136,30 +136,30 @@ class eggmodelclass(pandaresource):
 def make_geom(vertices, normals, colors, texcoords):
     if panda3d is None: raise ImportError("Cannot locate Panda3D")
     format = "V3"
-    if normals != None:
+    if normals is not None:
         assert len(normals) == len(vertices)
         format += "n3"
 
-    if colors != None:
+    if colors is not None:
         assert len(colors) == len(vertices)
         format += "cp"
 
-    if texcoords != None:
+    if texcoords is not None:
         assert len(texcoords) == len(vertices)
         format += "t2"
     format = getattr(GeomVertexFormat, "get" + format)()
     vdata = GeomVertexData("", format, Geom.UHStatic)
 
     v_vertex = GeomVertexWriter(vdata, 'vertex')
-    if normals != None: v_normals = GeomVertexWriter(vdata, 'normal')
-    if colors != None: v_colors = GeomVertexWriter(vdata, 'color')
-    if texcoords != None: v_texcoords = GeomVertexWriter(vdata, 'texcoord')
+    if normals is not None: v_normals = GeomVertexWriter(vdata, 'normal')
+    if colors is not None: v_colors = GeomVertexWriter(vdata, 'color')
+    if texcoords is not None: v_texcoords = GeomVertexWriter(vdata, 'texcoord')
 
     for n in range(len(vertices)):
         v_vertex.addData3f(*vertices[n])
-        if normals != None: v_normals.addData3f(*normals[n])
-        if colors != None: v_colors.addData4f(*colors[n])
-        if texcoords != None: v_texcoords.addData2f(*texcoords[n])
+        if normals is not None: v_normals.addData3f(*normals[n])
+        if colors is not None: v_colors.addData4f(*colors[n])
+        if texcoords is not None: v_texcoords.addData2f(*texcoords[n])
 
     return Geom(vdata)
 
@@ -182,7 +182,7 @@ class manualmodel_per_vertex(pandaresource):
     def load(self):
         if panda3d is None: raise ImportError("Cannot locate Panda3D")
         #KLUDGE
-        if self.material != None and self.colors == None:
+        if self.material is not None and self.colors == None:
             col = self.material.getAmbient()
             col = (col[0] / col[3], col[1] / col[3], col[2] / col[3], 1.0)
             self.colors = (col,) * len(self.vertices)
@@ -205,7 +205,7 @@ class manualmodel_per_vertex(pandaresource):
 
         self.node = NodePath(node)
         self.node.setTwoSided(True)
-        if self.material != None: self.node.setMaterial(self.material, priority=1)
+        if self.material is not None: self.node.setMaterial(self.material, priority=1)
         self.loaded = True
 
 
@@ -223,15 +223,15 @@ class manualmodel_per_face(pandaresource):
         self.material = material
         assert self.facecolors == None or self.fvcolors == None
         self.texcoords = texcoords
-        if self.normals != None:
+        if self.normals is not None:
             assert len(self.normals) == len(self.faces)
-        if self.facecolors != None:
+        if self.facecolors is not None:
             assert len(self.facecolors) == len(self.faces)
-        if self.fvcolors != None:
+        if self.fvcolors is not None:
             assert len(self.fvcolors) == len(self.faces)
             for facecolors, facevertices in zip(self.fvcolors, self.faces):
                 assert len(facecolors) == len(facevertices)
-        if self.texcoords != None:
+        if self.texcoords is not None:
             assert len(self.texcoords) == len(self.faces)
             for facetexcoords, facevertices in zip(self.texcoords, self.faces):
                 assert len(facetexcoords) == len(facevertices)
@@ -246,19 +246,19 @@ class manualmodel_per_face(pandaresource):
             facevertices = self.faces[n]
             vertices = [self.vertices[v] for v in facevertices]
             normals = None
-            if self.normals != None:
+            if self.normals is not None:
                 normals = (self.normals[n],) * len(facevertices)
             colors = None
-            if self.facecolors != None:
+            if self.facecolors is not None:
                 colors = (self.facecolors[n],) * len(facevertices)
-            elif self.fvcolors != None:
+            elif self.fvcolors is not None:
                 colors = self.fvcolors[n]
             texcoords = None
-            if self.texcoords != None:
+            if self.texcoords is not None:
                 texcoords = self.texcoords[n]
 
             #KLUDGE
-            if self.material != None and colors == None:
+            if self.material is not None and colors == None:
                 col = self.material.getAmbient()
                 col = (col[0] / col[3], col[1] / col[3], col[2] / col[3], 1.0)
                 colors = (col,) * len(vertices)
@@ -279,7 +279,7 @@ class manualmodel_per_face(pandaresource):
             node.addGeom(geom)
         self.node = NodePath(node)
         self.node.setTwoSided(True)
-        if self.material != None:
+        if self.material is not None:
             self.node.setMaterial(self.material, priority=1)
         self.loaded = True
 
@@ -346,9 +346,9 @@ class pandascene(bee.drone):
             model = self.get_loader().loadModel(eggname)
             model.setMat(node.getMat())
             material = node.getMaterial()
-            if material != None:
+            if material is not None:
                 model.setMaterial(material, priority=1)
-            if entityname != None:
+            if entityname is not None:
                 self.entity_register((entityname, NodePath(model)))
             model.reparentTo(node.getParent())
             node.detachNode()
@@ -357,9 +357,9 @@ class pandascene(bee.drone):
             actor = Actor(eggname, animations)
             actor.setMat(node.getMat())
             material = node.getMaterial()
-            if material != None:
+            if material is not None:
                 actor.setMaterial(material, priority=1)
-            if entityname != None:
+            if entityname is not None:
                 self.actor_register((entityname, actor))
                 self.entity_register((entityname, NodePath(actor)))
             actor.reparentTo(node.getParent())
@@ -402,7 +402,7 @@ class pandascene(bee.drone):
     def start_block(self, name=None, mode="standard", static=None):
         newblock = pandarenderblock(mode, static)
         self.blocks[-1].lastblock = newblock
-        if name != None: self.blocks[-1].childblocks[name] = newblock
+        if name is not None: self.blocks[-1].childblocks[name] = newblock
         self.blocks.append(newblock)
 
     def import_from_parentblock(self, what_to_import):
@@ -435,9 +435,9 @@ class pandascene(bee.drone):
 
     def import_mesh_EGG(self, eggname, meshname=None):
         #m = (eggmodel(eggname, self.load_models), eggactor(eggname, self.load_actors))  # This would be the Ogre way
-        #if meshname != None:
+        #if meshname is not None:
         #self.blocks[-1].meshes[meshname] = m This would be the Ogre way...
-        if meshname != None:
+        if meshname is not None:
             self.blocks[-1].meshes[meshname] = eggname
         #self.blocks[-1].lastmesh = m  This would be the Ogre way...
         self.blocks[-1].lastmesh = eggname
@@ -446,7 +446,7 @@ class pandascene(bee.drone):
 
     def create_mesh_per_vertex(self, meshname, vertices, normals, colors, texcoords, faces, material):
         currblock = self.blocks[-1]
-        if material != None:
+        if material is not None:
             material = currblock.materials[material]
         m = manualmodel_per_vertex(meshname, vertices, normals, colors, texcoords, faces, material)
         m.load()
@@ -456,7 +456,7 @@ class pandascene(bee.drone):
 
     def create_mesh_per_face(self, meshname, vertices, faces, normals, facecolors, fvcolors, texcoords, material):
         currblock = self.blocks[-1]
-        if material != None:
+        if material is not None:
             material = currblock.materials[material]
         m = manualmodel_per_face(meshname, vertices, faces, normals, facecolors, fvcolors, texcoords, material)
         m.load()
@@ -537,7 +537,7 @@ class pandascene(bee.drone):
         model = self._get_mesh_model(meshname)
         model.set_entityname(entityname)
         currblock = self.blocks[-1]
-        if material != None:
+        if material is not None:
             material = currblock.materials[material]
         modelnode = model.render_MATRIX(matrix, material)
         modelnode.reparentTo(currblock.render)
@@ -547,7 +547,7 @@ class pandascene(bee.drone):
         model = self._get_mesh_model(meshname)
         model.set_entityname(entityname)
         currblock = self.blocks[-1]
-        if material != None:
+        if material is not None:
             material = currblock.materials[material]
         modelnode = model.render_SPYDER(axissystem, material)
         modelnode.reparentTo(currblock.render)
@@ -565,7 +565,7 @@ class pandascene(bee.drone):
         assert meshname not in currblock.manualmodels
         actor = eggactor(meshname, self.load_actors)  #Panda way
         currblock.lastactor = actor
-        if actorname != None: currblock.actors[actorname] = actor
+        if actorname is not None: currblock.actors[actorname] = actor
         return actor
 
     def add_actorclass_SPYDER(self, actorclassname, meshname=None, material=None, axissystem=None):
@@ -603,9 +603,9 @@ class pandascene(bee.drone):
         actorclass = eggactorclass(meshname)
         actorclass.material = material
         currblock.lastactor = actorclass
-        if actorclassname != None: currblock.actors[actorclassname] = actorclass
+        if actorclassname is not None: currblock.actors[actorclassname] = actorclass
 
-        if material != None:
+        if material is not None:
             material = currblock.materials[material]
         self.actorclasses.append((actorclassname, actorclass, material, nodepath))
 
@@ -613,7 +613,7 @@ class pandascene(bee.drone):
         actor = self._get_mesh_actor(meshname, actorname)
         actor.set_entityname(entityname)
         currblock = self.blocks[-1]
-        if material != None:
+        if material is not None:
             material = currblock.materials[material]
         actornode = actor.render_MATRIX(matrix, material)
         actornode.reparentTo(currblock.render)
@@ -623,7 +623,7 @@ class pandascene(bee.drone):
         actor = self._get_mesh_actor(meshname, actorname)
         actor.set_entityname(entityname)
         currblock = self.blocks[-1]
-        if material != None:
+        if material is not None:
             material = currblock.materials[material]
         actornode = actor.render_SPYDER(axissystem, material)
         actornode.reparentTo(currblock.render)
@@ -649,7 +649,7 @@ class pandascene(bee.drone):
     def _get_block(self, blockname):
         currblock = self.blocks[-1]
         if blockname == None:
-            assert currblock.lastblock != None
+            assert currblock.lastblock is not None
             return currblock.lastblock
         else:
             assert blockname in currblock.childblocks
@@ -660,7 +660,7 @@ class pandascene(bee.drone):
         b = self._get_block(blockname)
         node = b.render_MATRIX(matrix, material=material)
         node.reparentTo(currblock.render)
-        if entityname != None:
+        if entityname is not None:
             self.block_entities.append((entityname, node, modelclass))
 
     def render_block_SPYDER(self, blockname=None, axissystem=None, entityname=None, material=None):
@@ -668,7 +668,7 @@ class pandascene(bee.drone):
         b = self._get_block(blockname)
         node = b.render_SPYDER(axissystem, material=material)
         node.reparentTo(currblock.render)
-        if entityname != None:
+        if entityname is not None:
             self.block_entities.append((entityname, node))
 
     def add_block_entityclass_SPYDER(self, entityclassname, blockname=None, material=None, axisystem=None):

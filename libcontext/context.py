@@ -125,7 +125,7 @@ def retrieve_plugins(context, plugin, visited=[]):
             newvisited.append(context)
             #report("TRY!", contextinstance.contextname, name)
             ret2 = retrieve_plugins(contextinstance, name, newvisited)
-            if ret2 != None: ret += ret2
+            if ret2 is not None: ret += ret2
     context.retrieved_plugins[plugin] = ret
     return ret
 
@@ -146,7 +146,7 @@ def retrieve_sockets(context, socket, visited=[]):
             newvisited = list(visited)
             newvisited.append(context)
             ret2 = retrieve_sockets(contextinstance, name, newvisited)
-            if ret2 != None: ret += ret2
+            if ret2 is not None: ret += ret2
     context.retrieved_sockets[socket] = ret
     return ret
 
@@ -397,7 +397,7 @@ class context(object):
 
     def close(self):
         if self.closed: return
-        if self.subcontext != None:
+        if self.subcontext is not None:
             self.subcontext.__close__()
 
         from . import _contexts as contexts, get_curr_contextname

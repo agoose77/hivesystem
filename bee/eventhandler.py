@@ -122,7 +122,7 @@ class eventhandler(drone):
     def add_listener(self, mode, callback, pattern=None, priority=0):
         assert mode in modes, mode
         if mode != "all":
-            assert pattern != None
+            assert pattern is not None
 
         assert hasattr(callback, '__call__')
         listener = (mode, callback, pattern, priority)

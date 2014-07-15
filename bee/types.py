@@ -387,7 +387,7 @@ class typeclass(types_baseclass):
 class mode_type(object):
     def __init__(self, mode, type=None):
         if isinstance(mode, mode_type):
-            if type != None: raise TypeError("Too many arguments")
+            if type is not None: raise TypeError("Too many arguments")
             self.mode = mode.mode
             self.type = mode.type
         else:

@@ -17,7 +17,7 @@ class ticksensor(bee.worker):
 
     @modifier
     def m_start(self):
-        if self.listener != None: return
+        if self.listener is not None: return
         self.listener = self.add_listener("trigger", self.trig_outp, "tick", priority=1)
         self.on = True
 

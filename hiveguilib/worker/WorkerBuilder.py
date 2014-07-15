@@ -53,7 +53,7 @@ class WorkerMapping(object):
         self._inmap = m
         r = {}
         for k, v in m.items():
-            if v != None: r[v] = k
+            if v is not None: r[v] = k
         self._inmapr = r
 
     def get_inmap(self):
@@ -65,7 +65,7 @@ class WorkerMapping(object):
         self._pmap = m
         r = {}
         for k, v in m.items():
-            if v != None: r[v] = k
+            if v is not None: r[v] = k
         self._pmapr = r
 
     def get_pmap(self):
@@ -77,7 +77,7 @@ class WorkerMapping(object):
         self._outmap = m
         r = {}
         for k, v in m.items():
-            if v != None: r[v] = k
+            if v is not None: r[v] = k
         self._outmapr = r
 
     def get_outmap(self):

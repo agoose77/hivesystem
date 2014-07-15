@@ -92,7 +92,7 @@ def combodronewrapper(*args, **kwargs):
     if "combodict" in kwargs:
         combodict = kwargs["combodict"]
 
-    count = len(args) + (combolist != None) + (combodict != None)
+    count = len(args) + (combolist is not None) + (combodict is not None)
     if count < 1:
         raise TypeError("Too few arguments for combodronewrapper")
 

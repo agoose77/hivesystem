@@ -192,10 +192,10 @@ from .spyderhive.spyderhive import SpyderMethod
 
 def spyder_make_combo(combobee):
     combolist, combodict = [], {}
-    if combobee.combodict != None:
+    if combobee.combodict is not None:
         for item in combobee.combodict:
             combodict[item.pname] = item.objects
-    if combobee.combolist != None:
+    if combobee.combolist is not None:
         combolist = [a for a in combobee.combolist]
     return combolist, combodict
 
