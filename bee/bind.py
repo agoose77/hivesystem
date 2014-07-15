@@ -52,7 +52,7 @@ class bindbuilder(mytype):
         if name.endswith("bind_baseclass"):
             return mytype.__new__(metacls, name, bases, cls_dict)
 
-        rdic = {"bindname": bindantenna("id")}
+        new_cls_dict = {"bindname": bindantenna("id")}
 
         bindhelpers_nameless = []
         for cls in bases:
@@ -61,20 +61,20 @@ class bindbuilder(mytype):
                     bindhelpers_nameless.append(bind_helper)
 
         for cls in reversed(bases):
-            rdic.update(cls.__dict__)
+            new_cls_dict.update(cls.__dict__)
 
         oldbindparameters = {}
-        for k in rdic:
-            if isinstance(rdic[k], bindparameter): oldbindparameters[k] = rdic[k]
-        rdic.update(cls_dict)
+        for k in new_cls_dict:
+            if isinstance(new_cls_dict[k], bindparameter): oldbindparameters[k] = new_cls_dict[k]
+        new_cls_dict.update(cls_dict)
 
         fr = id(inspect.currentframe().f_back)
-        bindhelpers_nameless += get_reg_bindhelper(fr, rdic.values())
-        rdic["__bindhelpers__"] = bindhelpers_nameless
+        bindhelpers_nameless += get_reg_bindhelper(fr, new_cls_dict.values())
+        new_cls_dict["__bindhelpers__"] = bindhelpers_nameless
         bindhelpers = []
-        rdkeys = rdic.keys()
+        rdkeys = new_cls_dict.keys()
         for k in sorted(rdkeys):
-            a = rdic[k]
+            a = new_cls_dict[k]
             if isinstance(a, bindhelper):
                 bindhelpers.append((k, a))
         bindparameters = [h for h in bindhelpers if isinstance(h[1], bindparameter)]
@@ -106,7 +106,7 @@ class bindbuilder(mytype):
         def get_bindhiveworker(*args, **kwargs):
             class bindhiveworker(bindworker):
                 __beename__ = name + "-worker"
-                bindworkerhive = rdic["hive"]
+                bindworkerhive = new_cls_dict["hive"]
 
                 class propclass(object):
                     def __init__(self, value):
@@ -338,9 +338,9 @@ class bindbuilder(mytype):
 
             return bindhiveworker(*args, **kwargs)
 
-        rdic["worker"] = staticmethod(lambda *args, **kwargs: get_bindhiveworker(*args, **kwargs))
+        new_cls_dict["worker"] = staticmethod(lambda *args, **kwargs: get_bindhiveworker(*args, **kwargs))
 
-        return type.__new__(metacls, name, (bind_baseclass,), rdic)
+        return type.__new__(metacls, name, (bind_baseclass,), new_cls_dict)
 
 
 from .segments._helpersegment import reg_helpersegment

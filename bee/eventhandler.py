@@ -132,7 +132,7 @@ class eventhandler(drone):
 
     def remove_listener(self, listener):
         listeners = [l for l in self.listeners if l is listener]
-        if not len(listeners):
+        if not listeners:
             raise KeyError("Listener not found: %s" % (str(listener)))
 
         if len(listeners) > 1:

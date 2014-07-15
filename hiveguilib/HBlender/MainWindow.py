@@ -19,6 +19,7 @@ class BlenderParameterArea:
             p = BlenderParameterPanel(name, self)
             self.subwindows[name] = p
             return p
+
         raise NotImplementedError(name)
 
     def show(self):
@@ -28,7 +29,8 @@ class BlenderParameterArea:
         for k in self.subwindows:
             assert k in self.known, k
         for sub in ('props-general', 'props-params', 'props-metaparams', 'props-block'):
-            if sub not in self.subwindows: continue
+            if sub not in self.subwindows:
+                continue
             self.subwindows[sub].draw(context, layout)
 
     def __getattr__(self, attr):
@@ -36,9 +38,7 @@ class BlenderParameterArea:
 
 
 class BlenderToolArea:
-    """
-    Takes care of both panel and menu!
-    """
+    """Takes care of both panel and menu!"""
 
     def __init__(self, parent):
         self.parent = parent
@@ -156,9 +156,12 @@ class MainWindow(Layout):
 
     def newSubWindow(self, name, triggered=False):
         if triggered:
-            if name in self._subwindows: return self._subwindows[name]
+            if name in self._subwindows:
+                return self._subwindows[name]
+
         else:
             assert name not in self._subwindows, name
+
         win = self._layout(name)
         self._subwindows[name] = win
         return win
@@ -195,9 +198,7 @@ class MainWindow(Layout):
     def add_menu(self, name):
         pass  # We don't need this in Blender
 
-    def add_menu_action(self, menuname, name, callback,
-                        icon=None, shortcut=None, statustip=None
-    ):
+    def add_menu_action(self, menuname, name, callback, icon=None, shortcut=None, statustip=None):
         pass  # We don't need this in Blender
 
     def close(self):

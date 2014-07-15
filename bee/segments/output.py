@@ -47,8 +47,9 @@ class output(io_base):
                 "istrigger": (self.type in ("trigger", "toggle"))
             }
             return type("runtime_output_push:" + segmentname, (_runtime_output_push,), dic)
+
         elif self.mode == "pull":
-            if self.mode == "pull" and not len(self._connection):
+            if self.mode == "pull" and not self._connection:
                 raise TypeError("Pull output %s must have exactly one input" % (segmentname))
             dic = {
                 "_connection": self._connection,
@@ -59,4 +60,3 @@ class output(io_base):
         else:
             raise ValueError()
 
-    

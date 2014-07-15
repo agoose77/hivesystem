@@ -550,49 +550,67 @@ class connect(beehelper):
         self.parentcontext = libcontext.get_curr_context()
 
         if self.source_io is not None:
-            snam = self.source_io
-            if isinstance(snam, str): snam = (snam,)
-            for n in range(len(snam) - 1):
-                if snam[n] in ("evin", "evout", "evexc"): break
-                source_name2 = libcontext.add_contextnames(self.source_name, snam[:n + 1])
+            source_name = self.source_io
+            if isinstance(source_name, str):
+                source_name = (source_name,)
+
+            for index in range(len(source_name) - 1):
+                if source_name[index] in ("evin", "evout", "evexc"):
+                    break
+
+                source_name2 = libcontext.add_contextnames(self.source_name, source_name[:index + 1])
                 try:
                     libcontext.get_context(libcontext.abscontextname(source_name2))
                 except KeyError:
                     break
+
             else:
-                n = len(snam) - 1
-            snam = snam[n:]
-            if n:
-                self.source_name = libcontext.add_contextnames(self.source_name, snam[:n])
-                if len(snam) == 1:
-                    snam = snam[0]
-                elif not len(snam):
-                    snam = None
-                self.source_io = snam
+                index = len(source_name) - 1
+
+            source_name = source_name[index:]
+            if index:
+                self.source_name = libcontext.add_contextnames(self.source_name, source_name[:index])
+                if len(source_name) == 1:
+                    source_name = source_name[0]
+
+                elif not source_name:
+                    source_name = None
+
+                self.source_io = source_name
+
         sourcecontextname = self._get_sourcecontextname()
         sourcecontext = libcontext.get_context(sourcecontextname)
         self.sourcecontext = sourcecontext
 
         if self.target_io is not None:
-            tnam = self.target_io
-            if isinstance(tnam, str): tnam = (tnam,)
-            for n in range(len(tnam) - 1):
-                if tnam[n] in ("evin", "evout", "evexc"): break
-                target_name2 = libcontext.add_contextnames(self.target_name, tnam[:n + 1])
+            target_name = self.target_io
+            if isinstance(target_name, str):
+                target_name = (target_name,)
+
+            for index in range(len(target_name) - 1):
+                if target_name[index] in ("evin", "evout", "evexc"):
+                    break
+
+                target_name2 = libcontext.add_contextnames(self.target_name, target_name[:index + 1])
                 try:
                     libcontext.get_context(libcontext.abscontextname(target_name2))
+
                 except KeyError:
                     break
             else:
-                n = len(tnam) - 1
-            tnam = tnam[n:]
-            if n:
-                self.target_name = libcontext.add_contextnames(self.target_name, tnam[:n])
-                if len(tnam) == 1:
-                    tnam = tnam[0]
-                elif not len(tnam):
-                    tnam = None
-                self.target_io = tnam
+                index = len(target_name) - 1
+
+            target_name = target_name[index:]
+
+            if index:
+                self.target_name = libcontext.add_contextnames(self.target_name, target_name[:index])
+                if len(target_name) == 1:
+                    target_name = target_name[0]
+
+                elif not target_name:
+                    target_name = None
+
+                self.target_io = target_name
 
         targetcontextname = self._get_targetcontextname()
         targetcontext = libcontext.get_context(targetcontextname)
@@ -635,6 +653,7 @@ class connect(beehelper):
                 connectfunc = self.connect_worker_evin
             else:
                 raise Exception  #Never happens...
+
             newsourcecontext = connectioncontext(*newsourcecontextname, absolute=True)
             newsourcecontext.connect = self
             newsourcecontext.import_all_from_parent = True
@@ -642,4 +661,4 @@ class connect(beehelper):
             newtargetcontext.import_all_from_parent = True
             newtargetcontext.connect = self
             connectfunc(newsourcecontext, newtargetcontext)
-      
+

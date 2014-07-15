@@ -180,20 +180,21 @@ class blenderview:
             self.type = getattr(Spyder, self.typename + "Array" * form.arraycount)
 
         self._listen_callbacks = None
-        pw = None
+        parent_widget = None
         if parent is not None:
-            pw = parent.widget
+            parent_widget = parent.widget
 
-        if parent is None or not len(self.buttons):
-            self.widget = BlenderLayoutWidget(pw, self._name, self.buttons, advanced=advanced)
-            for b in self.buttons:
-                b.setParent(self.widget)
+        if parent is None or not self.buttons:
+            self.widget = BlenderLayoutWidget(parent_widget, self._name, self.buttons, advanced=advanced)
+            for button in self.buttons:
+                button.setParent(self.widget)
+
             widget = self.widget
 
         else:
-            self._pwidget = BlenderLayoutWidget(pw, self._name, self.buttons, advanced=advanced)
-            for b in self.buttons:
-                b.setParent(self._pwidget)
+            self._pwidget = BlenderLayoutWidget(parent_widget, self._name, self.buttons, advanced=advanced)
+            for button in self.buttons:
+                button.setParent(self._pwidget)
 
             self.widget = BlenderLayoutWidget(self._pwidget, self._name, [], advanced=advanced)
             self._pwidget.children.append(self.widget)
@@ -210,51 +211,60 @@ class blenderview:
                 v = self._getters.get(str(n), None)
                 if v is not None:
                     v = v.value
+
                 ret.append(v)
         else:
             ret = {}
             for prop in self._properties:
                 ret[prop] = self._getters[prop].value
+
         return ret
 
     def __str__(self):
         return str(self._value())
 
     def set(self, v):
-        if self.type is None: raise AttributeError
+        if self.type is None:
+            raise AttributeError
+
         if isinstance(v, self.type):
-            vv = v
+            new_value = v
+
         else:
-            vv = self.type(v)
+            new_value = self.type(v)
+
         for prop in self._properties:
             if self._form.arraycount > 0:
                 try:
-                    val = vv[int(prop)]
+                    val = new_value[int(prop)]
+
                 except IndexError:
                     continue
             else:
-                val = getattr(vv, prop)
+                val = getattr(new_value, prop)
             self._setters[prop](val)
 
     def _listener(self, dmmy):
         v = self._value()
-        for l in self._listen_callbacks:
-            l(v)
+        for callback in self._listen_callbacks:
+            callback(v)
 
     def block(self):
-        for prop in self._properties:
-            self._getters[prop].block()
+        for property in self._properties:
+            self._getters[property].block()
 
     def unblock(self):
-        for prop in self._properties:
-            self._getters[prop].unblock()
+        for property in self._properties:
+            self._getters[property].unblock()
 
     def listen(self, callback):
         if self._listen_callbacks is None:
             self._listen_callbacks = []
+
             for prop in self._properties:
-                proplis = self._prop_listeners[prop]
-                proplis(self._listener)
+                callback = self._prop_listeners[prop]
+                callback(self._listener)
+
         self._listen_callbacks.append(callback)
 
     def unlisten(self, callback):
@@ -322,62 +332,76 @@ class blenderview:
                 view = blenderview(mform, parent=self, name=name, value=formvalue)
                 self._properties[formname] = view
 
-        for prop in self._properties:
-            v = self._properties[prop]
-            mform = self._subformfunc(prop)
+        for property in self._properties:
+            v = self._properties[property]
+            mform = self._subformfunc(property)
 
             if isinstance(v, blenderview):
-                self._getters[prop] = v
-                self._setters[prop] = v.set
-                self._prop_listeners[prop] = v.listen
+                self._getters[property] = v
+                self._setters[property] = v.set
+                self._prop_listeners[property] = v.listen
                 continue
+
             advanced = getattr(mform, "advanced", False)
             name, formtype, formsubtype, formdefault = v
+
             if formtype == "spin" and formsubtype == "int":
                 widget = BlenderIntWidget(self.widget, name, advanced=advanced)
+
             elif formtype == "spin" and formsubtype == "float":
                 widget = BlenderFloatWidget(self.widget, name, advanced=advanced)
+
             elif formtype == "checkbox":
                 widget = BlenderBoolWidget(self.widget, name, advanced=advanced)
+
             elif formtype in ('text', 'password', 'type', 'expression'):
                 widget = BlenderStringWidget(self.widget, name, advanced=advanced)
+
             elif formtype in ('option', 'radio'):
                 options = mform.options
                 optiontitles = None
                 if hasattr(mform, "optiontitles"):
                     optiontitles = mform.optiontitles
-                    assert len(options) == len(optiontitles), (n, len(options), len(optiontitles))
+                    assert len(options) == len(optiontitles), (len(options), len(optiontitles))
+
                 advanced_options = getattr(mform, "advanced_options", None)
                 widget = BlenderOptionWidget(
                     self.widget,
                     name, options, optiontitles,
                     advanced=advanced, advanced_options=advanced_options
                 )
+
             elif formtype in ('textarea', 'pythoncode'):
                 widget = BlenderTextWidget(self.widget, name, advanced=advanced)
+
             elif formtype in ('file', 'object'):
                 widget = BlenderPlaceholderWidget(self.widget, name, formtype, advanced=advanced)
+
             else:
                 raise Exception("Form element '%s': Not implemented" % str(v))
 
             if formdefault is not None:
                 widget.set(formdefault)
-            getprop, setprop, proplis = widget.get, widget.set, widget.listen
-            viewbuttons = find_buttons(mform)
-            widget2 = widget
 
-            if len(viewbuttons):
-                widget2 = BlenderLayoutWidget(self.widget, name, viewbuttons, advanced=advanced)
-                for b in viewbuttons:
-                    b.setParent(widget2)
-                widget2.children.append(widget)
-            self.widget.children.append(widget2)
-            view = blenderview_primary(getprop, setprop, proplis, widget)
-            view.buttons = viewbuttons
-            self._properties[prop] = view
-            self._getters[prop] = view
-            self._setters[prop] = setprop
-            self._prop_listeners[prop] = proplis
+            get_property, set_property, property_listener = widget.get, widget.set, widget.listen
+            view_buttons = find_buttons(mform)
+            child_widget = widget
+
+            if view_buttons:
+                child_widget = BlenderLayoutWidget(self.widget, name, view_buttons, advanced=advanced)
+                for button in view_buttons:
+                    button.setParent(child_widget)
+
+                child_widget.children.append(widget)
+
+            self.widget.children.append(child_widget)
+
+            view = blenderview_primary(get_property, set_property, property_listener, widget)
+            view.buttons = view_buttons
+            self._properties[property] = view
+            self._getters[property] = view
+            self._setters[property] = set_property
+            self._prop_listeners[property] = property_listener
 
     def __getitem__(self, key):
         assert isinstance(key, int)
@@ -385,18 +409,22 @@ class blenderview:
         assert self._form.arraycount > 0
         return self._getters[str(key)]
 
-    def __getattr__(self, attr):
-        if attr == "value": return self._value()
-        try:
-            return self._getters[attr]
-        except KeyError:
-            raise AttributeError(attr)
+    def __getattr__(self, name):
+        if name == "value":
+            return self._value()
 
-    def __setattr__(self, attr, value):
-        if attr.startswith("_") or attr in ("type", "typename", "buttons", "widget"):
-            return object.__setattr__(self, attr, value)
         try:
-            return self._setters[attr](value)
+            return self._getters[name]
+
         except KeyError:
-            raise AttributeError(attr)
-  
+            raise AttributeError(name)
+
+    def __setattr__(self, name, value):
+        if name.startswith("_") or name in ("type", "typename", "buttons", "widget"):
+            return object.__setattr__(self, name, value)
+
+        try:
+            return self._setters[name](value)
+
+        except KeyError:
+            raise AttributeError(name)

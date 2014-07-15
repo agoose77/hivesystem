@@ -40,7 +40,6 @@ class AntennaFoldState(object):
 
     def gui_sets_value(self, persistent_id, antenna_name, value):
         worker_id = self._persistent_id_manager.get_temporary_id(persistent_id)
-        print("SET VALUAES")
         self._parent().gui_sets_value(worker_id, antenna_name, value)
 
     def init_form(self, worker_id, form):
