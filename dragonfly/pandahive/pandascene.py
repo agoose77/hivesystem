@@ -182,7 +182,7 @@ class manualmodel_per_vertex(pandaresource):
     def load(self):
         if panda3d is None: raise ImportError("Cannot locate Panda3D")
         #KLUDGE
-        if self.material is not None and self.colors == None:
+        if self.material is not None and self.colors is None:
             col = self.material.getAmbient()
             col = (col[0] / col[3], col[1] / col[3], col[2] / col[3], 1.0)
             self.colors = (col,) * len(self.vertices)
@@ -221,7 +221,7 @@ class manualmodel_per_face(pandaresource):
         self.facecolors = facecolors
         self.fvcolors = fvcolors
         self.material = material
-        assert self.facecolors == None or self.fvcolors == None
+        assert self.facecolors is None or self.fvcolors is None
         self.texcoords = texcoords
         if self.normals is not None:
             assert len(self.normals) == len(self.faces)
@@ -258,7 +258,7 @@ class manualmodel_per_face(pandaresource):
                 texcoords = self.texcoords[n]
 
             #KLUDGE
-            if self.material is not None and colors == None:
+            if self.material is not None and colors is None:
                 col = self.material.getAmbient()
                 col = (col[0] / col[3], col[1] / col[3], col[2] / col[3], 1.0)
                 colors = (col,) * len(vertices)
@@ -648,7 +648,7 @@ class pandascene(bee.drone):
 
     def _get_block(self, blockname):
         currblock = self.blocks[-1]
-        if blockname == None:
+        if blockname is None:
             assert currblock.lastblock is not None
             return currblock.lastblock
         else:

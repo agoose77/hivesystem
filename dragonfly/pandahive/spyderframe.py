@@ -83,7 +83,7 @@ def show_object(obj):
     normals = []
     for f in obj.faces:
         normal = f.normal
-        if f.normal == None:
+        if f.normal is None:
             verts = [obj.vertices[n] for n in f.vertices]
             normal = spyder.tarantula.calc_normal(verts)
         normals.append((normal.x, normal.y, normal.z))

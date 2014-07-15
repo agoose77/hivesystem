@@ -28,13 +28,13 @@ def add_contextnames(context1, context2):
     c2 = context2
     if hasattr(c2, "decode") or hasattr(c2, "encode"):
         c2 = (c2,)
-    if c1 == None: return c2
-    if c2 == None: return c1
+    if c1 is None: return c2
+    if c2 is None: return c1
     return c1 + c2
 
 
 def abscontextname(contexttuple):
-    if _curr_context == None: return contexttuple
+    if _curr_context is None: return contexttuple
     if hasattr(contexttuple, "decode") or hasattr(contexttuple, "encode"):
         contexttuple = (contexttuple,)
     return _curr_context + contexttuple

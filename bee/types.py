@@ -391,7 +391,7 @@ class mode_type(object):
             self.mode = mode.mode
             self.type = mode.type
         else:
-            if type == None: raise TypeError("Too few arguments")
+            if type is None: raise TypeError("Too few arguments")
             self.mode = modeclass(mode)
             self.type = typeclass(type)
         if self.mode.value == "pull" and self.type.push_type:

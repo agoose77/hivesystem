@@ -525,7 +525,7 @@ class context(object):
         self.closed = True
 
     def socket(self, keyword, socketinstance):
-        assert isinstance(socketinstance, socket_base) or socketinstance == None
+        assert isinstance(socketinstance, socket_base) or socketinstance is None
         ret = False
         if keyword not in self.sockets: self.sockets[keyword] = []
         if socketinstance not in self.sockets[keyword]:
@@ -537,7 +537,7 @@ class context(object):
         return ret
 
     def plugin(self, keyword, pluginstance, _plugids=_plugids):
-        assert isinstance(pluginstance, plugin_base)# or pluginstance == None
+        assert isinstance(pluginstance, plugin_base)# or pluginstance is None
         ret = False
         if keyword not in self.plugins:
             self.plugins[keyword] = []
@@ -567,7 +567,7 @@ class context(object):
         assert isinstance(contextinstance, context)
         assert contextinstance is not self
         ret = False
-        if newname == None:
+        if newname is None:
             newname = name
 
         n = (contextinstance, name, newname, optional)
@@ -595,7 +595,7 @@ class context(object):
         assert isinstance(contextinstance, context)
         assert contextinstance is not self
         ret = False
-        if newname == None: newname = name
+        if newname is None: newname = name
         n = (contextinstance, name, newname, optional)
         if n not in self.plugin_imports:
             self.plugin_imports.append(n)
@@ -613,13 +613,13 @@ class context(object):
     def export_socket(self, contextinstance, name, newname=None, optional=False):
         assert isinstance(contextinstance, context)
         assert contextinstance is not self
-        if newname == None: newname = name
+        if newname is None: newname = name
         contextinstance.socket_imports.append((self, name, newname, optional))
 
     def export_plugin(self, contextinstance, name, newname=None, optional=False):
         assert isinstance(contextinstance, context)
         assert contextinstance is not self
-        if newname == None: newname = name
+        if newname is None: newname = name
         contextinstance.plugin_imports.append((self, name, newname, optional))
 
 

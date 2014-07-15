@@ -19,7 +19,7 @@ class runtime_transistor(_runtime_segment):
         for target in self.push_outputs: target(value)
 
     def output(self):
-        if self.value == None: raise ValueError("Transistor segment cannot push None")
+        if self.value is None: raise ValueError("Transistor segment cannot push None")
         return self.value
 
 

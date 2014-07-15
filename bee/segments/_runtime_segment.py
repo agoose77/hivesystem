@@ -174,19 +174,19 @@ class _runtime_segment(object):
 
     def _trigger_push_output00(self):
         value = self.output()
-        if value == None: return
+        if value is None: return
         for target in self.push_outputs: target(value)
 
     def _trigger_push_output10(self):
         for target in self.triggering_output_pre:
             target()
         value = self.output()
-        if value == None: return
+        if value is None: return
         for target in self.push_outputs: target(value)
 
     def _trigger_push_output01(self):
         value = self.output()
-        if value == None: return
+        if value is None: return
         for target in self.push_outputs: target(value)
         for target in self.triggering_output:
             target()
@@ -195,7 +195,7 @@ class _runtime_segment(object):
         for target in self.triggering_output_pre:
             target()
         value = self.output()
-        if value == None: return
+        if value is None: return
         for target in self.push_outputs: target(value)
         for target in self.triggering_output:
             target()
@@ -545,7 +545,7 @@ class _runtime_antenna_pull(object):
         self.inputfunc = inputfunc
 
     def input(self):
-        if self.inputfunc == None: raise PullInputError(str(self.beename) + ":" + str(self.segmentname))
+        if self.inputfunc is None: raise PullInputError(str(self.beename) + ":" + str(self.segmentname))
         return self.inputfunc()
 
     def place(self):

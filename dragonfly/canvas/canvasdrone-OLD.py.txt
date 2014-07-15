@@ -97,7 +97,7 @@ class canvasdrone(bee.drone):
     identifier,drawobjecttype,drawfunc,box,parameters,updatefunc = \
      n["identifier"],n["drawobjecttype"],n["drawfunc"],n["box"],n["parameters"],n["updatefunc"]
     
-    if self._reserve_identifiers == None:
+    if self._reserve_identifiers is None:
       self._reserve_identifiers = {}
     if drawobjecttype is None and drawfunc is None:
       raise ValueError("You must specify an object type or a drawing function")
