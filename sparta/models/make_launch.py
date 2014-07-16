@@ -13,7 +13,6 @@ import Spyder
 
 
 def make_launch(config):
-    print("WARNING: Launch.make_worker, INCOMPLETE implementation")
     baseclasses = []
     if config.bind_hivereg:
         baseclasses.append(dragonfly.bind.bind)

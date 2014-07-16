@@ -302,8 +302,6 @@ class NodeUi(QtGui.QGraphicsWidget):
             if a._params.name == name:
                 return a
         else:
-            print("SHIT COULDN@T FIND")
-            print([a._params.name for a in self._attributeUis])
-            print(name," missing", self._name)
+            pass
 
             #raise KeyError(name) ###TODO

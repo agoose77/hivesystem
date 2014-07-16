@@ -118,7 +118,9 @@ build_zeroinstance()
 
 
 def build_worker_plain(beename, antennas, outputs, ev, paramnames, paramtypelist, guiparams):
-    if paramnames is None: raise Exception(beename)
+    if paramnames is None:
+        raise Exception(beename)
+
     mapping = WorkerMapping()
     attribs = []
     attrs = [(pname, "antenna", pval) for pname, pval in antennas.items()] + \
@@ -128,13 +130,17 @@ def build_worker_plain(beename, antennas, outputs, ev, paramnames, paramtypelist
 
     names = {}
     guiparams2 = {}
+
     if guiparams is not None:
         guiparams2 = guiparams.get("guiparams", {})
+
     for pname, io, pval in attrs:
         label = pname
         if pname in guiparams2:
             p = guiparams2[pname]
-            if "name" in p: label = p["name"]
+            if "name" in p:
+                label = p["name"]
+
         names[pname] = label
 
     inmap, outmap, pmap = mapping.inmap, mapping.outmap, mapping.pmap
@@ -177,6 +183,7 @@ def build_worker_plain(beename, antennas, outputs, ev, paramnames, paramtypelist
 def build_worker_default(beename, antennas, outputs, ev, paramnames, paramtypelist, guiparams):
     if paramnames is None:
         raise Exception(beename)
+
     mapping = WorkerMapping()
     attribs = []
     attrs = [(pname, "antenna", pval) for pname, pval in antennas.items()] + \
@@ -189,11 +196,13 @@ def build_worker_default(beename, antennas, outputs, ev, paramnames, paramtypeli
     guiparams2 = {}
     if guiparams is not None:
         guiparams2 = guiparams.get("guiparams", {})
+
     for pname, io, pval in attrs:
         label = pname
         if pname in guiparams2:
             p = guiparams2[pname]
-            if "name" in p: label = p["name"]
+            if "name" in p:
+                label = p["name"]
         names[pname] = label
 
     inmap, outmap, pmap = mapping.inmap, mapping.outmap, mapping.pmap
@@ -375,7 +384,7 @@ def block_subtree(spydertypetree, attribstack=[]):
 
 class Block(object):
     def __init__(self, io, mode, spydertype):
-        assert io in ("antenna", "output"), antenna
+        assert io in ("antenna", "output"), io
         assert mode in ("push", "pull"), mode
         self.io = io
         self.mode = mode
@@ -393,8 +402,10 @@ class Block(object):
             h1, h2 = None, None
             if io == "antenna":
                 h1, h2 = h, None
+
             else:
                 h1, h2 = None, h
+
             a = Attribute(attribname, h1, h2)
             self.attributes[attribname] = a
 
@@ -402,6 +413,7 @@ class Block(object):
 def build_block(block):
     if block is None:
         return None
+
     io, mode, spydertype = block
     return Block(io, mode, spydertype)
 
@@ -412,6 +424,7 @@ def update_params_pullantennas(parameters, pullantennas):
             p2 = pp
             if isinstance(pp, tuple):
                 p2 = (pp, None)
+
             parameters[a] = p2
 
 
@@ -520,10 +533,12 @@ def make_form_manipulators(guiparams, manip):
         antenna = antennas[antenna_name]
         if antenna[0] != "pull":
             continue
+
         form_antennas.append(antenna_name)
 
     if manip is None and not len(form_antennas):
         return []
+
     if not len(form_antennas):
         return [manip]
 
@@ -572,6 +587,7 @@ class WorkerBuilder(object):
                 hio = (io.mode, io.datatype)
                 if io.io == "antenna":
                     antennas[io.io_id] = hio
+
                 else:
                     outputs[io.io_id] = hio
 

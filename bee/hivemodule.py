@@ -319,14 +319,15 @@ class emptyhivecontext(hivecontext_base):
             bee.place()
 
         self.connect_contexts = []
+
         for bee_name, bee in self.bees:
             try:
-                if hasattr(bee, "connect_contexts") and bee.connect_contexts is not None and len(bee.connect_contexts) and \
-                                bee.connect_contexts[-1] != "connect_contexts":
-                    for context in bee.connect_contexts: self.connect_contexts.append(context)
+                connect_contexts = getattr(bee, "connect_contexts", None)
+                if connect_contexts and connect_contexts[-1] != "connect_contexts":
+                    self.connect_contexts.extend(connect_contexts)
+
             except TypeError:
-                # TODO remove len(bee.connect_contexts)
-                print("TYPEERROR")
+                raise
                 pass
 
     def __close__(self):
@@ -448,7 +449,7 @@ class _hivebuilder(reg_beehelper):
         mytype.__init__(self, name, bases, dic)
 
     def __new__(metacls, name, bases, dic, specialmethods=[], **kargs):
-        # print("HIVE-BUILD?", metacls, name)
+        #print("HIVE-BUILD?", metacls, name)
         if "__metaclass__" in dic and dic["__metaclass__"] is not metacls:
             mc = dic["__metaclass__"]
             return mc.__new__(mc, name, bases, dic, specialmethods, **kargs)
@@ -618,10 +619,12 @@ class _hivebuilder(reg_beehelper):
                 else:
                     raise TypeError(g)
         for n in bees:
+
             if hasattr(n[1], "hiveguiparams"):
                 if not hasattr(n[1], "configure") or isinstance(n[1].configure, tuple):
                     f = n[1].hiveguiparams
-                    if hasattr(f, "__call__"): f(n[0], guiparams)
+                    if hasattr(f, "__call__"):
+                        f(n[0], guiparams)
 
         if "_hivecontext" in dic:
             _hivecontext = dic["_hivecontext"]
@@ -631,7 +634,9 @@ class _hivebuilder(reg_beehelper):
                 if hasattr(base_cls, "_hivecontext"):
                     _hivecontext = getattr(base_cls, "_hivecontext")
                     break
+
                 dic["_hivecontext"] = _hivecontext
+
             else:
                 raise TypeError()
 
@@ -650,8 +655,15 @@ class _hivebuilder(reg_beehelper):
                 if base_cls is bb:
                     ok = False
                 break
+
             if ok:
                 combobee_bases_unique.append(base_cls)
+
+
+        gui_parameters = dic.get("guiparams", None)
+
+        if gui_parameters:
+            guiparams["guiparams"] = gui_parameters
 
         hivedict0 = {"_wrapped_hive": rhive, "guiparams": guiparams, "__metaclass__": metacls.__thisclass__,
                      "_combobees": [], "_combobee_bases": combobee_bases_unique, "__hivecombined__": False}

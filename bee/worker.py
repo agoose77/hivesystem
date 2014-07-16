@@ -71,7 +71,9 @@ class workerframe(libcontext.subcontext):
     def __get_beename__(self_or_class):
         from . import BuildError
 
-        if self_or_class.built is not True: raise BuildError
+        if self_or_class.built is not True:
+            raise BuildError
+
         return self_or_class.beename
 
     def __getattr__(self, attr):
@@ -80,6 +82,7 @@ class workerframe(libcontext.subcontext):
                 self.parent = p
 
             return set_parent
+
         return (self, attr)
 
 
@@ -96,6 +99,7 @@ class runtime_worker(object):
         for p in params:
             segment = [c for c in self._runtime_segment_classes if c.segmentname == p][0]
             segment.startvalue = params[p]
+
         for segmentclass in self._runtime_segment_classes:
             self._runtime_segments.append(segmentclass(self, beename))
 
@@ -116,7 +120,8 @@ class runtime_worker(object):
                 segment.set_catchfunc(functools.partial(self.catchfunc, segment.segmentname))
 
 
-class worker: pass  # placeholder; will be redefined later
+class worker:
+    pass  # placeholder; will be redefined later
 
 
 class workerbuilder(reg_beehelper):

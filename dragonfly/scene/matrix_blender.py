@@ -1,5 +1,6 @@
 class blender_wraps_blender(object):
     _matrixview = None
+
     def __init__(self, wrapped):
         self._wrapped = wrapped
 

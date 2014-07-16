@@ -30,7 +30,6 @@ class PSpyderhive(object):
                 self._parent.gui_sets_spyderhive(spyderhive)
 
     def draw(self, context, layout):
-        print("DRAY")
         if self.visible:
             self.widget.draw(context, layout)
 

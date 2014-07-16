@@ -231,9 +231,10 @@ class WorkermapManager(object):
             self._dialogs.append(dialog)
             set_css(textedit)
             highlight(textedit)
+
         except:
             import traceback
 
             traceback.print_exc()
-            if code is not None: print(code)
-    
+            if code is not None:
+                print(code)

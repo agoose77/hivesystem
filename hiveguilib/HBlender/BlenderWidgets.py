@@ -286,6 +286,7 @@ class BlenderStringWidget(BlenderWidget):
         super().__init__(parent)
 
     def listen(self, callback):
+        assert callable(callback), "Not callable {}".format(callback)
         self._listeners.append(callback)
 
     def unlisten(self, callback):

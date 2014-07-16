@@ -3,7 +3,8 @@ from . import level
 
 
 class NodeItem:
-    """FAKE DESC"""
+
+    """Operator entry within the Add node menu"""
 
     def __init__(self, manager, key, fullkey):
         self.manager = manager
@@ -16,7 +17,10 @@ class NodeItem:
 
         if context.space_data.edit_tree.name not in self.manager._nodeitem_trees[self.fullkey]:
             return False
-        if not level.active(context, tuple(self.fullkey.split("."))): return
+
+        if not level.active(context, tuple(self.fullkey.split("."))):
+            return
+
         return True
 
     def draw(self, layout, context):
@@ -26,6 +30,9 @@ class NodeItem:
 
 
 class NodeItemMenu:
+
+    """Menu entry within the Add node menu"""
+
     name = "NODE_MT_HIVE"
 
     def __init__(self, title, fullname, make_panel=False):
@@ -49,26 +56,28 @@ class NodeItemMenu:
             name = self.name + "_" + "_".join(self.fullname)
 
         self.name = name
-        self.menuclass = type(name, (bpy.types.Menu,), cls_dict)
+        self.menu_class = type(name, (bpy.types.Menu,), cls_dict)
 
         if make_panel:
             type_name = name.replace("NODE_MT_", "NODE_PT_")
             cls_dict = dict(bl_space_type='NODE_EDITOR', bl_label=title, bl_region_type='TOOLS',
                             bl_options={'DEFAULT_CLOSED'}, poll=self._active, draw=menudraw)
-            self.panelclass = type(type_name, (bpy.types.Panel,), cls_dict)
+            self.panel_class = type(type_name, (bpy.types.Panel,), cls_dict)
 
         else:
-            self.panelclass = None
+            self.panel_class = None
 
     def register(self):
-        if self.panelclass is not None:
-            bpy.utils.register_class(self.panelclass)
-        bpy.utils.register_class(self.menuclass)
+        if self.panel_class is not None:
+            bpy.utils.register_class(self.panel_class)
+
+        bpy.utils.register_class(self.menu_class)
 
     def unregister(self):
-        if self.panelclass is not None:
-            bpy.utils.unregister_class(self.panelclass)
-        bpy.utils.unregister_class(self.menuclass)
+        if self.panel_class is not None:
+            bpy.utils.unregister_class(self.panel_class)
+
+        bpy.utils.unregister_class(self.menu_class)
 
     def _active(self, context):
         if not level.active(context, self.fullname):

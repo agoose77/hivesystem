@@ -527,13 +527,17 @@ class context(object):
     def socket(self, keyword, socketinstance):
         assert isinstance(socketinstance, socket_base) or socketinstance is None
         ret = False
-        if keyword not in self.sockets: self.sockets[keyword] = []
+        if keyword not in self.sockets:
+            self.sockets[keyword] = []
+
         if socketinstance not in self.sockets[keyword]:
             self.sockets[keyword].append(socketinstance)
             ret = True
+
         if socketinstance not in socketcontextdict:
             socketcontextdict[socketinstance] = self
             socketnamedict[socketinstance] = keyword
+
         return ret
 
     def plugin(self, keyword, pluginstance, _plugids=_plugids):

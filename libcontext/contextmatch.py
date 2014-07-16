@@ -52,10 +52,12 @@ def import_sockets(context, socket_imports, plugin_imports, sockets_original, im
 
 def import_plugins(context, plugin_imports, socket_imports, plugins_original, import_origins_plugins, pluginfunc):
     newplugins = {}
-    for p in plugin_imports:
-        newname = p[2]
-        if newname not in newplugins: newplugins[newname] = []
-        newplugins[newname].append(p)
+    for plugin in plugin_imports:
+        newname = plugin[2]
+        if newname not in newplugins:
+            newplugins[newname] = []
+        newplugins[newname].append(plugin)
+
     count = 1
     for nwname in newplugins:
         count += 1
@@ -76,20 +78,20 @@ def import_plugins(context, plugin_imports, socket_imports, plugins_original, im
                     currplugins += currplugins0
             else:
                 pluginfunc(newname, None)
+
         currplugins = list(set(currplugins))
         currplugins.sort(key=namesortfunc2)
-        for cname, p in currplugins:
-            if contextinstance is not context and p not in plugins_original: import_origins_plugins[p] = contextinstance
-            if newname in context.plugins and p in context.plugins[newname]: continue
-            pluginfunc(newname, p)
+
+        for cname, plugin in currplugins:
+            if contextinstance is not context and plugin not in plugins_original:
+                import_origins_plugins[plugin] = contextinstance
+
+            if newname in context.plugins and plugin in context.plugins[newname]:
+                continue
+            pluginfunc(newname, plugin)
 
 
-def contextmatch(
-        context, contextname,
-        sockets, plugins,
-        socket_imports, plugin_imports,
-        socketfunc, pluginfunc,
-):
+def contextmatch(context, contextname, sockets, plugins, socket_imports, plugin_imports, socketfunc, pluginfunc):
     from . import _all_connections
 
     import_origins_plugins = {}
@@ -97,31 +99,30 @@ def contextmatch(
     plugins_original0 = [plugins[p] for p in sorted(plugins, key=namesortfunc)]
     plugins_original = []
 
-    for p in plugins_original0:
-        plugins_original += p
+    for plugin in plugins_original0:
+        plugins_original += plugin
 
     import_plugins(context, plugin_imports, socket_imports, plugins_original, import_origins_plugins, pluginfunc)
 
     sockets_original0 = [sockets[p] for p in sorted(sockets, key=namesortfunc)]
     sockets_original = []
 
-    for s in sockets_original0:
-        sockets_original += s
+    for socket in sockets_original0:
+        sockets_original += socket
 
     import_sockets(context, socket_imports, plugin_imports, sockets_original, import_origins_sockets, socketfunc)
 
     filled_sockets = set()
-    pluginnames = list(plugins.keys())
-    pluginnames.sort(key=namesortfunc)
-    socket_names = list(sockets.keys())
-    socket_names.sort(key=namesortfunc)
-    for name in pluginnames:
-        plugs = plugins[name]
-        plugs.sort(key=lambda p: _plugids[p])
-        for p in plugs:
-            if name not in sockets and p not in import_origins_plugins and p is not None:
+    plugin_names = sorted(plugins.keys(), key=namesortfunc)
+    socket_names = sorted(sockets.keys(), key=namesortfunc)
+    
+    for name in plugin_names:
+        plugins_ = sorted(plugins[name], key=_plugids.__getitem__)
+
+        for plugin in plugins_:
+            if name not in sockets and plugin not in import_origins_plugins and plugin is not None:
                 try:
-                    p.unfilled()
+                    plugin.unfilled()
 
                 except Exception as e:
                     raise type(e)(*(e.args + (contextname, name)))
@@ -133,39 +134,47 @@ def contextmatch(
                 found_sockets = []
                 if name in socket_names:
                     found_sockets += sockets[name]
-                if len(found_sockets):
-                    for s in found_sockets:
-                        if s is None:
+
+                if found_sockets:
+                    for socket in found_sockets:
+                        if socket is None:
                             continue
-                        if p in import_origins_plugins:
-                            if p is None:
+
+                        if plugin in import_origins_plugins:
+                            if plugin is None:
                                 continue
 
-                        if (s, p) in _all_connections:
+                        if (socket, plugin) in _all_connections:
                             continue
-                        _all_connections.add((s, p))
+
+                        _all_connections.add((socket, plugin))
 
                         try:
-                            socketcontextname = s.function.im_self.workerinstance._context.contextname
-                            segmentname = s.function.im_self.segmentname
+                            socket_context_name = socket.function.im_self.workerinstance._context.contextname
+                            segment_name = socket.function.im_self.segmentname
+
                         except AttributeError:
                             pass
-                        s.fill(*p.args, **p.kargs)
-                        p.fill(s)
+                        socket.fill(*plugin.args, **plugin.kargs)
+                        plugin.fill(socket)
+
             except Exception as e:
                 if python2:
                     e2 = type(e)(contextname, name, e.args)
                     do_raise(e2)
+
                 else:
                     raise Exception(contextname, name)
 
     for name in socket_names:
         if name in filled_sockets:
             continue
+
         try:
-            for s in sockets[name]:
-                if s not in import_origins_sockets and s is not None:
-                    s.unfilled()
+            for socket in sockets[name]:
+                if socket not in import_origins_sockets and socket is not None:
+                    socket.unfilled()
+
         except Exception as e:
             from . import add_contextnames
 

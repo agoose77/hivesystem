@@ -402,7 +402,7 @@ class blenderapp(bee.drone):
         return self._entities[entity_name]["hivemap"]
 
     def get_hivemap_name_for_entity_class(self, entity_class_name):
-        return self._entity_classes[entity_class_name]["hivemap"]
+        return self._entity_classes[entity_class_name][0]["hivemap"]
 
     def place(self):
         libcontext.socket("startupfunction", socket_container(self.addstartupfunction))

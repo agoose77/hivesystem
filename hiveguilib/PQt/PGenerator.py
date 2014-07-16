@@ -106,7 +106,6 @@ def PGenerator(paramnames, paramtypelist, paramvalues,
 
     v = qtview.qtview(form)
     v._wrap(parwidget)
-    print(dir(v))
 
     for pname in paramnames:
         pname2 = pname

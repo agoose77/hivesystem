@@ -130,17 +130,19 @@ class WorkerManager(object):
     def build_worker(self, workername):
         found = False
         for wf in (self._workerfinder_local, self._workerfinder_global):
-            if wf is None: continue
+            if wf is None:
+                continue
             if workername in wf.workers:
                 worker = wf.workers[workername]
                 self._workerbuilder.build_worker(workername, worker)
                 self._pworkercreator.append(workername)
                 found = True
                 break
+
             elif workername in wf.metaworkers:
-                metaworker = metaworkers[metaworkername]
-                self._workerbuilder.build_metaworker(metaworkername, metaworker)
-                self._pworkercreator.append(metaworkername)
+                metaworker = wf.metaworkers[workername]
+                self._workerbuilder.build_metaworker(workername, metaworker)
+                self._pworkercreator.append(workername)
                 found = True
                 break
 
@@ -244,7 +246,8 @@ class WorkerManager(object):
                 if argument is not None:
                     parameter_values[parameter_name] = argument
 
-        self._worker_parameters[worker_id] = [workertype, worker_instance.paramnames, worker_instance.paramtypelist, parameter_values, worker_instance.guiparams]
+        self._worker_parameters[worker_id] = [workertype, worker_instance.paramnames, worker_instance.paramtypelist,
+                                              parameter_values, worker_instance.guiparams]
         if self._antennafoldstate is not None:
             gp = {}
             pullantennas = []
@@ -312,7 +315,7 @@ class WorkerManager(object):
 
         widget, controller = self._pmanager.select_pwidget(worker_id, "params", params[1], params[2],  params[3],
                                                            update_function, [], form_manipulators)
-        print("SELCT")
+        print("SELECT")
         if widget is not None and self._antennafoldstate is not None:
             self._antennafoldstate.init_widget(worker_id, widget, controller)
 
