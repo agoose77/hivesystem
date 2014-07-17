@@ -183,12 +183,12 @@ class blenderview:
             self.type = getattr(Spyder, self.typename + "Array" * form.arraycount)
 
         self._listen_callbacks = None
-        parent = None
+        parent_widget = None
         if parent is not None:
-            parent = parent.widget
+            parent_widget = parent.widget
 
         if parent is None or not self.buttons:
-            self.widget = BlenderLayoutWidget(parent, self._name, self.buttons, advanced=advanced)
+            self.widget = BlenderLayoutWidget(parent_widget, self._name, self.buttons, advanced=advanced)
 
             for button in self.buttons:
                 button.setParent(self.widget)
@@ -196,7 +196,7 @@ class blenderview:
             widget = self.widget
 
         else:
-            self._pwidget = BlenderLayoutWidget(parent, self._name, self.buttons, advanced=advanced)
+            self._pwidget = BlenderLayoutWidget(parent_widget, self._name, self.buttons, advanced=advanced)
             for button in self.buttons:
                 button.setParent(self._pwidget)
 
