@@ -193,7 +193,7 @@ class launch(object):
             guiparams = {
                 "process_class": {"name": "Process class", "fold": True},
                 "trig": {"name": "Trigger"},
-                "process_identifier": {"name": "Process Identifier"},
+                "process_identifier": {"name": "Process ID"},
                 "subprocess": {"name": "Subprocess"},
                 "memberorder": ["trig", "process_class", "process_identifier"],
             }

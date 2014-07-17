@@ -541,7 +541,7 @@ class BlendManager:
 
     def blend_update(self, *args):
         """Handle blend file updates"""
-        from .NodeTrees import HiveNodeTree, HivemapNodeTree, WorkermapNodeTree, SpydermapNodeTree
+        from .NodeTrees import HiveNodeTree
 
         if self._loading:
             return

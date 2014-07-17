@@ -120,7 +120,9 @@ class blenderview_primary:
 
 
 def find_buttons(form):
-    if form is None or "_othertokens" not in form._props: return []
+    if form is None or "_othertokens" not in form._props:
+        return []
+
     tokens = form._props["_othertokens"]
     ret = []
     for token, args in tokens:
@@ -148,6 +150,7 @@ class blenderview:
             try:
                 if issubclass(obj, Object):
                     form = obj._form()
+
             except TypeError:
                 raise TypeError(obj)
 
@@ -180,18 +183,20 @@ class blenderview:
             self.type = getattr(Spyder, self.typename + "Array" * form.arraycount)
 
         self._listen_callbacks = None
-        pw = None
+        parent = None
         if parent is not None:
-            pw = parent.widget
+            parent = parent.widget
 
-        if parent is None or not len(self.buttons):
-            self.widget = BlenderLayoutWidget(pw, self._name, self.buttons, advanced=advanced)
+        if parent is None or not self.buttons:
+            self.widget = BlenderLayoutWidget(parent, self._name, self.buttons, advanced=advanced)
+
             for button in self.buttons:
                 button.setParent(self.widget)
+
             widget = self.widget
 
         else:
-            self._pwidget = BlenderLayoutWidget(pw, self._name, self.buttons, advanced=advanced)
+            self._pwidget = BlenderLayoutWidget(parent, self._name, self.buttons, advanced=advanced)
             for button in self.buttons:
                 button.setParent(self._pwidget)
 

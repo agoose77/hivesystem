@@ -5,7 +5,9 @@ from libcontext.pluginclasses import *
 from bee.bind import *
 
 
-class matrix_binder(binderdrone):
+class matrix_forward_mixins:
+
+    """Mixin class for re-importing matrix plugins"""
 
     def set_matrix_function(self, function):
         self._get_matrix = function
@@ -20,6 +22,23 @@ class matrix_binder(binderdrone):
         self._get_matrix_blender = function
 
     def bind(self, binderworker, bindname):
+        libcontext.plugin(("entity", "matrix"), plugin_supplier(self._get_matrix))
+        libcontext.plugin(("entity", "matrix", "Blender"), plugin_supplier(self._get_matrix_blender))
+        libcontext.plugin(("entity", "matrix", "NodePath"), plugin_supplier(self._get_matrix_nodepath))
+        libcontext.plugin(("entity", "matrix", "AxisSystem"), plugin_supplier(self._get_matrix_axissystem))
+
+    def place(self):
+        libcontext.socket(("entity", "matrix"), socket_single_required(self.set_matrix_function))
+        libcontext.socket(("entity", "matrix", "Blender"), socket_single_required(self.set_matrix_function_blender))
+        libcontext.socket(("entity", "matrix", "NodePath"), socket_single_required(self.set_matrix_function_nodepath))
+        libcontext.socket(("entity", "matrix", "AxisSystem"), socket_single_required(self.set_matrix_function_axissystem))
+
+
+class matrix_binder(matrix_forward_mixins, binderdrone):
+
+    def bind(self, binderworker, bindname):
+        matrix_forward_mixins.bind(self, binderworker, bindname)
+
         libcontext.plugin(("entity", "bound", "matrix"),
                           plugin_supplier(lambda: self._get_matrix(bindname)))
         libcontext.plugin(("entity", "bound", "matrix", "NodePath"),
@@ -30,30 +49,12 @@ class matrix_binder(binderdrone):
                           plugin_supplier(lambda: self._get_matrix_blender(bindname)))
         # TODO: add (unmodified) plugins for ("get_entity", "view", "local") and all other views
 
-    def place(self):
-        libcontext.socket(("entity", "matrix"), socket_single_required(self.set_matrix_function))
 
-        libcontext.socket(("entity", "matrix", "Blender"), socket_single_required(self.set_matrix_function_blender))
-        libcontext.socket(("entity", "matrix", "NodePath"), socket_single_required(self.set_matrix_function_nodepath))
-        libcontext.socket(("entity", "matrix", "AxisSystem"), socket_single_required(self.set_matrix_function_axissystem))
-        # TODO: add sockets for ("get_entity", "view", "local") and all other views
-
-
-class matrix_binder_view(binderdrone):
-
-    def set_matrix_function(self, function):
-        self._get_matrix = function
-
-    def set_matrix_function_nodepath(self, function):
-        self._get_matrix_nodepath = function
-
-    def set_matrix_function_axissystem(self, function):
-        self._get_matrix_axissystem = function
-
-    def set_matrix_function_blender(self, function):
-        self._get_matrix_blender = function
+class matrix_binder_view(matrix_forward_mixins, binderdrone):
 
     def bind(self, binderworker, bindname):
+        matrix_forward_mixins.bind(self, binderworker, bindname)
+
         libcontext.plugin(("entity", "bound", "matrix"), plugin_supplier(lambda: self._get_matrix(bindname)))
         libcontext.plugin(("entity", "bound", "matrix", "NodePath"),
                           plugin_supplier(lambda: self._get_matrix_nodepath(bindname)))
@@ -61,17 +62,6 @@ class matrix_binder_view(binderdrone):
                           plugin_supplier(lambda: self._get_matrix_axissystem(bindname)))
         libcontext.plugin(("entity", "bound", "matrix", "Blender"),
                           plugin_supplier(lambda: self._get_matrix_blender(bindname)))
-        # TODO: add (unmodified) plugins for ("get_entity", "view", self._view) and all other views
-
-    def place(self):
-        libcontext.socket(("entity", "view", self._view), socket_single_required(self.set_matrix_function))
-        libcontext.socket(("entity", "view", self._view, "Blender"),
-                          socket_single_required(self.set_matrix_function_blender))
-        libcontext.socket(("entity", "view", self._view, "NodePath"),
-                          socket_single_required(self.set_matrix_function_nodepath))
-        libcontext.socket(("entity", "view", self._view, "AxisSystem"),
-                          socket_single_required(self.set_matrix_function_axissystem))
-        # TODO: add (unmodified) sockets for all other views than ("get_entity", "view", self._view)
 
 
 class matrix_binder_local(matrix_binder_view):
