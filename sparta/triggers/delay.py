@@ -69,6 +69,9 @@ class delay(object):
 
             @modifier
             def add_callback(self):
+                if not self.multi:
+                    self.pending_triggers.clear()
+
                 self.pending_triggers.append(self.time_value + self.b_delay)
 
             trigger(b_delay, add_callback)

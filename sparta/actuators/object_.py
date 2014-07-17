@@ -91,7 +91,9 @@ class object_(object):
 
     metaguiparams = {
         "config": "Launch",
-        "autocreate": {"config": "Launch (\n  bind_event = True,\n  bind_hivereg = True,\n  bind_io = True,\n  bind_sys = True,\n  bind_scene = True,\n  bind_time = True\n)"},
+        "autocreate": {"config":{"bind_event": True, "bind_hivereg": True, "bind_io":  True,
+                                             "bind_sys": True, "bind_scene": True, "bind_time": True,
+                                             "bind_entity": True, "bind_matrix": "relative"}},
         "_memberorder": ["config"]
     }
 
