@@ -8,16 +8,18 @@ class duck(object):
     def __new__(cls, type1, type2):
         class duck(bee.worker):
             inp = antenna("pull", type1)
-            t_inp = transistor(type1)
-            connect(inp, t_inp)
+            b_inp = buffer("pull", type1)
+            connect(inp, b_inp)
 
             outp = output("pull", type2)
             v_outp = variable(type2)
             connect(v_outp, outp)
 
-            op = operator(lambda x: x, type1, type2)
-            connect(t_inp, op)
-            connect(op, v_outp)
-            pretrigger(v_outp, t_inp)
+            @modifier
+            def do_duck(self):
+                self.v_outp = self.b_inp
+
+            pretrigger(v_outp, b_inp)
+            pretrigger(v_outp, do_duck)
 
         return duck

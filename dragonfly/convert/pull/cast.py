@@ -15,16 +15,18 @@ class cast(object):
 
         class cast(bee.worker):
             inp = antenna("pull", type1)
+            b_inp = buffer("pull", type1)
+            connect(inp, b_inp)
 
             outp = output("pull", type2)
             v_outp = variable(type2)
             connect(v_outp, outp)
 
-            op = operator(lambda x: constructor(x), type1, type2)
-            t_op = transistor(type1)
-            connect(inp, t_op)
-            connect(t_op, op)
-            connect(op, v_outp)
-            pretrigger(v_outp, t_op)
+            @modifier
+            def do_duck(self):
+                self.v_outp = constructor(self.b_inp)
+
+            pretrigger(v_outp, b_inp)
+            pretrigger(v_outp, do_duck)
 
         return cast
