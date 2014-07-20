@@ -81,9 +81,13 @@ class processbinder(binderdrone):
         libcontext.plugin(("process", "unregister"), plugin_supplier(self.unregister_process))
         libcontext.plugin(("process", "launch"), plugin_supplier(self.launch_process))
 
+        # Setup functions
         libcontext.plugin(("process", "register", "pause"), plugin_supplier(self.register_pause_process))
         libcontext.plugin(("process", "register", "stop"), plugin_supplier(self.register_stop_process))
         libcontext.plugin(("process", "register", "resume"), plugin_supplier(self.register_resume_process))
+
+        # Get current process ID
+        libcontext.plugin(("process", "bound"), plugin_supplier(lambda: bindname))
 
         libcontext.plugin("register_hive", plugin_supplier(self.register_hive))
         libcontext.plugin("get_hive", plugin_supplier(self.get_hive))
