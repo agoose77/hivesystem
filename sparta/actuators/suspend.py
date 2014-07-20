@@ -4,9 +4,9 @@ from libcontext.socketclasses import *
 from libcontext.pluginclasses import *
 
 
-class pause(bee.worker):
+class suspend(bee.worker):
     """
-    The pause actuator pauses a hive process 
+    The suspend actuator suspends a hive process
     """
     # Inputs and outputs
     trig = antenna("push", "trigger")
@@ -17,10 +17,10 @@ class pause(bee.worker):
     trigger(trig, b_process)
 
     @modifier
-    def do_pause(self):
-        self.pause_function(self.b_process)
+    def do_suspend(self):
+        self.suspend_process(self.b_process)
 
-    trigger(trig, do_pause)
+    trigger(trig, do_suspend)
 
     # Define the I/O names
     guiparams = {
@@ -29,9 +29,9 @@ class pause(bee.worker):
         "_memberorder": ["trig", "process"],
     }
 
-    def set_pause_function(self, pause_function):
-        self.pause_function = pause_function
+    def set_suspend_function(self, supsend_function):
+        self.suspend_process = supsend_function
 
     def place(self):
-        libcontext.socket(("process", "pause"), socket_single_required(self.set_pause_function))
+        libcontext.socket(("process", "suspend"), socket_single_required(self.set_suspend_function))
 

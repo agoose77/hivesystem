@@ -26,6 +26,7 @@ class join(object):
     def __new__(cls, type1, type2):
         if not isinstance(type1, str) and not isinstance(type1, tuple):
             raise AssertionError("Join type 1 must be tuple, not '%s'" % type(type1))
+        
         typetuple1 = type1
         if isinstance(type1, str): typetuple1 = (type1,)
 

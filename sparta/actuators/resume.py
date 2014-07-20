@@ -6,7 +6,7 @@ from libcontext.pluginclasses import *
 
 class resume(bee.worker):
     """
-    The resume actuator resumes a paused hive process 
+    The resume actuator resumes a suspended hive process
     """
     # Inputs and outputs
     trig = antenna("push", "trigger")

@@ -49,7 +49,8 @@ class view(object):
             guiparams = {
                 "trig": {"name": "Trigger"},
                 "identifier": {"name": "Identifier", "fold": True},
-                "_memberorder": ["identifier", "trig"]
+                "view": {"name": "View"},
+                "_memberorder": ["identifier", "trig", "view"]
             }
 
             def place(self):

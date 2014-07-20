@@ -4,7 +4,7 @@ from .motion import motion
 from .view import view
 from .launch import launch
 from .kill import kill
-from .pause import pause
+from .suspend import suspend
 from .resume import resume
 from .stop import stop
 from .set_property import set_property
