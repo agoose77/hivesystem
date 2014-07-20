@@ -18,9 +18,6 @@ Type Launch:Degenerate {
   *Bool bind_stop = True
   *Enum bind_pacemaker("transmit",) = "transmit"
   *Enum transmit_tick("no", "evin") = "evin"
-  validate {
-    if hivemap is not None: assert bind_hivereg == False
-  }
 
 }
 

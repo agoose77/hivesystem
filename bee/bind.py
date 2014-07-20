@@ -13,7 +13,7 @@
 from __future__ import print_function
 import libcontext
 from .segments import *
-from . import worker, drone
+from . import worker, drone, event
 from .bindworker import bindworker
 from . import connect as hiveconnect
 import inspect
@@ -146,7 +146,9 @@ class bindbuilder(mytype):
                 @modifier
                 def parse_bindantennas(self):
                     vb = self.v_bind
-                    if len(bindantennas) == 1: vb = (vb,)
+                    if len(bindantennas) == 1:
+                        vb = (vb,)
+
                     self.bindantennavalues = {}
                     for name, value in zip(bindantennas, vb):
                         self.bindantennavalues[name[0]] = value
@@ -203,6 +205,11 @@ class bindbuilder(mytype):
 
                     self.hives[bind_name] = hive
 
+                    # Raise start event
+                    if bind_name in self.event_handlers:
+                        handler = self.event_handlers[bind_name]
+                        handler(event("start"))
+
                 trigger(v_bind, parse_bindantennas)
                 trigger(v_bind, do_bind)
 
@@ -233,13 +240,9 @@ class bindbuilder(mytype):
                 # Stop all hives
                 @modifier
                 def m_stop_all(self):
-                    for hive in self.hives.values():
-                        for function in hive.zzz_bindbridgedrone.cleanup_functions:
-                            function()
-
-                    self.hives.clear()
-                    self.handler_states.clear()
-                    self.event_handlers.clear()
+                    for hive_name in tuple(self.hives.keys()):
+                        self.v_stop = hive_name
+                        self.m_stop()
 
                 stop_all = antenna("push", "trigger")
                 trigger(stop_all, m_stop_all)
@@ -247,10 +250,9 @@ class bindbuilder(mytype):
                 # Pause all hives
                 @modifier
                 def m_pause_all(self):
-                    # For every bound event handler, disable this
-                    handler_states = self.handler_states
-                    for bind_name in handler_states:
-                        handler_states[bind_name] = False
+                    for hive_name in tuple(self.hives.keys()):
+                        self.v_pause = hive_name
+                        self.m_pause()
 
                 pause_all = antenna("push", "trigger")
                 trigger(pause_all, m_pause_all)
@@ -268,17 +270,22 @@ class bindbuilder(mytype):
                         hive = self.hives.pop(stopped_name)
 
                     except KeyError:
-                        print("Couldn't find hive %s to stop" % stopped_name)
+                        raise KeyError("Couldn't find hive %s to stop" % stopped_name)
 
-                    else:
-                        for function in hive.zzz_bindbridgedrone.cleanup_functions:
-                            function()
+                    # Raise stop event
+                    if stopped_name in self.event_handlers:
+                        handler = self.event_handlers[stopped_name]
+                        handler(event("stop"))
+
+                    for function in hive.zzz_bindbridgedrone.cleanup_functions:
+                        function()
 
                     try:
                         del self.handler_states[stopped_name]
                         del self.event_handlers[stopped_name]
+
                     except KeyError:
-                        print("Couldn't find hive %s to stop" % stopped_name)
+                        raise KeyError("Couldn't find hive %s to stop" % stopped_name)
 
                 trigger(v_stop, m_stop)
 
@@ -295,14 +302,6 @@ class bindbuilder(mytype):
                         event_func(event)
 
                 trigger(v_event, m_event)
-
-                def add_bound_handler(self, binder, bind_name, handler):
-                    """Add a handler for the current bind name"""
-                    if not bind_name in self.event_handlers:
-                        self.event_handlers[bind_name] = {}
-                        self.handler_states[bind_name] = True
-
-                    self.event_handlers[bind_name][binder] = handler
 
                 def place(self):
                     self.hives = {}
@@ -334,7 +333,7 @@ class bindbuilder(mytype):
                         binder_instance.place()
 
                     libcontext.plugin("cleanupfunction",
-                      libcontext.pluginclasses.plugin_single_required(self.m_stop_all))
+                                      libcontext.pluginclasses.plugin_single_required(self.m_stop_all))
 
             return bindhiveworker(*args, **kwargs)
 
@@ -452,13 +451,15 @@ class prebinder(bindhelper):
             #before placing the new hive, call binderdrone.bind(bind object, ...) with the values of the specified antennanames
 
     def __init__(self, drone, antennanames=[]):
-        if isinstance(antennanames, str): antennanames = [antennanames]
+        if isinstance(antennanames, str):
+            antennanames = [antennanames]
         assert drone is None or issubclass(drone._wrapped_hive, binderdrone._wrapped_hive)
         self.drone = drone
         self.antennanames = antennanames
 
     def getinstance(self, __parent__=None):
-        if self.drone is None: return
+        if self.drone is None:
+            return
         binder_drone_instance = self.drone.getinstance(__parent__)
         return self.binderinstance(binder_drone_instance, self.antennanames)
 

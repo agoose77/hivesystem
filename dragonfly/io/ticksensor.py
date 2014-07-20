@@ -17,7 +17,9 @@ class ticksensor(bee.worker):
 
     @modifier
     def m_start(self):
-        if self.listener is not None: return
+        if self.listener is not None:
+            return
+
         self.listener = self.add_listener("trigger", self.trig_outp, "tick", priority=1)
         self.on = True
 
@@ -41,6 +43,8 @@ class ticksensor(bee.worker):
     def place(self):
         libcontext.socket(("evin", "add_listener"), socket_single_required(self.set_add_listener))
         libcontext.socket(("evin", "remove_listener"), socket_single_required(self.set_remove_listener))
+
         self.listener = None
+
         if self.on:
             libcontext.plugin(("bee", "init"), plugin_single_required(self.m_start))

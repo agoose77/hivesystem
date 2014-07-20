@@ -63,6 +63,7 @@ class object_helper(bee.worker):
 
         # if we have a hivemap, cascade trigger
         self.v_output_process_class = hive_map_name
+        self.v_output_entity = entity_name
         self.do_trigger()
 
     trigger(trig, do_spawn)

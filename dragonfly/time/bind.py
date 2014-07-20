@@ -4,29 +4,35 @@ import bee.event
 
 
 class tickforwarder_evin(binderdrone):
+
     def __init__(self):
         self.bindnames = set()
-        self.send_event = {}
-        self.first = {}
+        self.event_senders = {}
+        self.binderworker = None
 
     def listener(self, event):
+        if self.binderworker is None:
+            return
+
+        event_senders = self.event_senders
+        bound_hives = self.binderworker.hives
+
         for bindname in list(self.bindnames):
-            if bindname not in self.binderworker.hives:
+            send_event = event_senders[bindname]
+
+            if bindname not in bound_hives:
                 self.bindnames.remove(bindname)
                 continue
-            if self.first[bindname]:
-                self.first[bindname] = False
-                self.send_event[bindname](bee.event("start"))
-            self.send_event[bindname](event)
+
+            send_event(event)
 
     def set_send_event(self, send_event):
-        self.send_event[self.currbindname] = send_event
+        self.event_senders[self.currbindname] = send_event
 
     def bind(self, binderworker, bindname):
         self.binderworker = binderworker
         binderworker.eventfuncs.append(self.listener)
         self.bindnames.add(bindname)
-        self.first[bindname] = True
         self.currbindname = bindname
         s = libcontext.socketclasses.socket_single_required(self.set_send_event)
         libcontext.socket(("evin", "event"), s)
@@ -38,7 +44,9 @@ class tickforwarder_evin(binderdrone):
 
 class bind(bind_baseclass):
     bind_pacemaker = bindparameter("transmit")
+    # TODO check if this can be disabled
     binder("bind_pacemaker", "transmit", pluginbridge("pacemaker"))
+    binder("bind_pacemaker", False, None)
     # TODO: binder("bind_pacemaker", "simple")
     transmit_tick = bindparameter("evin")
     binder("transmit_tick", False, None)

@@ -35,4 +35,3 @@ class pacemaker_simple(bee.drone):
     def place(self):
         libcontext.socket(("evin", "event"), socket_single_required(self.set_eventfunc))
         libcontext.plugin("pacemaker", plugin_supplier(self))
-    

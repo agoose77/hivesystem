@@ -32,7 +32,7 @@ class eventdispatcher(binderdrone):
                 continue
 
             # Forward the event
-            event_func = event_forwarders[bindname][self]
+            event_func = event_forwarders[bindname]
             event_func(event_after)
 
     def bind(self, binderworker, bindname):
@@ -47,8 +47,12 @@ class eventdispatcher(binderdrone):
         self.bindnames.add(bindname)
 
         # Individual event handler of the BOUND class (multiple bound hives possible)
-        add_func = lambda func: binderworker.add_bound_handler(self, bindname, func)
-        s = libcontext.socketclasses.socket_single_required(add_func)
+        def set_handler(func):
+            binderworker.event_handlers[bindname] = func
+            # Active state
+            binderworker.handler_states[bindname] = True
+
+        s = libcontext.socketclasses.socket_single_required(set_handler)
         libcontext.socket(("evin", "event"), s)
 
     def place(self):
@@ -78,7 +82,7 @@ class eventforwarder(eventdispatcher):
                 continue
 
             # Forward the event
-            event_func = event_forwarders[bindname][self]
+            event_func = event_forwarders[bindname]
             event_func(event)
 
 
