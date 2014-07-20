@@ -272,7 +272,8 @@ def _parameterclass(parametertuple, *args, **kargs):
 
 def get_parameterclass(parclassname):
     t = typeclass(parclassname)
-    if t.is_subtype: return get_parameterclass(parclassname[0])
+    if t.is_subtype:
+        return get_parameterclass(parclassname[0])
     if isinstance(parclassname, tuple):
         parametertuple = [get_parameterclass(p) for p in parclassname]
         t0 = [t[0] for t in parametertuple]
