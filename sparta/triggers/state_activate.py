@@ -16,4 +16,3 @@ class state_activate(bee.worker):
 
     def place(self):
         raise NotImplementedError("sparta.triggers.state_activate has not been implemented yet")
-    

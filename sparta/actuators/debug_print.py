@@ -6,13 +6,18 @@ class debug_print(bee.worker):
     """The set_property actuator modifies a named property"""
 
     trig = antenna("push", "trigger")
-    message_default = variable("str")
-    parameter(message_default, "Triggered!")
+    message_ = antenna("pull", "str")
+    message_default = buffer("pull", "str")
+    startvalue(message_default, "Triggered!")
+    connect(message_, message_default)
+
+    trigger(trig, message_default)
 
     # Name the inputs and outputs
     guiparams = {
         "trig": {"name": "Trigger"},
-        "_memberorder": ["trig"],
+        "message_": {"name": "Message"},
+        "_memberorder": ["trig", "message_"],
     }
 
     @modifier
@@ -20,7 +25,4 @@ class debug_print(bee.worker):
         print(self.message_default)
 
     trigger(trig, on_triggered)
-
-    def place(self):
-        pass
 

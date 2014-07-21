@@ -4,6 +4,7 @@ class event(tuple):
         if len(value) == 1:
             if isinstance(value, tuple):
                 value = value[0]
+
             if isinstance(value, str):
                 value = (value,)
 
@@ -19,8 +20,9 @@ class event(tuple):
 
     def grow_head(self, head):
         pre = self.__class__(head)
-        if len(self) == 0:
+        if not self:
             return head
+
         return self.__class__(pre + self.__class__(self[0]), *self[1:])
 
     def match_leader(self, leader):
@@ -38,7 +40,7 @@ class event(tuple):
         return self.__class__(e) == self
 
     def match_head(self, head):
-        if len(self) == 0:
+        if not self:
             return None
 
         myhead = self.__class__(self[0])

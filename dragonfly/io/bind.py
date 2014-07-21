@@ -2,7 +2,6 @@ import libcontext
 from bee.bind import *
 from ..event.bind import eventlistener
 
-
 class bind(bind_baseclass):
 
     bind_keyboard = bindparameter("direct")
@@ -24,3 +23,7 @@ class bind(bind_baseclass):
     bind_watch = bindparameter(True)
     binder("bind_watch", False, None)
     binder("bind_watch", True, pluginbridge("watch"))
+
+    bind_messages = bindparameter(True)
+    binder("bind_messages", False, None)
+    binder("bind_messages", True, eventlistener("message"), "bindname")

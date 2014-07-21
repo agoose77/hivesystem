@@ -4,6 +4,8 @@ from bee.bind import *
 
 class eventdispatcher(binderdrone):
 
+    """Dispatch events with bind name header to bound hives"""
+
     def __init__(self):
         self.bindnames = set()
 
@@ -62,6 +64,8 @@ class eventdispatcher(binderdrone):
 
 class eventforwarder(eventdispatcher):
 
+    """ Forward all events to bound hives"""
+
     def listener(self, event):
         # As this is a plugin, it may be prematurely called
         if not self.bindnames:
@@ -87,6 +91,8 @@ class eventforwarder(eventdispatcher):
 
 
 class eventlistener(eventforwarder):
+
+    """Forward all events of a certain pattern to bound hives"""
 
     def __init__(self, leader):
         self.bindnames = set()

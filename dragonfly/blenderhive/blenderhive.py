@@ -493,7 +493,7 @@ class blenderapp(bee.drone):
 from bee import connect
 from ..time import simplescheduler
 from ..sys import exitactuator
-from ..io import keyboardsensor_trigger
+from ..io import keyboardsensor_trigger, messagehandler
 from ..time import pacemaker_simple
 from ..sys import processmanager
 
@@ -608,6 +608,7 @@ class blenderhive(bee.inithive):
     cameraloader()
     animationloader = animationloader()
     processmanager = processmanager()
+    messagehandler = messagehandler()
 
     near_drone = near_drone()
 

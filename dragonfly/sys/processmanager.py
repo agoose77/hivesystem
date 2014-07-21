@@ -76,6 +76,7 @@ class processmanager(bee.drone):
         libcontext.plugin(("process", "register", "resume"), plugin_supplier(self.register_resume_process))
         libcontext.plugin(("process", "register", "suspend"), plugin_supplier(self.register_suspend_process))
         libcontext.plugin(("process", "unregister"), plugin_supplier(self.unregister_process))
+
         libcontext.plugin(("process", "suspend"), plugin_supplier(self.suspend_process))
         libcontext.plugin(("process", "resume"), plugin_supplier(self.resume_process))
         libcontext.plugin(("process", "stop"), plugin_supplier(self.stop_process))

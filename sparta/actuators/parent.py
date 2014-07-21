@@ -55,7 +55,6 @@ class parent(object):
                 def set_parent_set(self, parent_set):
                     self.parent_set = parent_set
 
-
             elif idmode == "unbound":
                 @modifier
                 def m_parent(self):

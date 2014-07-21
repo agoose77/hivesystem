@@ -28,8 +28,8 @@ class id_suffix_worker(bee.worker):
     v_identifier_base = variable(("str", "identifier"))
     connect(identifier_base, v_identifier_base)
 
-    v_suffix_id = variable(("str", "identifier"))
-    new_identifier = output("pull", ("str", "identifier"))
+    v_suffix_id = variable(("str", "process"))
+    new_identifier = output("pull", ("str", "process"))
     connect(v_suffix_id, new_identifier)
 
     trig_out = output("push", "trigger")
@@ -37,7 +37,6 @@ class id_suffix_worker(bee.worker):
 
     @modifier
     def create_id(self):
-        print("SPAWN")
         self.v_suffix_id = "{}_{}".format(self.v_identifier_base, next(self._id_generator))
         self.do_out()
 
@@ -52,8 +51,8 @@ class launch_helper(bee.worker):
     b_process_class = buffer("pull", ("str", "identifier"))
     connect(process_class, b_process_class)
 
-    process_identifier = antenna("pull", ("str", "identifier"))
-    b_process_id = buffer("pull", ("str", "identifier"))
+    process_identifier = antenna("pull", ("str", "process"))
+    b_process_id = buffer("pull", ("str", "process"))
     connect(process_identifier, b_process_id)
 
     trig_out = output("push", "trigger")
