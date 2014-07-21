@@ -30,6 +30,19 @@ class message(object):
 
             if idmode == "unbound":
                 identifier = antenna("pull", ("str", "identifier"))
+                identifier_buffer = buffer("pull", ("str", "identifier"))
+                connect(identifier, identifier_buffer)
+                trigger_identifier_buffer = triggerfunc(identifier_buffer)
+
+                @property
+                def process_name(self):
+                    self.trigger_identifier_buffer()
+                    return self.identifier_buffer
+
+            else:
+                @property
+                def process_name(self):
+                    return self.get_process_id()
 
             # Are we listening for a specific message?
             p_message = variable(("str", "message"))
@@ -55,6 +68,26 @@ class message(object):
                 "_memberorder": ["message", "active"],
             }
 
+            def update(self):
+                self.is_active = self.is_active_next
+                self.messagevalue = self.message_value_next
+                self.is_active_next = False
+                self.message_value_next = ""
+
+            def check_message(self, event):
+                # If the leader didn't match and the event is specific
+                if event[0] and event.match_leader(self.process_name) is None:
+                    return
+
+                message = event[1:]
+
+                if self.p_message:
+                    if message != self.p_message:
+                        return
+
+                self.message_value_next = message
+                self.is_active_next = True
+
 
             # Method to manipulate the parameter form as it appears in the GUI
             @classmethod
@@ -62,11 +95,27 @@ class message(object):
                 f.p_message.name = "Message"
                 f.p_message.tooltip = "Specific message to listen for"
 
+            def set_get_process_id(self, get_process_id):
+                self.get_process_id = get_process_id
+
+            #Add event listeners at startup
+            def set_add_listener(self, add_listener):
+                self.add_listener = add_listener
+
+            def enable(self):
+                self.add_listener("trigger", self.update, "tick", priority=9)
+                self.add_listener("leader", self.check_message, "message", priority=10)
+
+                self.is_active_next = False
+                self.message_value_next = ""
 
             def place(self):
-                raise NotImplementedError("sparta.sensors.message has not been implemented yet")
+                #Grab the hive's function for adding listeners
+                libcontext.socket(("evin", "add_listener"), socket_single_required(self.set_add_listener))
+                #Make sure we are enabled at startup
+                libcontext.plugin(("bee", "init"), plugin_single_required(self.enable))
+
+                if idmode == "bound":
+                    libcontext.socket(("process", "bound"), socket_single_required(self.set_get_process_id))
 
         return message
-        
-      
-      
