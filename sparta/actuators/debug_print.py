@@ -9,6 +9,7 @@ class debug_print(bee.worker):
     message_ = antenna("pull", "str")
     message_default = buffer("pull", "str")
     startvalue(message_default, "Triggered!")
+
     connect(message_, message_default)
 
     trigger(trig, message_default)
@@ -16,7 +17,7 @@ class debug_print(bee.worker):
     # Name the inputs and outputs
     guiparams = {
         "trig": {"name": "Trigger"},
-        "message_": {"name": "Message"},
+        "message_": {"name": "Message", "fold": True},
         "_memberorder": ["trig", "message_"],
     }
 
