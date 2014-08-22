@@ -61,8 +61,8 @@ class startup_binder_drone(bee.drone):
         socket = socket_single_required(self.set_get_entity_names)
         libcontext.socket(("entity", "names"), socket)
 
-        plugin = plugin_single_required(self.on_start)
-        libcontext.plugin("startupfunction", plugin)
+        listener = plugin_single_required(("trigger", self.on_start, "start", 9))
+        libcontext.plugin(("evin", "listener"), listener)
 
         # Get hive name
         socket = socket_single_required(self.set_get_hivemap)
