@@ -376,7 +376,14 @@ class NodeCanvas(HGui):
             self._hNodeCanvas.h_morph_node(node_id, replacement_node, connection_map)
 
     def copy_clipboard(self, node_ids):
-        self._clipboard().nodecanvas_copy_nodes(node_ids)
+        all_node_ids = list(node_ids)
+        for node_id in node_ids:
+
+            if node_id in self._folded_antennas:
+                print("TEXTREND", self._folded_antennas[node_id].values())
+                all_node_ids.extend(self._folded_antennas[node_id].values())
+
+        self._clipboard().nodecanvas_copy_nodes(all_node_ids)
 
     def paste_clipboard(self, pre_conversion=None):
         pasted_nodes_id_sequence = self._clipboard().nodecanvas_paste_nodes(pre_conversion)
@@ -569,9 +576,9 @@ class NodeCanvas(HGui):
         self._hNodeCanvas.hide_attribute(node_id, antenna_name)
 
         # Record which nodes were folded so deleting the parent node clears them
-
         if node_id not in self._folded_antennas:
             self._folded_antennas[node_id] = {}
+
         self._folded_antennas[node_id][antenna_name] = variable_id
         self._folded_antenna_variables[variable_id] = node_id
 

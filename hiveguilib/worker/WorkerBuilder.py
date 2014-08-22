@@ -160,13 +160,15 @@ def build_worker_plain(beename, antennas, outputs, ev, paramnames, paramtypelist
         )
         attribs.append(a)
     for pname in "evin", "evout", "everr", "evexc":
-        if pname not in ev: continue
+        if pname not in ev:
+            continue
         if pname == "evin":
             inmap[pname] = None
         else:
             outmap[pname] = None
 
     data = dict(zip(paramnames, paramtypelist))
+
     for paramname in paramnames:
         pmap[paramname] = paramname
         attribute = Attribute(
@@ -339,22 +341,30 @@ def build_worker_default_evio(*args, **kwargs):
 
 
 def build_worker_simplified(beename, antennas, outputs, ev, paramnames, paramtypelist, guiparams):
-    if guiparams is None or "guiparams" not in guiparams: return None, None
+    if guiparams is None or "guiparams" not in guiparams:
+        return None, None
     advanced = []
     g = guiparams["guiparams"]
+
     for k in g:
         try:
             g[k].get
         except AttributeError:
             continue
-        if g[k].get("advanced", False): advanced.append(k)
-    if len(advanced) == 0: return None, None
+
+        if g[k].get("advanced", False):
+            advanced.append(k)
+
+    if not advanced:
+        return None, None
 
     attribs, mapping = build_worker_default(beename, antennas, outputs, ev, paramnames, paramtypelist, guiparams)
     attribs = [a for a in attribs if a.name not in advanced]
     for a in advanced:
-        if a in mapping.inmap: mapping.inmap[a] = None
-        if a in mapping.outmap: mapping.outmap[a] = None
+        if a in mapping.inmap:
+            mapping.inmap[a] = None
+        if a in mapping.outmap:
+            mapping.outmap[a] = None
     return attribs, mapping
 
 
