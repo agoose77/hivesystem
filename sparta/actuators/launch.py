@@ -19,7 +19,6 @@ def id_generator():
 
 
 class id_suffix_worker(bee.worker):
-
     """Create new identifier with incremental suffix"""
 
     _id_generator = id_generator()
@@ -44,7 +43,6 @@ class id_suffix_worker(bee.worker):
 
 
 class launch_helper(bee.worker):
-
     """Interfaces with BindWorker from configuration options"""
 
     process_class = antenna("pull", ("str", "identifier"))

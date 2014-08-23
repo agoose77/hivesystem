@@ -13,52 +13,46 @@ class message(bee.worker):
     # Inputs and outputs
     trig = antenna("push", "trigger")
 
-    p_local = variable("bool")
-    parameter(p_local, False)
+    body = antenna("pull", ("str", "message"))
+    b_body = buffer("pull", ("str", "message"))
+    startvalue(b_body, "")
+    connect(body, b_body)
 
-    message = antenna("pull", ("str", "message"))
-    b_message = buffer("pull", ("str", "message"))
-    startvalue(b_message, "")
+    subject = antenna("pull", ("str", "message"))
+    b_subject = buffer("pull", ("str", "message"))
+    startvalue(b_subject, "")
+    connect(subject, b_subject)
 
-    connect(message, b_message)
-    trigger(trig, b_message)
-
-    process = antenna("pull", ("str", "process"))
-    b_process = buffer("pull", ("str", "process"))
+    process = antenna("pull", ("str"))
+    b_process = buffer("pull", ("str"))
     startvalue(b_process, "")
-
     connect(process, b_process)
+
+    trigger(trig, b_subject)
+    trigger(trig, b_body)
     trigger(trig, b_process)
 
     # Define the I/O names
     guiparams = {
         "trig": {"name": "Trigger"},
-        "message": {"name": "Message", "fold": True},
+        "body": {"name": "Body  ", "fold": True},
+        "subject": {"name": "Subject", "fold": True},
         "process": {"name": "Process", "fold": True},
-        "_memberorder": ["trig", "message", "process"],
+        "_memberorder": ["trig", "subject", "body", "process"],
     }
 
     @modifier
     def do_message(self):
         target = self.b_process
-        body = self.b_message
-        message_event = bee.event("message", target, body)
+        body = self.b_body
+        subject = self.b_subject
 
-        if self.p_local:
-            read_event = self.read_local_event
-        else:
-            read_event = self.read_event
-
-        read_event(message_event)
+        self.publish_message(target, subject, body)
 
     trigger(trig, do_message)
 
-    def set_read_event(self, read_event):
-        self.read_event = read_event
-
-    def set_read_local_event(self, read_event):
-        self.read_local_event = read_event
+    def set_publish_message(self, publish_message):
+        self.publish_message = publish_message
 
     def place(self):
-        libcontext.socket(("message", "evin"), socket_single_required(self.set_read_event))
-        libcontext.socket(("message", "evin"), socket_single_required(self.set_read_local_event))
+        libcontext.socket(("message", "publish"), socket_single_required(self.set_publish_message))

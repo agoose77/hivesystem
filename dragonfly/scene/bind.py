@@ -182,7 +182,7 @@ class entity_binder(binderdrone):
         :param bindname: name of bound entity (Warning, this is passed by keyword)
         """
         # Bound functions
-        # TODO just pass string here
+        # TODO just pass string here?
         libcontext.plugin(("entity", "bound"), plugin_supplier(lambda: bindname))
         libcontext.plugin(("entity", "bound", "parent", "set"),
                           plugin_supplier(lambda parent: self.set_parent(bindname, parent)))

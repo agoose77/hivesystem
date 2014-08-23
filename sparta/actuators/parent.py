@@ -69,8 +69,7 @@ class parent(object):
 
             def place(self):
                 if idmode == "bound":
-                    libcontext.socket(("entity", "bound", "parent", "set"),
-                                      socket_single_required(self.set_parent_set))
+                    libcontext.socket(("entity", "bound", "parent", "set"), socket_single_required(self.set_parent_set))
 
                 else:
                     libcontext.socket(("entity", "parent", "set"), socket_single_required(self.set_parent_set_for))

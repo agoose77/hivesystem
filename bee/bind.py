@@ -182,7 +182,6 @@ class bindbuilder(mytype):
                             s = libcontext.socketclasses.socket_supplier(bridge.cleanup_functions.append)
                             libcontext.socket("cleanupfunction", s)
 
-
                     class newhive(self.hive):
                         zzz_bindbridgedrone = bindbridge()
                         raiser = raiser()

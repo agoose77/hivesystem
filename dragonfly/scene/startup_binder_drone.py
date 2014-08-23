@@ -8,7 +8,6 @@ from libcontext.pluginclasses import *
 
 
 class startup_binder_drone(bee.drone):
-
     """Provides plugins for scene-object binding on startup"""
 
     def on_start(self):
@@ -21,12 +20,16 @@ class startup_binder_drone(bee.drone):
                 continue
 
             # Check if it is registered
-            self.check_hivemap_registered(hivemap_name)
+            self.ensure_hivemap_registered(hivemap_name)
 
             # Launch it
             self.launch_hive(hivemap_name, entity_name)
 
-    def check_hivemap_registered(self, hivemap_name):
+    def ensure_hivemap_registered(self, hivemap_name):
+        """Check to ensure that a hivemap is registered to the hiveregister drone
+
+        :param hivemap_name: name of hivemap
+        """
         try:
             self.get_hive(hivemap_name)
 

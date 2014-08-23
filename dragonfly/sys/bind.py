@@ -131,3 +131,8 @@ class bind(bind_baseclass):
     bind_process = bindparameter(True)
     binder("bind_process", False, None)
     binder("bind_process", True, processbinder(), "bindname")
+
+    bind_messages = bindparameter(True)
+    binder("bind_messages", False, None)
+    binder("bind_messages", True, pluginbridge(("message", "subscribe")))
+    binder("bind_messages", True, pluginbridge(("message", "publish")))

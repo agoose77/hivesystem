@@ -173,7 +173,7 @@ class combohivewrapper(hivewrapper):
             else:
                 beelist.append((bee0[0], bee))
         for c in converters:
-            c.func.enable()
+            c.func.init()
         for bee in beelist:
             self._combine_bee(bee)
         for c in converters:

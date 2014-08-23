@@ -47,6 +47,7 @@ class delay(object):
 
                 @property
                 def time_value(self):
+                    print(dir(self.pacemaker))
                     return self.pacemaker.time
 
             connect(delay, b_delay)

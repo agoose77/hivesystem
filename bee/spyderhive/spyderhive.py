@@ -199,7 +199,7 @@ class spyderhivecontextmixin(myobject):
             if isinstance(obj, spydermethod_or_converter):
                 converter_indices.append(onr)
         for onr in converter_indices:
-            arg.bees[onr][1].func.enable()
+            arg.bees[onr][1].func.init()
         for onr in spyder_indices:
             subcontext0, b = arg.bees[onr]
             pnam = []

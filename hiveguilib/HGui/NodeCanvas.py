@@ -380,7 +380,6 @@ class NodeCanvas(HGui):
         for node_id in node_ids:
 
             if node_id in self._folded_antennas:
-                print("TEXTREND", self._folded_antennas[node_id].values())
                 all_node_ids.extend(self._folded_antennas[node_id].values())
 
         self._clipboard().nodecanvas_copy_nodes(all_node_ids)

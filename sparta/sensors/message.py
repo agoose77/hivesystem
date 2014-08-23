@@ -4,118 +4,104 @@ from libcontext.socketclasses import *
 from libcontext.pluginclasses import *
 
 
-class message(object):
+class message(bee.worker):
+    """
+    The message sensor reports any messages that were sent to a specific object during the last tick
 
-    """The message sensor reports any messages that were sent to a specific object during the last tick"""
+    """
 
-    metaguiparams = {
-        "idmode": "str",
-        "autocreate": {"idmode": "bound"},
+    # Are we listening for a specific message?
+    p_subject = variable(("str", "message"))
+    parameter(p_subject, "")
+
+    #Has a message been received during the last tick?
+    is_active = variable("bool")
+    startvalue(is_active, False)
+    active = output("pull", "bool")
+    connect(is_active, active)
+
+    #What is the value of the last message?
+    # It will be "" if no key has been pressed/released during the last tick
+    subject_value = variable(("str", "message"))
+    startvalue(subject_value, "")
+    subject = output("pull", ("str", "message"))
+    connect(subject_value, subject)
+
+    body_value = variable(("str", "message"))
+    startvalue(body_value, "")
+    body = output("pull", ("str", "message"))
+    connect(body_value, body)
+
+    subject_body_pairs = variable(("object", "iterable", ("str", "str")))
+    startvalue(subject_body_pairs, "")
+    subject_body = output("pull", ("object", "iterable", ("str", "str")))
+    connect(subject_body_pairs, subject_body)
+
+    # Mark "message" as an advanced output segment, and capitalize the I/O names
+    guiparams = {
+        "subject_body": {"advanced": True, "name": "Subject-Body Pairs"},
+        "subject": {"advanced": True, "name": "Subject"},
+        "body": {"advanced": True, "name": "Body"},
+        "active": {"name": "Active"},
+        "_memberorder": ["subject", "body", "active", "subject_body"],
     }
 
+    # Method to manipulate the parameter form as it appears in the GUI
     @classmethod
     def form(cls, f):
-        f.idmode.name = "ID mode"
-        f.idmode.advanced = True
-        f.idmode.type = "option"
-        f.idmode.options = "unbound", "bound"
-        f.idmode.default = "bound"
-        f.idmode.optiontitles = "Unbound", "Bound"
+        f.p_subject.name = "Subject"
+        f.p_subject.tooltip = "Specific subject to listen for"
 
-    def __new__(cls, idmode):
-        assert idmode in ("bound", "unbound"), idmode
+    @property
+    def process_name(self):
+        try:
+            return self.get_process_name()
 
-        class message(bee.worker):
-            __doc__ = cls.__doc__
+        except AttributeError:
+            pass
 
-            if idmode == "unbound":
-                identifier = antenna("pull", ("str", "identifier"))
-                identifier_buffer = buffer("pull", ("str", "identifier"))
-                connect(identifier, identifier_buffer)
-                trigger_identifier_buffer = triggerfunc(identifier_buffer)
+    def enable(self):
+        self.subscribe(self.handle_message, process_name=self.process_name)
+        self.add_listener("trigger", self.update, "tick", priority=9)
 
-                @property
-                def process_name(self):
-                    self.trigger_identifier_buffer()
-                    return self.identifier_buffer
+        self.active_next = False
+        self.subject_body_pairs = []
 
-            else:
-                @property
-                def process_name(self):
-                    return self.get_process_id()
+    def handle_message(self, subject, body):
+        if subject != self.p_subject and self.p_subject:
+            return
 
-            # Are we listening for a specific message?
-            p_message = variable(("str", "message"))
-            parameter(p_message, "")
+        self.subject_value = subject
+        self.body_value = body
 
-            #Has a message been received during the last tick?
-            is_active = variable("bool")
-            startvalue(is_active, False)
-            active = output("pull", "bool")
-            connect(is_active, active)
+        self.active_next = True
+        self.subject_body_pairs.append((subject, body))
 
-            #What is the value of the last message? 
-            # It will be "" if no key has been pressed/released during the last tick
-            messagevalue = variable(("str", "message"))
-            startvalue(messagevalue, "")
-            message = output("pull", ("str", "message"))
-            connect(messagevalue, message)
+    def set_add_listener(self, add_listener):
+        self.add_listener = add_listener
 
-            # Mark "message" as an advanced output segment, and capitalize the I/O names
-            guiparams = {
-                "message": {"advanced": True, "name": "Message"},
-                "active": {"name": "Active"},
-                "_memberorder": ["message", "active"],
-            }
+    def set_get_process_name(self, get_process_name):
+        self.get_process_name = get_process_name
 
-            def update(self):
-                self.is_active = self.is_active_next
-                self.messagevalue = self.message_value_next
-                self.is_active_next = False
-                self.message_value_next = ""
+    def set_subscribe(self, subscribe):
+        self.subscribe = subscribe
 
-            def check_message(self, event):
-                # If the leader didn't match and the event is specific
-                if event[0] and event.match_leader(self.process_name) is None:
-                    return
+    def set_unsubscribe(self, unsubscribe):
+        self.unsubscribe = unsubscribe
 
-                message = event[1:]
+    def update(self):
+        self.is_active, self.active_next = self.active_next, False
+        self.subject_body_pairs.clear()
 
-                if self.p_message:
-                    if message != self.p_message:
-                        return
+    def on_cleanup(self):
+        self.unsubscribe(self.handle_message, self.process_name)
 
-                self.message_value_next = message
-                self.is_active_next = True
+    def place(self):
+        libcontext.socket(("process", "bound"), socket_single_optional(self.set_get_process_name))
+        libcontext.plugin(("bee", "init"), plugin_single_required(self.enable))
+        libcontext.socket(("evin", "add_listener"), socket_single_required(self.set_add_listener))
+        libcontext.socket(("message", "subscribe"), socket_single_required(self.set_subscribe))
+        libcontext.socket(("message", "unsubscribe"), socket_single_required(self.set_unsubscribe))
 
+        libcontext.plugin("cleanupfunction", plugin_single_required(self.on_cleanup))
 
-            # Method to manipulate the parameter form as it appears in the GUI
-            @classmethod
-            def form(cls, f):
-                f.p_message.name = "Message"
-                f.p_message.tooltip = "Specific message to listen for"
-
-            def set_get_process_id(self, get_process_id):
-                self.get_process_id = get_process_id
-
-            #Add event listeners at startup
-            def set_add_listener(self, add_listener):
-                self.add_listener = add_listener
-
-            def enable(self):
-                self.add_listener("trigger", self.update, "tick", priority=9)
-                self.add_listener("leader", self.check_message, "message", priority=10)
-
-                self.is_active_next = False
-                self.message_value_next = ""
-
-            def place(self):
-                #Grab the hive's function for adding listeners
-                libcontext.socket(("evin", "add_listener"), socket_single_required(self.set_add_listener))
-                #Make sure we are enabled at startup
-                libcontext.plugin(("bee", "init"), plugin_single_required(self.enable))
-
-                if idmode == "bound":
-                    libcontext.socket(("process", "bound"), socket_single_required(self.set_get_process_id))
-
-        return message

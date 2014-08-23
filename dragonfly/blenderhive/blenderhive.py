@@ -70,8 +70,8 @@ class blenderapp(bee.drone):
                 if accumulator > 1:
                     accumulator -= 1
                     self.pacemaker.send_input()
-                    self.on_tick()
                     self.pacemaker.tick()
+                    self.on_tick()
                     t = time.time()
                     new_ticks_todo = tick_rate * (t - current_time)
 
@@ -496,6 +496,7 @@ from ..sys import exitactuator
 from ..io import keyboardsensor_trigger, messagehandler
 from ..time import pacemaker_simple
 from ..sys import processmanager
+from ..scene import startup_binder_drone
 
 
 class blenderpacemaker(pacemaker_simple):
@@ -595,6 +596,8 @@ from .near_drone import near_drone
 
 class blenderhive(bee.inithive):
     _hivecontext = hivemodule.appcontext(blenderapp)
+    # Allows hives to be launched for bound game objects on startup
+    startupbinder = startup_binder_drone()
 
     inputhandler = inputhandlerhive()
     connect(("inputhandler", "evout"), "evin")
@@ -606,10 +609,10 @@ class blenderhive(bee.inithive):
     entityloader()
     entityclassloader()
     cameraloader()
+
     animationloader = animationloader()
     processmanager = processmanager()
     messagehandler = messagehandler()
-
     near_drone = near_drone()
 
     exitactuator = exitactuator()
