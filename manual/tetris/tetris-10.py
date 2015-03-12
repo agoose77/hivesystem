@@ -24,12 +24,12 @@ from bee.segments import *
 
 class tetris_init_main(bee.worker):
     gridx = variable("int")
-    parameter(gridx)
+    Parameter(gridx)
     gridy = variable("int")
-    parameter(gridy)
+    Parameter(gridy)
 
-    start = antenna("push", "trigger")
-    outp = output("push", ("object", "bgrid"))
+    start = Antenna("push", "trigger")
+    outp = Output("push", ("object", "bgrid"))
     grid = variable(("object", "bgrid"))
     t_outp = transistor(("object", "bgrid"))
     connect(grid, t_outp)
@@ -45,8 +45,8 @@ class tetris_init_main(bee.worker):
 
 
 class tetris_control(bee.worker):
-    maingrid = antenna("pull", ("object", "bgrid"))
-    blockgrid = antenna("pull", ("object", "bgrid"))
+    maingrid = Antenna("pull", ("object", "bgrid"))
+    blockgrid = Antenna("pull", ("object", "bgrid"))
     grid1 = buffer("pull", ("object", "bgrid"))
     connect(maingrid, grid1)
     grid2 = buffer("pull", ("object", "bgrid"))
@@ -54,10 +54,10 @@ class tetris_control(bee.worker):
     get_grids = triggerfunc(grid1, "input")
     trigger(grid1, grid2, "input", "input")
 
-    lost = output("push", "trigger")
+    lost = Output("push", "trigger")
     trig_lost = triggerfunc(lost)
 
-    place_init = antenna("push", "trigger")
+    place_init = Antenna("push", "trigger")
 
     @modifier
     def m_place_init(self):
@@ -73,10 +73,10 @@ class tetris_control(bee.worker):
 
     trigger(place_init, m_place_init)
 
-    dropped = output("push", "trigger")
+    dropped = Output("push", "trigger")
     trig_dropped = triggerfunc(dropped)
 
-    move_down = antenna("push", "trigger")
+    move_down = Antenna("push", "trigger")
 
     @modifier
     def m_move_down(self):
@@ -104,7 +104,7 @@ class tetris_control(bee.worker):
         if self.grid1.overlap(block): return
         self.grid2.translate(direction, 0)
 
-    move_left = antenna("push", "trigger")
+    move_left = Antenna("push", "trigger")
 
     @modifier
     def m_move_left(self):
@@ -112,7 +112,7 @@ class tetris_control(bee.worker):
 
     trigger(move_left, m_move_left)
 
-    move_right = antenna("push", "trigger")
+    move_right = Antenna("push", "trigger")
 
     @modifier
     def m_move_right(self):
@@ -131,7 +131,7 @@ class tetris_control(bee.worker):
         if self.grid1.overlap(block): return
         self.grid2.set(block)
 
-    rotate_cw = antenna("push", "trigger")
+    rotate_cw = Antenna("push", "trigger")
 
     @modifier
     def m_rotate_cw(self):
@@ -139,7 +139,7 @@ class tetris_control(bee.worker):
 
     trigger(rotate_cw, m_rotate_cw)
 
-    rotate_ccw = antenna("push", "trigger")
+    rotate_ccw = Antenna("push", "trigger")
 
     @modifier
     def m_rotate_ccw(self):
@@ -147,7 +147,7 @@ class tetris_control(bee.worker):
 
     trigger(rotate_ccw, m_rotate_ccw)
 
-    drop = antenna("push", "trigger")
+    drop = Antenna("push", "trigger")
 
     @modifier
     def m_drop(self):
@@ -185,27 +185,27 @@ class tetris_control(bee.worker):
             if removed == 4: return self.b_reward_line4
         return 0
 
-    score = antenna("pull", "int")
+    score = Antenna("pull", "int")
     b_score = buffer("pull", "int")
     connect(score, b_score)
-    newscore = output("push", "int")
+    newscore = Output("push", "int")
     b_newscore = buffer("push", "int")
     connect(b_newscore, newscore)
     trig_newscore = triggerfunc(b_newscore)
 
-    reward_block = antenna("pull", "int")
+    reward_block = Antenna("pull", "int")
     b_reward_block = buffer("pull", "int")
     connect(reward_block, b_reward_block)
-    reward_line = antenna("pull", "int")
+    reward_line = Antenna("pull", "int")
     b_reward_line = buffer("pull", "int")
     connect(reward_line, b_reward_line)
-    reward_line2 = antenna("pull", "int")
+    reward_line2 = Antenna("pull", "int")
     b_reward_line2 = buffer("pull", "int")
     connect(reward_line2, b_reward_line2)
-    reward_line3 = antenna("pull", "int")
+    reward_line3 = Antenna("pull", "int")
     b_reward_line3 = buffer("pull", "int")
     connect(reward_line3, b_reward_line3)
-    reward_line4 = antenna("pull", "int")
+    reward_line4 = Antenna("pull", "int")
     b_reward_line4 = buffer("pull", "int")
     connect(reward_line4, b_reward_line4)
 
@@ -217,12 +217,12 @@ class tetris_control(bee.worker):
     trigger(b_score, b_reward_line4, "update", "update")
 
 
-from bee import antenna, output, connect, attribute, configure, parameter, get_parameter
+from bee import Antenna, Output, connect, attribute, Configure, Parameter, ParameterGetter
 
 
 class tetris_select_block(bee.frame):
-    blocks = parameter("object")
-    blocks_ = get_parameter("blocks")
+    blocks = Parameter("object")
+    blocks_ = ParameterGetter("blocks")
     w_blocks = dragonfly.gen.gentuple2(blocks_)
     sel = dragonfly.random.choice()
     connect(w_blocks, sel)
@@ -249,8 +249,8 @@ class tetris_select_block(bee.frame):
     connect(trigger, rotate)
     connect(trigger, do_select2)
 
-    select = antenna(trigger.inp)
-    selected = output(do_select2.outp)
+    select = Antenna(trigger.inp)
+    selected = Output(do_select2.outp)
 
 
 class tetris_draw(bee.frame):
@@ -278,21 +278,21 @@ class tetris_draw(bee.frame):
     connect(trigger, t_blockgrid)
     connect(trigger, update)
 
-    start = antenna(do_draw.trig)
-    maingrid = antenna(maingridcontrol.grid)
-    blockgrid = antenna(t_blockgrid.inp)
-    draw = antenna(trigger.inp)
+    start = Antenna(do_draw.trig)
+    maingrid = Antenna(maingridcontrol.grid)
+    blockgrid = Antenna(t_blockgrid.inp)
+    draw = Antenna(trigger.inp)
 
 
 class tetris_draw_score(bee.frame):
     scorearea_ = attribute("parent", "scorearea")
     scorearea_id_ = attribute("parent", "scorearea_id")
 
-    scorestr = dragonfly.std.variable("mstr")("")
+    scorestr = dragonfly.std.variable("StringValue")("")
     scorecontrol = dragonfly.mutable.mstrcontrol()
     connect(scorestr, scorecontrol)
-    w_draw = dragonfly.canvas.draw3("mstr")(scorearea_id_)
-    do_draw = dragonfly.std.transistor("mstr")()
+    w_draw = dragonfly.canvas.draw3("StringValue")(scorearea_id_)
+    do_draw = dragonfly.std.transistor("StringValue")()
     connect(scorestr, do_draw)
     connect(do_draw, w_draw)
     update = dragonfly.canvas.update3(scorearea_id_)
@@ -305,9 +305,9 @@ class tetris_draw_score(bee.frame):
     get_score = dragonfly.convert.pull.cast("int", "str")()
     connect(get_score, set_score)
 
-    start = antenna(do_draw.trig)
-    score = antenna(get_score.inp)
-    draw = antenna(set_score.trig)
+    start = Antenna(do_draw.trig)
+    score = Antenna(get_score.inp)
+    draw = Antenna(set_score.trig)
 
 
 class parameters(object):
@@ -336,9 +336,9 @@ class main(dragonfly.pandahive.pandahive):
     scorearea_ = attribute("scorearea")
     scorearea_id_ = attribute("scorearea_id")
 
-    c0 = configure("canvas")  # must have a lower-alphabet name than "canvas"
+    c0 = Configure("canvas")  # must have a lower-alphabet name than "canvas"
     c0.reserve(mainarea_id_, ("object", "bgrid"), box=mainarea_, parameters=mainarea_parameters_)
-    c0.reserve(scorearea_id_, "mstr", box=scorearea_)
+    c0.reserve(scorearea_id_, "StringValue", box=scorearea_)
 
     maingrid = dragonfly.std.variable(("object", "bgrid"))(emptygrid)
     maingridcontrol = dragonfly.grid.bgridcontrol()

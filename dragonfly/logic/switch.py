@@ -4,16 +4,16 @@ import libcontext
 
 
 class switch(worker):
-    true = antenna("push", "trigger")
-    false = antenna("push", "trigger")
+    true = Antenna("push", "trigger")
+    false = Antenna("push", "trigger")
 
     state = variable("bool")
-    parameter(state, False)
+    Parameter(state, False)
 
-    on = output("pull", "bool")
+    on = Output("pull", "bool")
     connect(state, on)
 
-    outp = output("push", "bool")
+    outp = Output("push", "bool")
     t_outp = transistor("bool")
     connect(state, t_outp)
     connect(t_outp, outp)

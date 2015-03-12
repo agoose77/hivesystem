@@ -33,7 +33,7 @@ def id_generator():
 
 
 def show_panda(c):
-    cf = bee.configure("scene")
+    cf = bee.Configure("scene")
     cf.import_mesh_EGG("models/panda-model")
     a = Spyder.AxisSystem()
     a *= 0.001

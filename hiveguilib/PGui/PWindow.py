@@ -37,7 +37,7 @@ class PWindow(object):
 
     def set_paramvalues(self, *args, **kwargs):
         """
-        Instructs the controller to set the parameter values,
+        Instructs the controller to set the Parameter values,
          letting the controller update the global state
         """
         self._controller.set_paramvalues(*args, **kwargs)

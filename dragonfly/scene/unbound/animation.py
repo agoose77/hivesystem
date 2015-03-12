@@ -6,13 +6,13 @@ from libcontext.pluginclasses import *
 
 
 class animation(worker):
-    start = antenna("push", "trigger")
-    stop = antenna("push", "trigger")
-    loop = antenna("push", "trigger")
-    actor = antenna("pull", "id")
+    start = Antenna("push", "trigger")
+    stop = Antenna("push", "trigger")
+    loop = Antenna("push", "trigger")
+    actor = Antenna("pull", "id")
     b_actor = buffer("pull", "id")
     connect(actor, b_actor)
-    animation_name = antenna("pull", "str")
+    animation_name = Antenna("pull", "str")
     v_animation_name = variable("str")
     t_animation_name = transistor("str")
     connect(animation_name, t_animation_name)

@@ -6,8 +6,8 @@ from libcontext.pluginclasses import *
 
 
 class translateX(worker):
-    translateX = antenna("push", "float")
-    entity = antenna("pull", "id")
+    translateX = Antenna("push", "float")
+    entity = Antenna("pull", "id")
     b_entity = buffer("pull", "id")
     connect(entity, b_entity)
     x = variable("float")

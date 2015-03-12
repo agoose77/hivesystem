@@ -63,7 +63,7 @@ hivemap = "pandajump.web"
 pandadict["pandaclass3"] = ("model", data, box, image, hivemap)
 
 from dragonfly.canvas import box2d
-from bee.mstr import mstr
+from bee.stringvalue import StringValue
 
 
 class parameters: pass
@@ -145,16 +145,16 @@ class pandabind(dragonfly.event.bind,
 
 
 class pandalogicframe(bee.frame):
-    name = bee.parameter("str")
-    name_ = bee.get_parameter("name")
+    name = bee.Parameter("str")
+    name_ = bee.ParameterGetter("name")
 
     do_trig_spawn = dragonfly.std.pushconnector("trigger")()
-    trig_spawn = bee.output(do_trig_spawn.outp)
+    trig_spawn = bee.Output(do_trig_spawn.outp)
 
     v_panda = dragonfly.std.variable("id")(name_)
     t_set_panda = dragonfly.std.transistor("id")()
     connect(v_panda, t_set_panda)
-    set_panda = bee.output(t_set_panda.outp)
+    set_panda = bee.Output(t_set_panda.outp)
 
     pandaicon_click = dragonfly.io.mouseareasensor(name_)
     connect(pandaicon_click, t_set_panda)
@@ -163,12 +163,12 @@ class pandalogicframe(bee.frame):
 
 class pandalogichive(bee.frame):
     do_set_panda = dragonfly.std.pushconnector("id")()
-    set_panda = bee.output(do_set_panda.outp)
+    set_panda = bee.Output(do_set_panda.outp)
 
     do_trig_spawn = dragonfly.std.pushconnector("trigger")()
-    trig_spawn = bee.output(do_trig_spawn.outp)
+    trig_spawn = bee.Output(do_trig_spawn.outp)
 
-    c_hivereg = bee.configure("hivereg")
+    c_hivereg = bee.Configure("hivereg")
 
     for name in pandadict:
         mode, data, box, image, hivemap = pandadict[name]

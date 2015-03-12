@@ -144,9 +144,9 @@ class launch(object):
         class launch(bee.frame):
             __doc__ = cls.__doc__
 
-            subprocess = bee.parameter("bool")
+            subprocess = bee.Parameter("bool")
 
-            bind_worker = launch_helper(subprocess=bee.get_parameter("subprocess"))
+            bind_worker = launch_helper(subprocess=bee.ParameterGetter("subprocess"))
             hive_binder = worker()
             id_factory = id_suffix_worker()
 
@@ -155,15 +155,15 @@ class launch(object):
             bee.connect(id_transistor.outp, id_factory.identifier_base)
 
             # Create some hive IO pins
-            trig = bee.antenna(id_transistor.trig)
+            trig = bee.Antenna(id_transistor.trig)
             bee.connect(id_factory.trig_out, bind_worker.trig)
 
             # Secondary calls
-            process_class = bee.antenna(id_transistor.inp)
+            process_class = bee.Antenna(id_transistor.inp)
             bee.connect(process_class, bind_worker.process_class)
 
             # Secondary calls
-            process_identifier = bee.output(id_factory.new_identifier)
+            process_identifier = bee.Output(id_factory.new_identifier)
             bee.connect(process_identifier, bind_worker.process_identifier)
 
             # Weaver of these two

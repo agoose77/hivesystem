@@ -5,7 +5,7 @@ from bee.types import stringtupleparser
 
 class splitter(object):
 
-    """The splitter splits push or trigger output into three"""
+    """The splitter splits push or trigger Output into three"""
 
     metaguiparams = {
         "type_": "str",
@@ -32,7 +32,7 @@ class splitter(object):
 
             # One input value
             inp = antenna("push", type_)
-            # Three output values
+            # Three Output values
             outp1 = output("push", type_)
             outp2 = output("push", type_)
             outp3 = output("push", type_)

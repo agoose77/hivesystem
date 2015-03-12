@@ -5,12 +5,12 @@ from dragonfly.op.pull import equal2
 
 
 class human(frame):
-    player = parameter("str")
+    player = Parameter("str")
 
     p = filter(("str", "chess"))()
-    turn_p = equal2("str")(get_parameter("player"))
+    turn_p = equal2("str")(ParameterGetter("player"))
     connect(turn_p, p.filter)
 
-    com = antenna(p.inp)
-    turn = antenna(turn_p.inp)
-    move = output(p.true)
+    com = Antenna(p.inp)
+    turn = Antenna(turn_p.inp)
+    move = Output(p.true)

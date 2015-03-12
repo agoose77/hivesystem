@@ -1,5 +1,5 @@
 import Spyder, spyder, bee, libcontext
-from bee import connect, configure, multiconfigure
+from bee import connect, Configure, ConfigureMultiple
 
 from bee.spyderhive import spyderframe as spyderframe_orig, SpyderMethod, SpyderConverter
 

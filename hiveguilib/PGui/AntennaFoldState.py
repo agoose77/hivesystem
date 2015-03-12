@@ -93,7 +93,7 @@ class AntennaFoldState(object):
             if not antenna.foldable:
                 continue
 
-            # Set the antenna.fold value from the GUI ( if at 0,0 its folded else not)
+            # Set the Antenna.fold value from the GUI ( if at 0,0 its folded else not)
             should_be_folded = self._nodecanvas().check_default_folded(workerid, antenna_name)
 
             if should_be_folded is None:

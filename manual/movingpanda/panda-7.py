@@ -41,18 +41,18 @@ class parameters: pass
 
 
 class myscene(bee.frame):
-    pandaclassname_ = bee.get_parameter("pandaclassname")
-    pandaname_ = bee.get_parameter("pandaname")
-    pandaicon_ = bee.get_parameter("pandaicon")
+    pandaclassname_ = bee.ParameterGetter("pandaclassname")
+    pandaname_ = bee.ParameterGetter("pandaname")
+    pandaicon_ = bee.ParameterGetter("pandaicon")
 
-    c1 = bee.configure("scene")
+    c1 = bee.Configure("scene")
     c1.import_mesh_EGG("models/environment")
     a = Spyder.AxisSystem()
     a *= 0.25
     a.origin += (-8, 42, 0)
     c1.add_model_SPYDER(axissystem=a)
 
-    c2 = bee.configure("scene")
+    c2 = bee.Configure("scene")
     c2.import_mesh_EGG("models/panda-model")
     a = Spyder.AxisSystem()
     a *= 0.005
@@ -60,7 +60,7 @@ class myscene(bee.frame):
     c2.import_mesh_EGG("models/panda-walk4")
     c2.add_animation("walk")
 
-    c3 = bee.configure("scene")
+    c3 = bee.Configure("scene")
     c3.import_mesh_EGG("models/panda-model")
     a = Spyder.AxisSystem()
     a *= 0.005

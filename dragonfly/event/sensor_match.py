@@ -7,8 +7,8 @@ from libcontext.pluginclasses import *
 
 class sensor_match(worker):
     match = variable("event")
-    parameter(match)
-    outp = output("push", "trigger")
+    Parameter(match)
+    outp = Output("push", "trigger")
     trig_outp = triggerfunc(outp)
 
     def place(self):

@@ -51,8 +51,8 @@ def run(readmetxt=None):
     wfc = workermanager._workerfinderclass
     currdir = os.path.split(__file__)[0]
     seg = [
-        "segments.antenna",
-        "segments.output",
+        "segments.Antenna",
+        "segments.Output",
         "segments.variable",
         "segments.buffer",
         "segments.transistor",

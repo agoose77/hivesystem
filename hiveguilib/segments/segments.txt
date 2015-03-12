@@ -1,11 +1,11 @@
 connect, 
-X antenna, 
-X output, 
+X Antenna,
+X Output,
 X modifier, 
 X buffer: pushbuffer, pullbuffer
 X variable, 
 X transistor, 
-parameter, 
+Parameter,
 trigger, 
 pretrigger
 triggerfunc 

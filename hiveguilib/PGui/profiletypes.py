@@ -12,19 +12,19 @@ profiles_segment = [
 
 profiles_seg_variable = [
     ("default", "Default"),
-    ("parameter", "Default, with value"),
+    ("Parameter", "Default, with value"),
     ("minimal", "Minimal"),
     ("parameter2", "Minimal, with value"),
     ("input", "Input"),
     ("parameter_input", "Input, with value"),
-    ("output", "Output"),
+    ("Output", "Output"),
     ("parameter_output", "Output, with value"),
     ("full", "Full"),
 ]
 
 profiles_seg_pushbuffer = [
     ("default", "Minimal"),
-    ("parameter", "Minimal, with value"),
+    ("Parameter", "Minimal, with value"),
     ("input", "Input"),
     ("parameter_input", "Input, with value"),
     ("full", "Full"),
@@ -32,8 +32,8 @@ profiles_seg_pushbuffer = [
 
 profiles_seg_pullbuffer = [
     ("default", "Minimal"),
-    ("parameter", "Minimal, with value"),
-    ("output", "Output"),
+    ("Parameter", "Minimal, with value"),
+    ("Output", "Output"),
     ("parameter_output", "Output, with value"),
     ("full", "Full"),
 ]

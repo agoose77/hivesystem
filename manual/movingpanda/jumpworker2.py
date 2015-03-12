@@ -22,5 +22,5 @@ class jumpworker2(bee.worker):
         avgvelocity = 4 * self.height * (1 - progress)
         self.v_position = progress * avgvelocity
 
-    pretrigger(v_position, v_progress, "output")
-    pretrigger(v_position, jump, "output")
+    pretrigger(v_position, v_progress, "Output")
+    pretrigger(v_position, jump, "Output")

@@ -2,30 +2,36 @@ from .segments._helpersegment import reg_helpersegment
 
 
 class reg_beehelper(reg_helpersegment):
+
     def __new__(metacls, name, bases, dic, **kargs):
         if "__reg_enabled__" not in dic:
-            for b in bases:
-                d = b.__dict__
-                if "__reg_enabled__" in d:
-                    dic["__reg_enabled__"] = d["__reg_enabled__"]
+            for cls in bases:
+                cls_dict = cls.__dict__
+
+                if "__reg_enabled__" in cls_dict:
+                    dic["__reg_enabled__"] = cls_dict["__reg_enabled__"]
+
         return reg_helpersegment.__new__(metacls, name, bases, dic, **kargs)
 
 
 from . import Object
 
 
-class beehelper(Object):
+class BeeHelper(Object):
     __metaclass__ = reg_beehelper
 
 
 class tupledummy(tuple):
+
     def __getattr__(self, attr):
-        if attr.startswith("_"): raise AttributeError
+        if attr.startswith("_"):
+            raise AttributeError
+
         ret = self + tupledummy((attr,))
         return ret
 
 
-class beewrapper(beehelper):
+class BeeWrapper(BeeHelper):
     _wrapped_hive = None
 
     def __init__(self, *args, **kargs):
@@ -49,14 +55,14 @@ class beewrapper(beehelper):
         return self.instance
 
     def set_parameters(self, name, parameters):
-        from .parameter import parameter as bee_parameter
+        from .parameter import Parameter as bee_parameter
         from .resolve import resolve
 
         args2_new = []
         for pnr, p in enumerate(self.args):
             if isinstance(p, bee_parameter):
                 raise TypeError(
-                    "'%s', argument %d: Cannot retrieve value from bee.parameter, use bee.get_parameter instead" % (
+                    "'%s', argument %d: Cannot retrieve value from bee.Parameter, use bee.ParameterGetter instead" % (
                     name, pnr + 1))
             args2_new.append(resolve(p, parameters=parameters, prebuild=True))
         self.args2 = args2_new
@@ -64,7 +70,7 @@ class beewrapper(beehelper):
             p = self.kargs[k]
             if isinstance(p, bee_parameter):
                 raise TypeError(
-                    "'%s', argument '%s': Cannot retrieve value from bee.parameter, use bee.get_parameter instead" % (
+                    "'%s', argument '%s': Cannot retrieve value from bee.Parameter, use bee.ParameterGetter instead" % (
                     name, k))
             self.kargs2[k] = resolve(p, parameters=parameters, prebuild=True)
 
@@ -74,10 +80,14 @@ class beewrapper(beehelper):
                 ret = getattr(self.instance, attr)
             else:
                 ret = getattr(self._wrapped_hive, attr)
+
         except AttributeError:
-            if attr == "__nested_tuple__": raise
-            if hasattr(self, "__nested_tuple__") and self.__nested_tuple__ == True:
+            if attr == "__nested_tuple__":
+                raise
+
+            if getattr(self, "__nested_tuple__", None):
                 ret = tupledummy((self, attr))
+
             else:
                 ret = (self, attr)
         return ret

@@ -26,7 +26,7 @@ Workermap (
     ),
     WorkerSegment (
       segid = 'empty',
-      segtype = 'segments.output.pull_output_bool',
+      segtype = 'segments.Output.pull_output_bool',
       position = Coordinate2D (
         x = 405.0,
         y = 320.0,
@@ -153,7 +153,7 @@ Workermap (
     ),
     WorkerSegment (
       segid = 'register',
-      segtype = 'segments.antenna.push_antenna_id',
+      segtype = 'segments.Antenna.push_antenna_id',
       position = Coordinate2D (
         x = -468.666666667,
         y = -53.3157894737,
@@ -162,7 +162,7 @@ Workermap (
     ),
     WorkerSegment (
       segid = 'register_and_select',
-      segtype = 'segments.antenna.push_antenna_id',
+      segtype = 'segments.Antenna.push_antenna_id',
       position = Coordinate2D (
         x = -478.263157895,
         y = -182.460526316,
@@ -171,7 +171,7 @@ Workermap (
     ),
     WorkerSegment (
       segid = 'select',
-      segtype = 'segments.antenna.push_antenna_int',
+      segtype = 'segments.Antenna.push_antenna_int',
       position = Coordinate2D (
         x = -448.416666667,
         y = 125.083333333,
@@ -180,7 +180,7 @@ Workermap (
     ),
     WorkerSegment (
       segid = 'select_identifier',
-      segtype = 'segments.antenna.push_antenna_id',
+      segtype = 'segments.Antenna.push_antenna_id',
       position = Coordinate2D (
         x = -464.0,
         y = 45.25,
@@ -198,7 +198,7 @@ Workermap (
     ),
     WorkerSegment (
       segid = 'select_next',
-      segtype = 'segments.antenna.push_antenna_trigger',
+      segtype = 'segments.Antenna.push_antenna_trigger',
       position = Coordinate2D (
         x = -463.75,
         y = 322.5,
@@ -207,7 +207,7 @@ Workermap (
     ),
     WorkerSegment (
       segid = 'select_prev',
-      segtype = 'segments.antenna.push_antenna_trigger',
+      segtype = 'segments.Antenna.push_antenna_trigger',
       position = Coordinate2D (
         x = -463.75,
         y = 233.75,
@@ -216,7 +216,7 @@ Workermap (
     ),
     WorkerSegment (
       segid = 'selected',
-      segtype = 'segments.output.pull_output_id',
+      segtype = 'segments.Output.pull_output_id',
       position = Coordinate2D (
         x = 389.0,
         y = 229.0,
@@ -225,7 +225,7 @@ Workermap (
     ),
     WorkerSegment (
       segid = 'unregister',
-      segtype = 'segments.antenna.push_antenna_trigger',
+      segtype = 'segments.Antenna.push_antenna_trigger',
       position = Coordinate2D (
         x = -445.416666667,
         y = -283.666666667,
@@ -234,7 +234,7 @@ Workermap (
     ),
     WorkerSegment (
       segid = 'unregister_identifier',
-      segtype = 'segments.antenna.push_antenna_id',
+      segtype = 'segments.Antenna.push_antenna_id',
       position = Coordinate2D (
         x = -461.083333333,
         y = -342.333333333,
@@ -304,7 +304,7 @@ Workermap (
         x = 3.25,
         y = 17.5,
       ),
-      profile = 'output',
+      profile = 'Output',
     ),
     WorkerSegment (
       segid = 'v_unregister',
@@ -496,7 +496,7 @@ Workermap (
       ),
       end = WorkerSegmentConnector (
         segid = 'b_register_and_select',
-        io = 'output',
+        io = 'Output',
       ),
       interpoints = Coordinate2DArray (
         Coordinate2D (

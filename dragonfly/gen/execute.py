@@ -4,7 +4,7 @@ import functools
 
 """
 Executes a string using python's exec function
-Supports output information with a shorthand output() function, or by accessing the worker directly
+Supports Output information with a shorthand Output() function, or by accessing the worker directly
 """
 
 

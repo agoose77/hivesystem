@@ -33,7 +33,7 @@ class compare(object):
             # Two input values 
             inp1 = antenna("pull", type_)
             inp2 = antenna("pull", type_)
-            # One output value returning the result of the comparision
+            # One Output value returning the result of the comparision
             outp = output("pull", "bool")
             result = variable("bool")
             connect(result, outp)

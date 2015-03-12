@@ -29,7 +29,7 @@ class any_(bee.worker):
     def evaluate(self):
         self.v_outp = (self.b_inp1 or self.b_inp2 or self.b_inp3 or self.b_inp4)
 
-    # Whenever the output is requested: update the inputs and evaluate
+    # Whenever the Output is requested: update the inputs and evaluate
     pretrigger(v_outp, b_inp1)
     pretrigger(v_outp, b_inp2)
     pretrigger(v_outp, b_inp3)

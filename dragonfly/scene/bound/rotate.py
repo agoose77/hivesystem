@@ -6,7 +6,7 @@ from libcontext.pluginclasses import *
 
 
 class rotateX(worker):
-    rotate = antenna("push", "float")
+    rotate = Antenna("push", "float")
     rotation = variable("float")
     connect(rotate, rotation)
 
@@ -26,7 +26,7 @@ class rotateX(worker):
 
 
 class rotateY(worker):
-    rotate = antenna("push", "float")
+    rotate = Antenna("push", "float")
     rotation = variable("float")
     connect(rotate, rotation)
 
@@ -46,7 +46,7 @@ class rotateY(worker):
 
 
 class rotateZ(worker):
-    rotate = antenna("push", "float")
+    rotate = Antenna("push", "float")
     rotation = variable("float")
     connect(rotate, rotation)
 

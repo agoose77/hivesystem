@@ -30,7 +30,7 @@ class keyboard(bee.worker):
     key = output("pull", ("str", "keycode"))
     connect(keyvalue, key)
 
-    # Mark "key" as an advanced output segment, and capitalize the I/O names
+    # Mark "key" as an advanced Output segment, and capitalize the I/O names
     guiparams = {"key": {"advanced": True, "name": "Key"},
                  "active": {"name": "Active"},
                  "_memberorder": ["key", "active"]}
@@ -46,7 +46,7 @@ class keyboard(bee.worker):
     def activate2(self, event):
         self.is_active_next = True
 
-    #Every tick, update the current output values to the next tick's values
+    #Every tick, update the current Output values to the next tick's values
     # and reset the next tick's values
     def update(self):
         self.is_active = self.is_active_next
@@ -59,7 +59,7 @@ class keyboard(bee.worker):
         self.add_listener = add_listener
 
     def enable(self):
-        #Initialize the output values for the next tick
+        #Initialize the Output values for the next tick
         self.is_active_next = False
         self.keyvalue_next = ""
 
@@ -75,7 +75,7 @@ class keyboard(bee.worker):
             event_head = ("keyboard", self.mode, self.keycode)
         self.add_listener("match_leader", activate, event_head)
 
-    # Method to manipulate the parameter form as it appears in the GUI
+    # Method to manipulate the Parameter form as it appears in the GUI
     @classmethod
     def form(cls, f):
         f.keycode.name = "Key"

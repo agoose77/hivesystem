@@ -36,7 +36,7 @@ class keyboardsensor_base(bee.worker):
 """    
 class keyboardsensor_pulse(keyboardsensor_base):
   keycode = variable("str")
-  parameter(keycode, "SPACE")  
+  Parameter(keycode, "SPACE")
 
   def __init__(self, keycode):
     self.pulses = []

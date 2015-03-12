@@ -76,7 +76,7 @@ Hivemap (
   io = HivemapIOArray (
     HivemapIO (
       io_id = 'draw',
-      io = 'antenna',
+      io = 'Antenna',
       worker = 'set_score',
       workerio = 'trig',
       mode = 'push',
@@ -88,7 +88,7 @@ Hivemap (
     ),
     HivemapIO (
       io_id = 'score',
-      io = 'antenna',
+      io = 'Antenna',
       worker = 'get_score',
       workerio = 'inp',
       mode = 'pull',

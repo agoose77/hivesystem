@@ -7,8 +7,8 @@ from .spyderhive import SpyderMethod, SpyderConverter, spyderframe, spyderhive, 
 from .spydermaphive import spydermapframe
 
 from ..types import stringtupleparser, boolparser, spyderparser
-from .. import antenna, output, \
-    parameter as _bee_parameter, get_parameter as _bee_get_parameter, \
+from .. import Antenna, Output, \
+    Parameter as _bee_parameter, ParameterGetter as _bee_get_parameter, \
     attribute as _bee_attribute
 import os
 
@@ -45,7 +45,7 @@ def build_hivemap(hm, *args, **kwargs):
                     break
 
             else:
-                raise ValueError("Hop worker has no name parameter")
+                raise ValueError("Hop worker has no name Parameter")
 
             if wt == "sparta.rerouters.hop_in":
                 hop_dict = __hop_in_id_to_name__

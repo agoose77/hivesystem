@@ -236,7 +236,7 @@ Hivemap (
   io = HivemapIOArray (
     HivemapIO (
       io_id = 'actionplay',
-      io = 'antenna',
+      io = 'Antenna',
       worker = 'actiondict',
       workerio = 'inkey',
       mode = 'push',

@@ -71,7 +71,7 @@ class camerabind2(camerabind):
 
 class mycombohive(bee.combohive):
     pandas = []
-    c_hivereg = bee.configure("hivereg")
+    c_hivereg = bee.Configure("hivereg")
     pandalogics = [c_hivereg]
     for name in pandadict:
         panda = pandadict[name]

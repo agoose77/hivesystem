@@ -10,7 +10,7 @@ class genfor(bee.worker):
     outp = output("push", "object")
     b_outp = buffer("push", "object")
     connect(b_outp, outp)
-    trig_output = triggerfunc(b_outp, "output")
+    trig_output = triggerfunc(b_outp, "Output")
 
     @modifier
     def iterate(self):

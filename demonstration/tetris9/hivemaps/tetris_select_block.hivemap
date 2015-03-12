@@ -324,7 +324,7 @@ Hivemap (
   io = HivemapIOArray (
     HivemapIO (
       io_id = 'selected',
-      io = 'output',
+      io = 'Output',
       worker = 'do_select2',
       workerio = 'outp',
       mode = 'push',
@@ -336,7 +336,7 @@ Hivemap (
     ),
     HivemapIO (
       io_id = 'select',
-      io = 'antenna',
+      io = 'Antenna',
       worker = 'trigger',
       workerio = 'inp',
       mode = 'push',

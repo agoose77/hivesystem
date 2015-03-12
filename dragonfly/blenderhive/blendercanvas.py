@@ -39,7 +39,7 @@ blendercanvas_mstr = build_canvasdrone(
     blender_mstr,
     "blendercanvas_mstr",
     "draw",
-    "mstr",
+    "StringValue",
     object,
 )
 

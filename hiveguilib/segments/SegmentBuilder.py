@@ -7,15 +7,15 @@ from ..worker.WorkerBuilder import WorkerMapping
 def build_segment_default(beename, antennas, outputs, ev, paramnames, paramtypelist):
     mapping = WorkerMapping()
     attribs = []
-    attrs = [(pname, "antenna", pval) for pname, pval in antennas.items()] + \
-            [(pname, "output", pval) for pname, pval in outputs.items()]
+    attrs = [(pname, "Antenna", pval) for pname, pval in antennas.items()] + \
+            [(pname, "Output", pval) for pname, pval in outputs.items()]
     attrs.sort(key=lambda i: i[0])
 
     inmap, outmap, pmap = mapping.inmap, mapping.outmap, mapping.pmap
     for pname, io, pval in attrs:
         mode, type_ = pval
         h = Hook(mode, type_)
-        if io == "antenna":
+        if io == "Antenna":
             inh, outh = h, None
             inmap[pname] = pname
         else:
@@ -25,11 +25,11 @@ def build_segment_default(beename, antennas, outputs, ev, paramnames, paramtypel
             pname,
             inh, outh,
         )
-        if io == "antenna":
-            if pname in ("output", "update"):
+        if io == "Antenna":
+            if pname in ("Output", "update"):
                 inmap[pname] = None
                 continue
-        if io == "output":
+        if io == "Output":
             if pname.startswith("on_"):
                 outmap[pname] = None
                 continue
@@ -46,15 +46,15 @@ def build_segment_default(beename, antennas, outputs, ev, paramnames, paramtypel
 def build_segment_minimal(beename, antennas, outputs, ev, paramnames, paramtypelist):
     mapping = WorkerMapping()
     attribs = []
-    attrs = [(pname, "antenna", pval) for pname, pval in antennas.items()] + \
-            [(pname, "output", pval) for pname, pval in outputs.items()]
+    attrs = [(pname, "Antenna", pval) for pname, pval in antennas.items()] + \
+            [(pname, "Output", pval) for pname, pval in outputs.items()]
     attrs.sort(key=lambda i: i[0])
 
     inmap, outmap, pmap = mapping.inmap, mapping.outmap, mapping.pmap
     for pname, io, pval in attrs:
         mode, type_ = pval
         h = Hook(mode, type_)
-        if io == "antenna":
+        if io == "Antenna":
             inh, outh = h, None
             inmap[pname] = pname
         else:
@@ -64,11 +64,11 @@ def build_segment_minimal(beename, antennas, outputs, ev, paramnames, paramtypel
             pname,
             inh, outh,
         )
-        if io == "antenna":
-            if pname in ("output", "update", "inp"):
+        if io == "Antenna":
+            if pname in ("Output", "update", "inp"):
                 inmap[pname] = None
                 continue
-        if io == "output":
+        if io == "Output":
             if pname == "outp":
                 outmap[pname] = None
                 continue
@@ -88,8 +88,8 @@ def build_segment_minimal(beename, antennas, outputs, ev, paramnames, paramtypel
 def build_segment_full(beename, antennas, outputs, ev, paramnames, paramtypelist):
     mapping = WorkerMapping()
     attribs = []
-    attrs = [(pname, "antenna", pval) for pname, pval in antennas.items()] + \
-            [(pname, "output", pval) for pname, pval in outputs.items()]
+    attrs = [(pname, "Antenna", pval) for pname, pval in antennas.items()] + \
+            [(pname, "Output", pval) for pname, pval in outputs.items()]
     attrs.sort(key=lambda i: i[0])
 
     inmap, outmap, pmap = mapping.inmap, mapping.outmap, mapping.pmap
@@ -103,7 +103,7 @@ def build_segment_full(beename, antennas, outputs, ev, paramnames, paramtypelist
     for pname, io, pval in attrs:
         mode, type_ = pval
         h = Hook(mode, type_)
-        if io == "antenna":
+        if io == "Antenna":
             inh, outh = h, None
             inmap[pname] = pname
         else:
@@ -303,14 +303,14 @@ class SegmentVariableTemplate(SegmentTemplate):
     _type = "segment-variable"
     _builders = {
         "default": build_segment_default,
-        "parameter": build_segment_parameter,
+        "Parameter": build_segment_parameter,
         "full": build_segment_full,
 
         "minimal": build_segment_minimal,
         "parameter2": build_variable_parameter,
         "input": build_variable_input,
         "parameter_input": build_variable_parameter_input,
-        "output": build_variable_output,
+        "Output": build_variable_output,
         "parameter_output": build_variable_parameter_output,
     }
 
@@ -320,7 +320,7 @@ class SegmentPushBufferTemplate(SegmentTemplate):
     _builders = {
         "default": build_segment_default,
         "full": build_segment_full,
-        "parameter": build_segment_parameter,
+        "Parameter": build_segment_parameter,
         "input": build_pushbuffer_input,
         "parameter_input": build_pushbuffer_parameter_input,
     }
@@ -331,7 +331,7 @@ class SegmentPullBufferTemplate(SegmentTemplate):
     _builders = {
         "default": build_segment_default,
         "full": build_segment_full,
-        "parameter": build_segment_parameter,
-        "output": build_pullbuffer_output,
+        "Parameter": build_segment_parameter,
+        "Output": build_pullbuffer_output,
         "parameter_output": build_pullbuffer_parameter_output,
     }

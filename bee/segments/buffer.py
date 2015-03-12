@@ -4,7 +4,7 @@ import libcontext
 import functools
 
 supported_triggered = {
-    "push": ("output", "default"),
+    "push": ("Output", "default"),
     "pull": ("input", "update", "default"),
 }
 
@@ -108,7 +108,7 @@ class buffer(object):
         self._triggered_update = []
         self._triggered_default = []
         self.startvalue = None
-        for signal in ("input", "output", "update", "default"):
+        for signal in ("input", "Output", "update", "default"):
             if signal in supported_triggered[self.mode]:
                 setattr(self, "triggered_" + signal, getattr(self, "_triggered_" + signal + "_"))
             setattr(self, "triggering_" + signal, getattr(self, "_triggering_" + signal + "_"))

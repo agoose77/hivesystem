@@ -6,7 +6,7 @@ from libcontext.pluginclasses import *
 
 
 class setZ(worker):
-    setZ = antenna("push", "float")
+    setZ = Antenna("push", "float")
     z = variable("float")
     connect(setZ, z)
 

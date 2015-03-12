@@ -1,81 +1,81 @@
 import Spyder, spyder, bee, libcontext
-from bee import connect, configure, multiconfigure
+from bee import connect, Configure, ConfigureMultiple
 
 from bee.spyderhive import spyderframe as spyderframe_orig, SpyderMethod, SpyderConverter
 
 
 def create_material(mat):
     # only for color materials
-    cf = configure("scene")
+    cf = Configure("scene")
     c = mat.color
     cf.create_material_COLOR(mat.pname, (c.r / 255.0, c.g / 255.0, c.b / 255.0))
     return cf
 
 
 def show_entity(e):
-    cf = configure("scene")
+    cf = Configure("scene")
     cf.start_block(mode="compile")
     cf.import_from_parentblock("materials")
     cf2 = e.objects.make_bee()
-    cf3 = configure("scene")
+    cf3 = Configure("scene")
     cf3.render_block_SPYDER(entityname=e.entityname)
     cf3.end_block()
-    return multiconfigure(cf, cf2, cf3)
+    return ConfigureMultiple(cf, cf2, cf3)
 
 
 def show_objectlist3d(ol):
-    cf = configure("scene")
+    cf = Configure("scene")
     cf.start_block()
     cf.import_from_parentblock("materials")
     configures = [cf]
     for o in ol:
         configures.append(o.make_bee())
-    cf = configure("scene")
+    cf = Configure("scene")
     cf.end_block()
     configures.append(cf)
-    return multiconfigure(configures)
+    return ConfigureMultiple(configures)
 
 
 def show_objectgroup(og):
-    cf = configure("scene")
+    cf = Configure("scene")
     cf.start_block(mode="compile")
     cf.import_from_parentblock("materials")
     cf2 = og.group.make_bee()
-    cf3 = configure("scene")
+    cf3 = Configure("scene")
     cf3.render_block_SPYDER(axissystem=og.axis)
     cf3.end_block()
-    return multiconfigure(cf, cf2, cf3)
+    return ConfigureMultiple(cf, cf2, cf3)
 
 
 def show_multi_instance(mi):
-    cf = configure("scene")
+    cf = Configure("scene")
     cf.start_block(mode="compile")
     cf.import_from_parentblock("materials")
     cf2 = mi.object.make_bee()
-    cf3 = configure("scene")
+    cf3 = Configure("scene")
     for axis in mi.instances:
         cf3.render_block_SPYDER(axissystem=axis)
     cf3.end_block()
-    return multiconfigure(cf, cf2, cf3)
+    return ConfigureMultiple(cf, cf2, cf3)
 
 
 def show_multi_entity_instance(mi):
-    cf = configure("scene")
+    cf = Configure("scene")
     cf.start_block(mode="compile")
     cf.import_from_parentblock("materials")
     cf2 = mi.object.make_bee()
-    cf3 = configure("scene")
+    cf3 = Configure("scene")
     for axis, entityname in zip(mi.instances, mi.entitynames):
         cf3.render_block_SPYDER(axissystem=axis, entityname=entityname)
     cf3.end_block()
-    return multiconfigure(cf, cf2, cf3)
+    return ConfigureMultiple(cf, cf2, cf3)
 
 
 def show_object(obj):
     # only works for objects without face-specific materials
     #TODO: texturecoords
 
-    cf = configure("scene")
+    cf = Configure("scene")
     cf.start_block()
     cf.import_from_parentblock("materials")
     vertices = [(c.x, c.y, c.z) for c in obj.vertices]
@@ -106,17 +106,17 @@ def show_object(obj):
 
 
 def show_datablock(b):
-    cf = configure("scene")
+    cf = Configure("scene")
     cf.start_block(b.pname, mode="datablock")
     cf.import_from_parentblock("materials")
     cf2 = b.object[0].make_bee()
-    cf3 = configure("scene")
+    cf3 = Configure("scene")
     cf3.end_block()
-    return multiconfigure(cf, cf2, cf3)
+    return ConfigureMultiple(cf, cf2, cf3)
 
 
 def show_model(m):
-    cf = configure("scene")
+    cf = Configure("scene")
     cf.start_block()
     cf.import_from_parentblock("materials")
     if m.meshformat != "egg": raise ValueError("panda can render only egg/bam meshes, not '%s'" % m.meshformat)
@@ -127,7 +127,7 @@ def show_model(m):
 
 
 def show_actor(a):
-    cf = configure("scene")
+    cf = Configure("scene")
     cf.start_block()
     cf.import_from_parentblock("materials")
     if a.meshformat != "egg": raise ValueError("panda can render only egg/bam meshes, not '%s'" % a.meshformat)
@@ -143,7 +143,7 @@ def show_actor(a):
 
 
 def show_actorclass(a):
-    cf = configure("scene")
+    cf = Configure("scene")
     cf.start_block()
     cf.import_from_parentblock("materials")
     if a.meshformat != "egg": raise ValueError("panda can render only egg/bam meshes, not '%s'" % a.meshformat)
@@ -159,14 +159,14 @@ def show_actorclass(a):
 
 
 def show_entityclass(e):
-    cf = configure("scene")
+    cf = Configure("scene")
     cf.start_block(mode="compile")
     cf.import_from_parentblock("materials")
     cf2 = e.objects.make_bee()
-    cf3 = configure("scene")
+    cf3 = Configure("scene")
     cf3.add_block_entityclass(entityclassname=e.entityclassname, material=e.material)
     cf3.end_block()
-    return multiconfigure(cf, cf2, cf3)
+    return ConfigureMultiple(cf, cf2, cf3)
 
 
 def world_to_namespace(w):
@@ -204,7 +204,7 @@ def show_image(i):
   box = box2d(b.x,b.y,b.sizex,b.sizey,b.mode)
   params = parameters()
   if i.transparency: params.transparency = True
-  i1.draw_image(mstr(i.image),i.identifier,box,params)
+  i1.draw_image(StringValue(i.image),i.identifier,box,params)
   return i1
 """
 

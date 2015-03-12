@@ -459,7 +459,7 @@ class WorkerManager(object):
         for p in paramnames:
             if p not in autocreate:
                 raise ValueError(
-                    "%s.metaguiparams[\"autocreate\"] must be a dict with default values for all metaparameters; missing parameter '%s'" % (
+                    "%s.metaguiparams[\"autocreate\"] must be a dict with default values for all metaparameters; missing Parameter '%s'" % (
                         workertype, p))
         self.instantiate(worker_id, workertype, x, y, autocreate)
         return True

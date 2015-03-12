@@ -1,16 +1,16 @@
 Attribute has the following (all are optional):
-  - Input hook, bound from antenna
-  - Output hook, bound from output
-  - Name, bound from antenna, output, (meta)parameter or custom string
-  - Value, bound from parameter
+  - Input hook, bound from Antenna
+  - Output hook, bound from Output
+  - Name, bound from Antenna, Output, (meta)Parameter or custom string
+  - Value, bound from Parameter
 There is the "expanded" view:
-  One attribute with input hook for antenna
-  One attribute with output hook for output
-  One attribute with no hooks for each parameter (values shown for basic types)
+  One attribute with input hook for Antenna
+  One attribute with Output hook for Output
+  One attribute with no hooks for each Parameter (values shown for basic types)
 There is also the"canonical" view:
   inp, outp and trig not named
   evin,evout,evexc not shown
-  metaparameter "type" and parameter "value" is shown as attribute
+  metaparameter "type" and Parameter "value" is shown as attribute
 Block bees will be more special
 
 Signals are sent from lower layers to higher layers, where they are converted to
@@ -24,7 +24,7 @@ They are completely visual and very dumb.
 For example, connections have (x,y,z) endpoints, no connection to hooks.     
 However, embedding relationship (hook -> attribute -> node -> canvas) are maintained here.
  
-- parameter form (auto-gen using Spyder), connected to worker editing panel
+- Parameter form (auto-gen using Spyder), connected to worker editing panel
 
 - Menu's, connected to hivemap manager
 
@@ -52,9 +52,9 @@ Scene styler:
   translates attributes like push/pull into colors, line styles, etc. that are
    
 Worker editing panel, 
- embeds parameter form 
+ embeds Parameter form
  connection editor (with travel-to option)
-   also store totally invalid connections (i.e. through meta-parameter change, Spyder model change, etc.)
+   also store totally invalid connections (i.e. through meta-Parameter change, Spyder model change, etc.)
  attribute editor (including visibility and name/value binding)
 
 Parameter form generator (using Spyder, into .ui file, stored in generic dir, per-workerclass,user can edit)

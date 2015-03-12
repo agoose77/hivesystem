@@ -24,14 +24,14 @@ class add(object):
             op = operator(fadd, (type, type), type)
             connect(t, op)
 
-            # Set output variable
+            # Set Output variable
             v_outp = variable(type)
             connect(v_outp, outp)
 
             # Connect the operator to the variable
             connect(op, v_outp)
 
-            # Trigger transistor before output
+            # Trigger transistor before Output
             pretrigger(v_outp, t)
 
         return add

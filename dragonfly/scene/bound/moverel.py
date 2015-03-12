@@ -9,7 +9,7 @@ def get_worker(name, xyz):
     class moverel(worker):
         """Relative movement along %s axis""" % xyz
         __beename__ = name
-        moverel = antenna("push", "float")
+        moverel = Antenna("push", "float")
         movement = variable("float")
         connect(moverel, movement)
 

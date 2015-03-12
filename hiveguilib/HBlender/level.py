@@ -79,7 +79,7 @@ def get_level(path):
             return 0
 
         sub_module = path[1]
-        if sub_module in ("parameter", "io"):
+        if sub_module in ("Parameter", "io"):
             return 3
 
         if sub_module in ("attribute", "pyattribute", "wasp", "part"):

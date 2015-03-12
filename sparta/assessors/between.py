@@ -38,7 +38,7 @@ class between(object):
 
             range_ = antenna("pull", spydertype)
 
-            # One output value returning the result of the comparison
+            # One Output value returning the result of the comparison
             outp = output("pull", "bool")
             result = variable("bool")
             connect(result, outp)

@@ -29,7 +29,7 @@ class all_(bee.worker):
     def evaluate(self):
         self.v_outp = (self.b_inp1 and self.b_inp2 and self.b_inp3 and self.b_inp4)
 
-    # Whenever the output is requested: update the inputs and evaluate
+    # Whenever the Output is requested: update the inputs and evaluate
     pretrigger(v_outp, b_inp1)
     pretrigger(v_outp, b_inp2)
     pretrigger(v_outp, b_inp3)
@@ -45,7 +45,7 @@ class all_(bee.worker):
         "inp4": {"name": "Input 4", "fold": True},
     }
 
-    # Method to manipulate the parameter form as it appears in the GUI
+    # Method to manipulate the Parameter form as it appears in the GUI
     @classmethod
     def form(cls, f):
         f.inp1.default = True

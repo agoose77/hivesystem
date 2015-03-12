@@ -25,11 +25,11 @@ class python(object):
     trigger.
     When the Python processor is activated, all inputs are pulled in, and made available to the code as variables of the
     same name.
-    If persistent, previous pull output values are likewise added.
-    After the code has run, its locals() are inspected for output variables.
-    All pull output variables must be set (unless persistent).
-    If a push output variable has been set, it is fired towards its targets when the processor has finished.
-    If a trigger output variable has been set to True, it is fired towards its targets when the processor has finished
+    If persistent, previous pull Output values are likewise added.
+    After the code has run, its locals() are inspected for Output variables.
+    All pull Output variables must be set (unless persistent).
+    If a push Output variable has been set, it is fired towards its targets when the processor has finished.
+    If a trigger Output variable has been set to True, it is fired towards its targets when the processor has finished
     """
 
     metaguiparams = {
@@ -60,8 +60,8 @@ class python(object):
             if inp.io_name in io_names: raise ValueError("Duplicate input name: %s" % inp.io_name)
             io_names.add(inp.io_name)
         for outp in outputs:
-            if outp.io_name in reserved: raise ValueError("Reserved output name: %s" % outp.io_name)
-            if outp.io_name in io_names: raise ValueError("Duplicate input/output name: %s" % outp.io_name)
+            if outp.io_name in reserved: raise ValueError("Reserved Output name: %s" % outp.io_name)
+            if outp.io_name in io_names: raise ValueError("Duplicate input/Output name: %s" % outp.io_name)
             io_names.add(outp.io_name)
         dic = {
             "trig": antenna("push", "trigger"),

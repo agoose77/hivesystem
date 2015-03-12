@@ -68,7 +68,7 @@ class staticselector(bee.worker):
     trigger(select_prev, m_select_prev)
 
     def register_identifier(self, identifier):
-        ## This is called before instantiation (at configure time), so we are dealing
+        ## This is called before instantiation (at Configure time), so we are dealing
         # with a wrapped object: self.bee
         try:
             self.bee.identifiers.append(identifier)

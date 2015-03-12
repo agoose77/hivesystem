@@ -1,6 +1,6 @@
 class parameter(object):
     guiparams = dict(
-        __beename__="parameter",
+        __beename__="Parameter",
         antennas={},
         outputs={},
         parameters={

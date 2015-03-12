@@ -6,7 +6,7 @@ from libcontext.socketclasses import *
 
 def err(typ1, typ2):
     return TypeError("""
-Object type for reserved identifier does not match draw3 meta-parameter:
+Object type for reserved identifier does not match draw3 meta-Parameter:
 %s vs %s
 """ % (typ1, typ2)
     )

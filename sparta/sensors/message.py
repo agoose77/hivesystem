@@ -37,7 +37,7 @@ class message(bee.worker):
     subject_body = output("pull", ("object", "iterable", ("str", "str")))
     connect(subject_body_pairs, subject_body)
 
-    # Mark "message" as an advanced output segment, and capitalize the I/O names
+    # Mark "message" as an advanced Output segment, and capitalize the I/O names
     guiparams = {
         "subject_body": {"advanced": True, "name": "Subject-Body Pairs"},
         "subject": {"advanced": True, "name": "Subject"},
@@ -46,7 +46,7 @@ class message(bee.worker):
         "_memberorder": ["subject", "body", "active", "subject_body"],
     }
 
-    # Method to manipulate the parameter form as it appears in the GUI
+    # Method to manipulate the Parameter form as it appears in the GUI
     @classmethod
     def form(cls, f):
         f.p_subject.name = "Subject"

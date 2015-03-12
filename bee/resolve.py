@@ -1,5 +1,5 @@
 from .attribute import attribute
-from .get_parameter import get_parameter
+from .parametergetter import ParameterGetter
 
 
 class resolvelist(list):
@@ -26,9 +26,9 @@ def resolve(v, parameters=None, prebuild=False, parent=None):
             # return resolve(vv,parent,parameters,prebuild)
             return resolve(vv, parameters, prebuild)
 
-    elif isinstance(v, get_parameter):
+    elif isinstance(v, ParameterGetter):
         if parent is None and parameters is None:
-            raise TypeError("Cannot resolve get_parameter without parent or parameters")
+            raise TypeError("Cannot resolve ParameterGetter without parent or parameters")
 
         vv = v.get(parent, parameters)
         # return resolve(vv,parent,parameters,prebuild)

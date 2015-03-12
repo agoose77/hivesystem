@@ -1,13 +1,13 @@
 import libcontext, functools, traceback, sys
 from .resolve import resolve
-from .beewrapper import beewrapper
-from .configure import configure_base, delayedcall
+from .beewrapper import BeeWrapper
+from .configure import ConfigureBase, delayedcall
 
 
 class InitBeeException(Exception): pass
 
 
-class init(configure_base):
+class init(ConfigureBase):
     def __init__(self, target):
         self.target_original = target
         self.initialization = []
@@ -43,7 +43,7 @@ class init(configure_base):
         if n is self: raise Exception("bee.init target '%s' is self" % self.target)
         from .worker import workerframe
 
-        if isinstance(n, beewrapper):
+        if isinstance(n, BeeWrapper):
             assert n.instance is not None
             n = n.instance
         if isinstance(n, workerframe):
@@ -75,7 +75,7 @@ class init(configure_base):
                 s3 = traceback.format_exception_only(type(e), e)
                 s = "\n" + "".join(s1 + s2 + s3)
                 raise InitBeeException(s)
-        if isinstance(n, configure_base): n.hive_init(beedict)
+        if isinstance(n, ConfigureBase): n.hive_init(beedict)
 
     def __init_append__(self, attr, stack, *args, **kargs):
         self.initialization.append((attr, stack, args, kargs))

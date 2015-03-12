@@ -6,7 +6,7 @@ from libcontext.pluginclasses import *
 
 
 class startsensor(worker):
-    outp = output("push", "trigger")
+    outp = Output("push", "trigger")
     start = triggerfunc(outp)
     # def set_add_listener(self, add_listener):
     #  self.add_listener = add_listener

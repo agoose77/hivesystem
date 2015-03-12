@@ -6,8 +6,8 @@ from libcontext.pluginclasses import *
 
 
 class setHpr(worker):
-    setHpr = antenna("push", "Coordinate")
-    entity = antenna("pull", "id")
+    setHpr = Antenna("push", "Coordinate")
+    entity = Antenna("pull", "id")
     b_entity = buffer("pull", "id")
     connect(entity, b_entity)
     hpr = variable("Coordinate")

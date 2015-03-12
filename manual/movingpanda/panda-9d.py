@@ -102,7 +102,7 @@ class myscene(dragonfly.pandahive.spyderframe):
 def generate_pandalogic():
     class pandalogichive(bee.frame):
         c_inp = dragonfly.std.pullconnector(("id", ("object", "matrix")))()
-        inp = bee.antenna(c_inp.inp)
+        inp = bee.Antenna(c_inp.inp)
 
         for name in pandadict:
             mode, data, box, image = pandadict[name]

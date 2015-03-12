@@ -1,9 +1,9 @@
 from .spyderhive import _spyderhive as spyderhive
 from .hivemodule import *
-from .configure import configure_base
+from .configure import ConfigureBase
 
 
-class combohivewrapper(hivewrapper):
+class combohivewrapper(HiveWrapper):
     def __init__(self, **beeimports):
         self.beeimports = beeimports
         self.args = []
@@ -12,15 +12,15 @@ class combohivewrapper(hivewrapper):
         self.instance = None
         for i in self.beeimports:
             im = self.beeimports[i]
-            if not issubclass(im._wrapped_hive._hivecontext, hivecontext_base):
+            if not issubclass(im._wrapped_hive._hivecontext, HiveContextBase):
                 raise TypeError("Combo hive can accept only hive injections, not %s=%s:%s" % (i, type(im), im))
 
-    def hivecombine(self):
+    def combine_hive(self):
         pass
 
     def getinstance(self, __parent__=None):
         first = (self.instance is None)
-        ret = hivewrapper.getinstance(self)
+        ret = HiveWrapper.getinstance(self)
         if first:
             newbees = []
             for b in self.instance.beewrappers:
@@ -76,7 +76,7 @@ class combohivewrapper(hivewrapper):
 
     def _combine_bee(self, bee):
         name, b = bee
-        if isinstance(b, configure_base): return
+        if isinstance(b, ConfigureBase): return
         can_combo = False
         # if hasattr(b, "make_combo") and not isinstance(b.make_combo, tuple):
         try:
@@ -200,7 +200,7 @@ def spyder_make_combo(combobee):
     return combolist, combodict
 
 
-class combohive(emptyhive, emptyclass):
+class combohive(emptyhive, EmptyClass):
     __metaclass__ = _combohivebuilder
     _has_exc = False
     SpyderMethod("make_combo", "Combobee", spyder_make_combo)

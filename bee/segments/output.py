@@ -19,7 +19,7 @@ class output(io_base):
 
     def connection_input(self, connection):
         if self.mode == "pull" and len(self._connection):
-            raise TypeError("Pull output must have only one input")
+            raise TypeError("Pull Output must have only one input")
         self._connection.append(connection)
 
     def _triggered_input_trigger(self, target, pre=False):
@@ -50,7 +50,7 @@ class output(io_base):
 
         elif self.mode == "pull":
             if self.mode == "pull" and not self._connection:
-                raise TypeError("Pull output %s must have exactly one input" % (segmentname))
+                raise TypeError("Pull Output %s must have exactly one input" % (segmentname))
             dic = {
                 "_connection": self._connection,
                 "segmentname": segmentname,

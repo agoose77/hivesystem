@@ -1,12 +1,12 @@
 from __future__ import print_function
 from .segments import reg_helpersegment, decoratorsegment
 from .types import parse_parameters
-from .beewrapper import beewrapper, reg_beehelper
+from .beewrapper import BeeWrapper, reg_beehelper
 import inspect
 import libcontext
 import functools
 
-from . import emptyclass, Type
+from . import EmptyClass, Type
 from .event import exception
 from .resolve import resolve
 
@@ -126,7 +126,7 @@ class worker:
 
 class workerbuilder(reg_beehelper):
     __workerframeclass__ = workerframe
-    __workerwrapperclass__ = beewrapper
+    __workerwrapperclass__ = BeeWrapper
     __runtime_workerclass__ = runtime_worker
 
     def __init__(self, name, bases, dic, *args, **kwargs):
@@ -179,7 +179,7 @@ class workerbuilder(reg_beehelper):
         inherited_cls_dict.update(cls_dict)
         cls_dict = inherited_cls_dict
 
-        if emptyclass not in listed_base_classes and contains_segments:
+        if EmptyClass not in listed_base_classes and contains_segments:
             raise TypeError("Class definition of worker '%s': bee.worker with segments cannot be subclassed"
                             % forbidden_name)
 
@@ -189,9 +189,9 @@ class workerbuilder(reg_beehelper):
             args += [a for a in reg_helpersegment.reg[caller_id] if a not in cls_dict.values()]
             del reg_helpersegment.reg[caller_id]
 
-        if emptyclass in bases:
+        if EmptyClass in bases:
             cls_dict["__helpers__"] = args
-            bases = tuple([b for b in bases if b != emptyclass])
+            bases = tuple([b for b in bases if b != EmptyClass])
             return type.__new__(metacls, forbidden_name, bases, dict(cls_dict))
 
         segments = [(i + 1, a) for i, a in enumerate(args)] + list(cls_dict.items())
@@ -262,6 +262,6 @@ class workerbuilder(reg_beehelper):
         return ret
 
 
-class worker(emptyclass):
+class worker(EmptyClass):
     __metaclass__ = workerbuilder
 

@@ -6,7 +6,7 @@ from actionworkers import play_sound
 import bee
 from dragonfly.std import *
 import dragonfly.logic
-from bee import antenna, connect
+from bee import Antenna, connect
 
 
 class action1hive(bee.frame):
@@ -27,6 +27,6 @@ class action1hive(bee.frame):
     adict["jump"] = "jump-animation"
     sdict["jump"] = "jmp.wav"
 
-    animplay = antenna(animdict.inkey)
-    soundplay = antenna(sounddict.inkey)
+    animplay = Antenna(animdict.inkey)
+    soundplay = Antenna(sounddict.inkey)
 

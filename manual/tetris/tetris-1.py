@@ -17,12 +17,12 @@ blocks = (
 
 emptygrid = bgrid(0, 0, 0, 0)
 
-from bee import antenna, output, connect, attribute, parameter, get_parameter
+from bee import Antenna, Output, connect, attribute, Parameter, ParameterGetter
 
 
 class tetris_select_block(bee.frame):
-    blocks = parameter("object")
-    blocks_ = get_parameter("blocks")
+    blocks = Parameter("object")
+    blocks_ = ParameterGetter("blocks")
     w_blocks = dragonfly.gen.gentuple2(blocks_)
     sel = dragonfly.random.choice()
     connect(w_blocks, sel)
@@ -30,8 +30,8 @@ class tetris_select_block(bee.frame):
     do_select = dragonfly.gen.transistor()
     connect(sel, do_select)
 
-    select = antenna(do_select.trig)
-    selected = output(do_select.outp)
+    select = Antenna(do_select.trig)
+    selected = Output(do_select.outp)
 
 
 class parameters(object):

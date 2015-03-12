@@ -5,7 +5,7 @@ from bee.types import stringtupleparser
 
 class hop_in(object):
 
-    """The hop_in rerouter forwards an output to hop_out rerouters of the same name"""
+    """The hop_in rerouter forwards an Output to hop_out rerouters of the same name"""
 
     metaguiparams = {
         "mode": "str",

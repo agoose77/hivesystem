@@ -6,7 +6,7 @@ from bee.types import stringtupleparser
 
 class transistor(object):
 
-    """A transistor converts pull input to push output. Whenever the transistor is triggered, the value is pulled in
+    """A transistor converts pull input to push Output. Whenever the transistor is triggered, the value is pulled in
     and then pushed out
     """
 

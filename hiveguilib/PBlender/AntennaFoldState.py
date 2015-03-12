@@ -84,7 +84,7 @@ class AntennaFoldState(object):
                 continue
 
             if not hasattr(element, "widget"):
-                raise Exception("Unfoldable: %s.%s has no associated widget in parameter tab" % (worker_id, antenna_name))
+                raise Exception("Unfoldable: %s.%s has no associated widget in Parameter tab" % (worker_id, antenna_name))
 
             widget = element.widget
             show, hide = widget.show, widget.hide

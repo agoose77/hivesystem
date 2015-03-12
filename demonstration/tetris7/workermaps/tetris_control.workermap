@@ -2,7 +2,7 @@ Workermap (
   segments = WorkerSegmentArray (
     WorkerSegment (
       segid = 'blockgrid',
-      segtype = 'segments.antenna.pull_antenna',
+      segtype = 'segments.Antenna.pull_antenna',
       position = Coordinate2D (
         x = -267.0,
         y = 108.0,
@@ -97,7 +97,7 @@ Workermap (
     ),
     WorkerSegment (
       segid = 'maingrid',
-      segtype = 'segments.antenna.pull_antenna',
+      segtype = 'segments.Antenna.pull_antenna',
       position = Coordinate2D (
         x = -275.0,
         y = 216.0,
@@ -112,7 +112,7 @@ Workermap (
     ),
     WorkerSegment (
       segid = 'place_init',
-      segtype = 'segments.antenna.push_antenna_trigger',
+      segtype = 'segments.Antenna.push_antenna_trigger',
       position = Coordinate2D (
         x = -280.285714286,
         y = -96.0,

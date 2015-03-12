@@ -80,7 +80,7 @@ class SpydermapManager(object):
         for name, c in zip(spydermap.parameters, paramcoordinates):
             x, y = c
             self._workermanager.instantiate(
-                name, "spyderbees.parameter", x, y
+                name, "spyderbees.Parameter", x, y
             )
 
         for wasp in spydermap.wasps:
@@ -183,7 +183,7 @@ class SpydermapManager(object):
                 spydernames.append(workerid)
                 spyderobjectdata.append(spydervalue)
                 coordinates.append(Spyder.Coordinate2D(node.position))
-            elif workertype == "spyderbees.parameter":
+            elif workertype == "spyderbees.Parameter":
                 spyderparameters.append(workerid)
                 paramcoordinates.append(Spyder.Coordinate2D(node.position))
             elif workertype == "spyderbees.wasp":

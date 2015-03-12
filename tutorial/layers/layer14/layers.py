@@ -61,7 +61,7 @@ class mainhive(inithive):
 #Give us a new mainhive instance
 main = mainhive().getinstance()
 
-#Build a context tree named "main", and configure its bees
+#Build a context tree named "main", and Configure its bees
 main.build("main")
 
 #Declare sockets and plugins

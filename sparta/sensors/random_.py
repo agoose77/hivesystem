@@ -92,7 +92,7 @@ class random_(object):
                 "_memberorder": ["probability", "range_", "seed", "active", "random_"],
             }
 
-            # Method to manipulate the parameter form as it appears in the GUI
+            # Method to manipulate the Parameter form as it appears in the GUI
             @classmethod
             def form(cls, f):
                 if mode == "bool":

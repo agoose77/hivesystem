@@ -6,7 +6,7 @@ from libcontext.pluginclasses import *
 
 
 class translateY(worker):
-    translateY = antenna("push", "float")
+    translateY = Antenna("push", "float")
     y = variable("float")
     connect(translateY, y)
 

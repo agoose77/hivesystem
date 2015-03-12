@@ -2,7 +2,7 @@ Workermap (
   segments = WorkerSegmentArray (
     WorkerSegment (
       segid = 'string',
-      segtype = 'segments.output.pull_output_str',
+      segtype = 'segments.Output.pull_output_str',
       position = Coordinate2D (
         x = 156.0,
         y = 29.0,

@@ -28,7 +28,7 @@ class camerabind2(camerabind):
 
 def load_panda(mpanda):
     pandas = []
-    c_hivereg = bee.configure("hivereg")
+    c_hivereg = bee.Configure("hivereg")
     pandalogics = [c_hivereg]
 
     pandas.append(mpanda.model[0])

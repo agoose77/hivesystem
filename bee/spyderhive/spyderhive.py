@@ -1,8 +1,8 @@
 from ..hivemodule import *
 from .. import hivemodule
-from ..configure import configure_base
+from ..configure import ConfigureBase
 
-from .. import emptyclass, Type, Object
+from .. import EmptyClass, Type, Object
 
 
 class spyderwrapper(Object):
@@ -26,7 +26,7 @@ def filter_spyderreg(arg):
     return None
 
 
-class spyderconfigureplaceclass(configure_base):
+class spyderconfigureplaceclass(ConfigureBase):
     def __init__(self, l1, l2):
         self.l1 = l1
         self.l2 = l2
@@ -48,7 +48,7 @@ class spyderconfigureplaceclass(configure_base):
 
 
 def spyderresultwrapper(l):
-    class spyderconfigureclass(configure_base):
+    class spyderconfigureclass(ConfigureBase):
         def __init__(self, l):
             self.l = l
 
@@ -79,20 +79,20 @@ def spyderresultwrapper(l):
     ll1 = []
     ll2 = []
     for o in l:
-        if isinstance(o, configure_base):
+        if isinstance(o, ConfigureBase):
             no_conf0 = False
             no_place0 = True
         else:
-            no_conf0 = not hasattr(o, "configure") or not hasattr(o.configure, "__call__") or not hasattr(o,
+            no_conf0 = not hasattr(o, "Configure") or not hasattr(o.configure, "__call__") or not hasattr(o,
                                                                                                           "hive_init") or not hasattr(
                 o.hive_init, "__call__")
             no_place0 = not hasattr(o, "place") or not hasattr(o.place, "__call__")
         if no_conf0 and no_place0:
             if not isinstance(o, list):
-                raise TypeError("Spyderobject .make_bee() result has neither configure()/hive_init() nor place()")
+                raise TypeError("Spyderobject .make_bee() result has neither Configure()/hive_init() nor place()")
             else:
                 o = spyderresultwrapper(o)
-                no_conf0 = not hasattr(o, "configure") or not hasattr(o.configure, "__call__") or not hasattr(o,
+                no_conf0 = not hasattr(o, "Configure") or not hasattr(o.configure, "__call__") or not hasattr(o,
                                                                                                               "hive_init") or not hasattr(
                     o.hive_init, "__call__")
                 no_place0 = not hasattr(o, "place") or not hasattr(o.place, "__call__")
@@ -104,10 +104,10 @@ def spyderresultwrapper(l):
         if no_conf0: has_conf = False
         if no_place0: has_place = False
     if not has_conf and not has_place:
-        # raise TypeError("Spyderobject .make_bee() results have neither all configure()/hive_init() nor all place()")
+        # raise TypeError("Spyderobject .make_bee() results have neither all Configure()/hive_init() nor all place()")
         return spyderconfigureplaceclass(ll1, ll2)
     if has_conf and has_place:
-        # raise TypeError("Spyderobject .make_bee() results have all configure()/hive_init() and place()")
+        # raise TypeError("Spyderobject .make_bee() results have all Configure()/hive_init() and place()")
         return spyderconfigureplaceclass(ll, ll)
     if has_conf: return spyderconfigureclass(ll)
     if has_place: return spyderplaceclass(ll)
@@ -158,15 +158,15 @@ def filter_spydermethod_or_converter_reg(a):
     if isinstance(a, spydermethod_or_converter): return spyderwrapper(a)
 
 
-from ..parameter import parameter as bee_parameter
-from ..get_parameter import get_parameter as bee_get_parameter
+from ..parameter import Parameter as bee_parameter
+from ..parametergetter import ParameterGetter as bee_get_parameter
 
 
 def filter_parameter(a):
     if isinstance(a, bee_parameter): return a
 
 
-class _spyderhivebuilder(hivemodule._hivebuilder):
+class _spyderhivebuilder(hivemodule.HiveBuilderMeta):
     __registers__ = [get_spydermethod_or_converter_reg]
     __registerfilters__ = [
         filter_spyderreg, filter_reg_beehelper,
@@ -237,7 +237,7 @@ class spyderhivecontextmixin(Object):
                     r = b.make_bee()
             if hasattr(r, "place") and hasattr(r.place, "__call__"):
                 pass
-            elif hasattr(r, "configure") and hasattr(r.configure, "__call__"):
+            elif hasattr(r, "Configure") and hasattr(r.configure, "__call__"):
                 pass
             elif hasattr(r, "hive_init") and hasattr(r.hive_init, "__call__"):
                 pass
@@ -245,7 +245,7 @@ class spyderhivecontextmixin(Object):
                 r = spyderresultwrapper(r)
             else:
                 raise TypeError(
-                    "Spyderobject.make_bee() => %s does not have a method place() nor configure() nor hive_init()\nSpyderobject:\n%s" % (
+                    "Spyderobject.make_bee() => %s does not have a method place() nor Configure() nor hive_init()\nSpyderobject:\n%s" % (
                     r, arg.bees[onr][1]))
             arg.bees[onr] = (arg.bees[onr][0], r)
         for onr in converter_indices:
@@ -265,17 +265,17 @@ class spyderinithivecontext(spyderhivecontextmixin, inithivecontext):
         spyderhivecontextmixin.__init__(self, *args, **kargs)
 
 
-class spyderhive(closedhive, emptyclass):
+class spyderhive(closedhive, EmptyClass):
     __metaclass__ = _spyderhivebuilder
     _hivecontext = spyderhivecontext
 
 
-class spyderframe(frame, emptyclass):
+class spyderframe(frame, EmptyClass):
     __metaclass__ = _spyderhivebuilder
     _hivecontext = spyderhivecontext
 
 
-class spyderinithive(closedhive, emptyclass):
+class spyderinithive(closedhive, EmptyClass):
     __metaclass__ = _spyderhivebuilder
     _hivecontext = spyderinithivecontext
 
@@ -314,7 +314,7 @@ class spyderdicthivecontext(spyderdicthivecontextmixin, hivecontext):
         spyderdicthivecontextmixin.__init__(self, *args, **kargs)
 
 
-class spyderdicthive0(frame, emptyclass):
+class spyderdicthive0(frame, EmptyClass):
     __metaclass__ = _spyderhivebuilder
     _hivecontext = spyderdicthivecontext
 

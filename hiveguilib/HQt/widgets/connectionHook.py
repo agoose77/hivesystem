@@ -51,7 +51,7 @@ class ConnectionHook(QtGui.QGraphicsItem):
 
         self._parentNodeUi = weakref.ref(parentAttributeUi.parentNodeUi())
         self._parentAttributeUi = weakref.ref(parentAttributeUi)
-        assert mode in ("input", "output"), mode
+        assert mode in ("input", "Output"), mode
         self._mode = mode
         assert shape in ("circle", "square"), shape
         self._shape = shape
@@ -201,7 +201,7 @@ class ConnectionHook(QtGui.QGraphicsItem):
         return self._mode == "input"
 
     def isOutput(self):
-        return self._mode == "output"
+        return self._mode == "Output"
 
     def connections(self):
         return self._connections
@@ -309,7 +309,7 @@ class ConnectionHook(QtGui.QGraphicsItem):
             event.ignore()
             return
 
-        if self._mode == "output":
+        if self._mode == "Output":
             self._selectConnection(None)
             self._draggingConnection = Connection(self)
             self._draggingConnection.setActive(False)

@@ -9,21 +9,21 @@ from . import hivemap
 _hivesubclass = {}
 
 from .type import Type, Object
-from .emptyclass import emptyclass
+from .emptyclass import EmptyClass
 from .worker import worker
 from .drone import drone, combodrone, combodronewrapper
 
 from .connect import connect
-from .configure import configure, multiconfigure
+from .configure import Configure, ConfigureMultiple
 from .init import init
-from .io import antenna, output
+from .io import Antenna, Output
 
 from .hivemodule import frame, hive, closedhive, inithive, unregister
 from .event import event
 
 from .raiser import raiser
-from .parameter import parameter
-from .get_parameter import get_parameter
+from .parameter import Parameter
+from .parametergetter import ParameterGetter
 from .attribute import attribute
 from .resolve import resolve, resolvelist
 from .reference import Reference

@@ -52,7 +52,7 @@ Hivemap (
   io = HivemapIOArray (
     HivemapIO (
       io_id = 'actionplay',
-      io = 'antenna',
+      io = 'Antenna',
       worker = 'pushconnector_1',
       workerio = 'inp',
       mode = 'push',

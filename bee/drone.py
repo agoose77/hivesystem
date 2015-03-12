@@ -1,6 +1,6 @@
-from .beewrapper import beewrapper, reg_beehelper
+from .beewrapper import BeeWrapper, reg_beehelper
 
-from . import emptyclass, Type
+from . import EmptyClass, Type
 
 
 class dronebuilder(reg_beehelper):
@@ -11,8 +11,8 @@ class dronebuilder(reg_beehelper):
         Type.__init__(self, name, bases, cls_dict)
 
     def __new__(metacls, name, bases, cls_dict, **kargs):
-        if emptyclass in bases:
-            bases = tuple([b for b in bases if b != emptyclass])
+        if EmptyClass in bases:
+            bases = tuple([b for b in bases if b != EmptyClass])
             return type.__new__(metacls, name, bases, dict(cls_dict))
 
         new_bases = []
@@ -60,11 +60,11 @@ class dronebuilder(reg_beehelper):
 
         edrone = type.__new__(metacls, name + "&", new_bases, dict(cls_dict))
 
-        return type.__new__(metacls, name, (beewrapper,), {"_wrapped_hive": edrone, "guiparams": cls_dict["guiparams"],
+        return type.__new__(metacls, name, (BeeWrapper,), {"_wrapped_hive": edrone, "guiparams": cls_dict["guiparams"],
                                                            "__metaclass__": dronebuilder})
 
 
-class drone(emptyclass):
+class drone(EmptyClass):
     __metaclass__ = dronebuilder
 
 
@@ -73,7 +73,7 @@ class combodronebuilder(dronebuilder):
     __reqdronefunc__ = "make_combo"
 
 
-class combodrone(emptyclass):
+class combodrone(EmptyClass):
     __metaclass__ = combodronebuilder
 
 

@@ -1,7 +1,7 @@
 from __future__ import print_function
 import libcontext
 from libcontext import context, evincontext, evoutcontext, evexccontext
-from .hivemodule import beehelper, hivewrapper, evwrapper
+from .hivemodule import BeeHelper, HiveWrapper, EventWrapper
 from .types import typecompare
 
 
@@ -42,7 +42,7 @@ def search_beename(bee0, hive, io, nosub):
         found = False
         if w is bee:
             found = True
-        elif isinstance(w, _io.antenna) or isinstance(w, _io.output):
+        elif isinstance(w, _io.Antenna) or isinstance(w, _io.Output):
             inst = [b for beename, b in hive.bees if beename == wname][0]
             if inst.connector is bee:
                 found = True
@@ -61,7 +61,7 @@ def search_beename(bee0, hive, io, nosub):
                     raise Exception("Duplicate bee %s" % wname)
                 ret = (wname,) + subname, io
     for wname, w in hive.beewrappers:
-        if not isinstance(w, hivewrapper): continue
+        if not isinstance(w, HiveWrapper): continue
         r = search_beename(bee0, w, io, nosub)
         if r[0] is not None:
             if ret is not None:
@@ -78,7 +78,7 @@ def search_beename(bee0, hive, io, nosub):
     return None, None
 
 
-class connect(beehelper):
+class connect(BeeHelper):
     def getinstance(self, __parent__=None):
         return self.__class__(self.source_original, self.target_original, self.nosub)
 
@@ -234,7 +234,7 @@ class connect(beehelper):
                 for p in sourcecontext.plugins:
                     if not isinstance(p, tuple):
                         continue
-                    if p[1] != "output": continue
+                    if p[1] != "Output": continue
                     pp = p[2]
                     if self.nosub == False and pp.startswith("@"): pp = pp.lstrip("@")
                     if pp != self.source_io: continue
@@ -252,7 +252,7 @@ class connect(beehelper):
                     for p in sourcecontext.sockets:
                         if not isinstance(p, tuple):
                             continue
-                        if p[1] != "output": continue
+                        if p[1] != "Output": continue
                         pp = p[2]
                         if self.nosub == False and pp.startswith("@"): pp = pp.lstrip("@")
                         if pp != self.source_io: continue
@@ -272,7 +272,7 @@ class connect(beehelper):
                 if p[0] not in ("bee", "evin", "evout", "evexc"):
                     worker = False
                     continue
-                if p[1] != "output": continue
+                if p[1] != "Output": continue
                 source_plugin_candidates.append(p)
                 found = True
             if not found:
@@ -286,7 +286,7 @@ class connect(beehelper):
                 if p[0] not in ("bee", "evin", "evout", "evexc"):
                     worker = False
                     continue
-                if p[1] != "output": continue
+                if p[1] != "Output": continue
                 if p[2].startswith("__") and p[2].endswith("__"): continue
                 source_socket_candidates.append(p)
                 found = True
@@ -306,7 +306,7 @@ class connect(beehelper):
                 for p in targetcontext.plugins:
                     if not isinstance(p, tuple):
                         continue
-                    if p[1] != "antenna": continue
+                    if p[1] != "Antenna": continue
                     pp = p[2]
                     if self.nosub == False and pp.startswith("@"): pp = pp.lstrip("@")
                     if pp != self.target_io: continue
@@ -324,7 +324,7 @@ class connect(beehelper):
                     for p in targetcontext.sockets:
                         if not isinstance(p, tuple):
                             continue
-                        if p[1] != "antenna": continue
+                        if p[1] != "Antenna": continue
                         pp = p[2]
                         if self.nosub == False and pp.startswith("@"): pp = pp.lstrip("@")
                         if pp != self.target_io: continue
@@ -348,7 +348,7 @@ class connect(beehelper):
                 if p[0] not in ("bee", "evin", "evout", "evexc"):
                     worker = False
                     continue
-                if p[1] != "antenna": continue
+                if p[1] != "Antenna": continue
                 if p[2].startswith("__") and p[2].endswith("__"): continue
                 target_plugin_candidates.append(p)
                 found = True
@@ -363,7 +363,7 @@ class connect(beehelper):
                 if p[0] not in ("bee", "evin", "evout", "evexc"):
                     worker = False
                     continue
-                if p[1] != "antenna": continue
+                if p[1] != "Antenna": continue
                 target_socket_candidates.append(p)
                 found = True
             if not found:
@@ -480,7 +480,8 @@ class connect(beehelper):
 
     def connect_evout_worker(self, newsource, newtarget):
         contype = "event"
-        if isinstance(self.source, evexccontext): contype = "exception"
+        if isinstance(self.source, evexccontext):
+            contype = "exception"
 
         targetcontextname = self._get_targetcontextname()
         targetcontext = libcontext.get_context(targetcontextname)
@@ -489,11 +490,12 @@ class connect(beehelper):
         matches = []
         for p in target_plugin_candidates:
             if isinstance(p, tuple) and len(p) == 4:
-                if p[0] == "bee" and p[1] == "antenna" and typecompare(p[3], contype):
+                if p[0] == "bee" and p[1] == "Antenna" and typecompare(p[3], contype):
                     matches.append(p)
-        if len(matches) == 0:
+        if not matches:
             raise TypeError("Error in connect %s - %s\nNo antennas with type '%s' found in target" % (
             self.source_name, self.target, contype))
+
         elif len(matches) > 1:
             cand = ""
             for c in matches:
@@ -508,7 +510,8 @@ class connect(beehelper):
 
     def connect_worker_evin(self, newsource, newtarget):
         contype = "event"
-        if isinstance(self.target, evexccontext): contype = "exception"
+        if isinstance(self.target, evexccontext):
+            contype = "exception"
 
         sourcecontextname = self._get_sourcecontextname()
         sourcecontext = libcontext.get_context(sourcecontextname)
@@ -519,9 +522,10 @@ class connect(beehelper):
             if isinstance(s, tuple) and len(s) == 4:
                 if s[0] == "bee" and s[1] == "output" and typecompare(s[3], contype):
                     matches.append(s)
-        if len(matches) == 0:
+        if not matches:
             raise TypeError("Error in connect %s - %s\nNo outputs with type '%s' found in source" % (
             self.source, self.target_name, contype))
+
         elif len(matches) > 1:
             cand = ""
             for c in matches:
@@ -540,13 +544,10 @@ class connect(beehelper):
 
     def place(self):
         from libcontext import new_abscontextname, add_contextnames
-        from . import BuildError
-        # try:
-        #  self.bind()
-        #except BuildError, e:
-        # return
-        self.bind()
-        if not self.bound_source or not self.bound_target: return
+
+        if not self.bound_source or not self.bound_target:
+            return
+
         self.parentcontext = libcontext.get_curr_context()
 
         if self.source_io is not None:

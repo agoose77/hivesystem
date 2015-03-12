@@ -6,11 +6,11 @@ from libcontext.pluginclasses import *
 
 
 class rotateX(worker):
-    rotate = antenna("push", "float")
+    rotate = Antenna("push", "float")
     rotation = variable("float")
     connect(rotate, rotation)
 
-    entity = antenna("pull", "id")
+    entity = Antenna("pull", "id")
     b_entity = buffer("pull", "id")
     connect(entity, b_entity)
 
@@ -31,11 +31,11 @@ class rotateX(worker):
 
 
 class rotateY(worker):
-    rotate = antenna("push", "float")
+    rotate = Antenna("push", "float")
     rotation = variable("float")
     connect(rotate, rotation)
 
-    entity = antenna("pull", "id")
+    entity = Antenna("pull", "id")
     b_entity = buffer("pull", "id")
     connect(entity, b_entity)
 
@@ -56,11 +56,11 @@ class rotateY(worker):
 
 
 class rotateZ(worker):
-    rotate = antenna("push", "float")
+    rotate = Antenna("push", "float")
     rotation = variable("float")
     connect(rotate, rotation)
 
-    entity = antenna("pull", "id")
+    entity = Antenna("pull", "id")
     b_entity = buffer("pull", "id")
     connect(entity, b_entity)
 

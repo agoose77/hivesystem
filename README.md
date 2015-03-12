@@ -24,7 +24,7 @@ Hive Launch actuator
 ====================
 
   * Provide __advanced__ configuration options
-  * Support non-static hivemap name (as an antenna)
+  * Support non-static hivemap name (as an Antenna)
   * Output the process ID
 
 

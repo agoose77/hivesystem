@@ -27,7 +27,7 @@ class _runtime_antenna_blockcontrol(object):
     def place(self):
         pluginclass = libcontext.pluginclasses.plugin_supplier
         self.antenna_push_plugin = pluginclass(self.input)
-        libcontext.plugin(("bee", "antenna", self.segmentname, "blockcontrol"), self.antenna_push_plugin)
+        libcontext.plugin(("bee", "Antenna", self.segmentname, "blockcontrol"), self.antenna_push_plugin)
 
 
 class antenna_blockcontrol(io_base):

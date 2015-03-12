@@ -10,7 +10,7 @@ class bindworkerframe(workerframe):
         return ret
 
 
-class bindworkerwrapper(beewrapper):
+class bindworkerwrapper(BeeWrapper):
     def __init__(self, *args, **kargs):
         self.args = args
         self.kargs = kargs
@@ -27,7 +27,7 @@ class bindworkerwrapper(beewrapper):
             self.hive = bindworkerhive
 
     def getinstance(self, __parent__=None):
-        ret = beewrapper.getinstance(self, __parent__)
+        ret = BeeWrapper.getinstance(self, __parent__)
         bindworkerinstancehive = None
         if self.hive is not None:
             class bindworkerinstancehive(self.hive):
@@ -46,10 +46,10 @@ import sys
 python3 = (sys.version_info[0] == 3)
 if python3:
     e = """
-class bindworker(worker,emptyclass,metaclass=bindworkerbuilder):
+class bindworker(worker,EmptyClass,metaclass=bindworkerbuilder):
   pass
 """
     exec(e)
 else:
-    class bindworker(worker, emptyclass):
+    class bindworker(worker, EmptyClass):
         __metaclass__ = bindworkerbuilder

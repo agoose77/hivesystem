@@ -6,14 +6,14 @@ _modes = ["push", "pull"]
 _types = set((
     "event", "exception",
     "int", "float", "bool", "str",
-    "mstr", "id",
+    "StringValue", "id",
     "object",
     "block", "blockcontrol", "blockmodel",
     "expression",
     "bee",
 ))
 
-_objecttypes = "object", "mstr", "id", "block", "blockcontrol", "blockmodel", "expression", "bee"
+_objecttypes = "object", "StringValue", "id", "block", "blockcontrol", "blockmodel", "expression", "bee"
 
 _typemap = {
     "String": "str",
@@ -28,7 +28,7 @@ _typemap = {
 }
 
 from .event import event
-from .mstr import mstr
+from .stringvalue import StringValue
 from .reference import Reference
 
 import spyder
@@ -132,9 +132,9 @@ def generic_constructor(type_=None):
 
     if type_ is None:
         def generic_constructor(v):
-            from .beewrapper import beewrapper
+            from .beewrapper import BeeWrapper
 
-            if isinstance(v, beewrapper):
+            if isinstance(v, BeeWrapper):
                 return v
 
             if isinstance(v, Reference):
@@ -149,9 +149,9 @@ def generic_constructor(type_=None):
         return generic_constructor
 
     def generic_constructor(v):
-        from .beewrapper import beewrapper
+        from .beewrapper import BeeWrapper
 
-        if isinstance(v, beewrapper):
+        if isinstance(v, BeeWrapper):
             return v
 
         if isinstance(v, Reference):
@@ -172,7 +172,7 @@ _parametertypes = {
     "float": ("float", float),
     "bool": ("bool", boolparser),
     "str": ("str", str),
-    "mstr": ("mstr", generic_constructor(mstr)),
+    "StringValue": ("StringValue", generic_constructor(StringValue)),
     "id": ("str", str),
     "object": ("str", generic_constructor()),
     "event": ("event", eventparser),
@@ -237,7 +237,7 @@ Number of supplied non-keyword parameters: %d (%d non-keyword, %d keyword)
     unmatched = {}
     for pname in kargs:
         if pname in ret2:
-            raise TypeError("Duplicate definition of parameter %s" % pname)
+            raise TypeError("Duplicate definition of Parameter %s" % pname)
         ppar = [v[1] for v in namedparameters if v[0] == pname]
         if len(ppar) == 0:
             unmatched[pname] = kargs[pname]
@@ -259,7 +259,7 @@ Number of supplied non-keyword parameters: %d (%d non-keyword, %d keyword)
         ret2[pname] = pval
     for pname, pclass, default in namedparameters:
         if pname not in ret2:
-            raise TypeError("Undefined parameter '%s'" % pname)
+            raise TypeError("Undefined Parameter '%s'" % pname)
     if exactmatch:
         return tuple(ret1), ret2
     else:
@@ -299,7 +299,7 @@ def add_parameterclass(parclassname, parclassexpr, parclass):
 
 _pushtypes = set(("trigger", "toggle"))
 
-_triggermodes = ["default", "input", "output", "update"]
+_triggermodes = ["default", "input", "Output", "update"]
 
 
 class types_baseclass(object):
@@ -421,7 +421,7 @@ class connection_inputclass(object):
             self.value = arg
             self.bound = True
         else:
-            raise TypeError("Segment %s cannot be used as output from another segment" % type(arg).__name__)
+            raise TypeError("Segment %s cannot be used as Output from another segment" % type(arg).__name__)
 
     def bind(self, classname, dic):
         if not self.bound:
@@ -471,11 +471,11 @@ class triggering_class(object):
         else:
             raise TypeError("Segment %s cannot send triggers in mode %s" % (type(arg).__name__, self.mode))
 
-            # hack: change default pretrigger mode of variables from "input" to "output"
+            # hack: change default pretrigger mode of variables from "input" to "Output"
         from .segments.variable import variable
 
         if self.pre and isinstance(self.value, variable) and self.mode == "default":
-            self.mode = "output"
+            self.mode = "Output"
 
     def bind(self, classname, dic):
         if not self.bound:

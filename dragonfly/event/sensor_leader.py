@@ -7,8 +7,8 @@ from libcontext.pluginclasses import *
 
 class sensor_leader(worker):
     leader = variable("event")
-    parameter(leader)
-    outp = output("push", "event")
+    Parameter(leader)
+    outp = Output("push", "event")
     b_outp = buffer("push", "event")
     connect(b_outp, outp)
     trig_outp = triggerfunc(b_outp)

@@ -123,8 +123,8 @@ def build_worker_plain(beename, antennas, outputs, ev, paramnames, paramtypelist
 
     mapping = WorkerMapping()
     attribs = []
-    attrs = [(pname, "antenna", pval) for pname, pval in antennas.items()] + \
-            [(pname, "output", pval) for pname, pval in outputs.items()]
+    attrs = [(pname, "Antenna", pval) for pname, pval in antennas.items()] + \
+            [(pname, "Output", pval) for pname, pval in outputs.items()]
     memberorder = guiparams.get("guiparams", {}).get("_memberorder", {})
     attrs.sort(key=functools.partial(keyfunc, memberorder))
 
@@ -147,7 +147,7 @@ def build_worker_plain(beename, antennas, outputs, ev, paramnames, paramtypelist
     for pname, io, pval in attrs:
         mode, type_ = pval
         h = Hook(mode, type_)
-        if io == "antenna":
+        if io == "Antenna":
             inh, outh = h, None
             inmap[pname] = pname
         else:
@@ -188,8 +188,8 @@ def build_worker_default(beename, antennas, outputs, ev, paramnames, paramtypeli
 
     mapping = WorkerMapping()
     attribs = []
-    attrs = [(pname, "antenna", pval) for pname, pval in antennas.items()] + \
-            [(pname, "output", pval) for pname, pval in outputs.items()]
+    attrs = [(pname, "Antenna", pval) for pname, pval in antennas.items()] + \
+            [(pname, "Output", pval) for pname, pval in outputs.items()]
     memberorder = guiparams.get("guiparams", {}).get("_memberorder", {})
 
     attrs.sort(key=functools.partial(keyfunc, memberorder))
@@ -222,14 +222,14 @@ def build_worker_default(beename, antennas, outputs, ev, paramnames, paramtypeli
                 pmap[vv] = "value"
 
     for pname, io, pval in attrs:
-        if io == "antenna" and pname == "inp":
+        if io == "Antenna" and pname == "inp":
             t = pval[1]
             if isinstance(t, tuple) and not typetuple(t): t = t[0]
             if t == "id": t = "str"
             if has_value == True and t != valuetype:
                 has_value = False
             break
-        if io == "output" and pname == "outp":
+        if io == "Output" and pname == "outp":
             t = pval[1]
             if isinstance(t, tuple) and not typetuple(t): t = t[0]
             if t == "id": t = "str"
@@ -244,7 +244,7 @@ def build_worker_default(beename, antennas, outputs, ev, paramnames, paramtypeli
     for pname, io, pval in attrs:
         mode, type_ = pval
         h = Hook(mode, type_)
-        if io == "antenna":
+        if io == "Antenna":
             if has_value and pname == "inp":
                 a_value.inhook = h
                 inmap[pname] = "value"
@@ -394,7 +394,7 @@ def block_subtree(spydertypetree, attribstack=[]):
 
 class Block(object):
     def __init__(self, io, mode, spydertype):
-        assert io in ("antenna", "output"), io
+        assert io in ("Antenna", "Output"), io
         assert mode in ("push", "pull"), mode
         self.io = io
         self.mode = mode
@@ -410,7 +410,7 @@ class Block(object):
             self.blockmap[attribname] = attribname
             h = Hook(self.mode, typename)
             h1, h2 = None, None
-            if io == "antenna":
+            if io == "Antenna":
                 h1, h2 = h, None
 
             else:
@@ -595,7 +595,7 @@ class WorkerBuilder(object):
                     return None
 
                 hio = (io.mode, io.datatype)
-                if io.io == "antenna":
+                if io.io == "Antenna":
                     antennas[io.io_id] = hio
 
                 else:

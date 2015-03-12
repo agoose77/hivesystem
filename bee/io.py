@@ -1,19 +1,21 @@
 import libcontext
+
 from . import segments
+from .hivemodule import BeeHelper
 
 
-def get_connector(mode, type):
+def connector_factory(mode, type_):
     from .worker import worker
 
-    class connector(worker):
-        inp = segments.antenna(mode, type)
-        outp = segments.output(mode, type)
+    class Connector(worker):
+        inp = segments.antenna(mode, type_)
+        outp = segments.output(mode, type_)
         segments.connect(inp, outp)
 
-    return connector()
+    return Connector
 
 
-class _io(object):
+class IOBase(object):
     inout = None
 
     def __init__(self, target, nosub=False, mode=None, type_=None):
@@ -26,20 +28,27 @@ class _io(object):
             tmode, ttype = mode, type_
             self.ttype = ttype
             self.tmode = tmode
+
         else:
             try:
                 tmode, ttype = target[0]._wrapped_hive.guiparams[self.inout][target[1]]
                 self.ttype = ttype
                 self.tmode = tmode
+
             except KeyError:
                 raise TypeError("%s has no %s '%s'" % (target[0], self.inout[:-1], target[1]))
+
             self.guiparams = target[0]._wrapped_hive.guiparams
-        self.connector = get_connector(tmode, ttype).getinstance()
+
+        self.connector = connector_factory(tmode, ttype).getinstance()
         target2 = target
+
         if isinstance(target[1], tuple):
             target2 = (target[0],) + target[1]
+
         if self.inout == "antennas":
             self.connection = connect(self.connector.outp, target2, nosub).getinstance()
+
         elif self.inout == "outputs":
             self.connection = connect(target2, self.connector.inp, nosub).getinstance()
 
@@ -47,13 +56,19 @@ class _io(object):
         self.hivename = hivename
         self.connector.build(hivename)
 
-    def place0(self):
+    def pre_place(self):
+        """Establish plugin and sockets before connection"""
+        #TODO better docstring
+
         self.connector.place()
         self.connector.parent = self
+
+        # TODO can this become a single call?
         for k in self.connector.context.plugins.keys():
             if k[1] == self.inout[:-1]:
                 p = ("bee", k[1], self.hivename, self.ttype)
                 libcontext.plugin(p, self.connector.context.plugins[k][0])
+
         for k in self.connector.context.sockets.keys():
             if k[1] == self.inout[:-1]:
                 s = ("bee", k[1], self.hivename, self.ttype)
@@ -64,30 +79,32 @@ class _io(object):
         self.connect_contexts = self.connection.connect_contexts
 
 
-class antenna_io(_io):
+class AntennaIO(IOBase):
     inout = "antennas"
 
 
-class output_io(_io):
+class OutputIO(IOBase):
     inout = "outputs"
 
 
-from .hivemodule import beehelper
+class Antenna(BeeHelper):
 
-
-class antenna(beehelper):
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
-        if len(self.args):
+
+        if self.args:
             self.target = self.args[0]
+
         elif "target" in self.kwargs:
             self.target = self.kwargs["target"]
-        else:
-            raise TypeError("bee.antenna must have a target")
 
-    def getinstance(self, __parent__=None):
-        self.instance = antenna_io(*self.args, **self.kwargs)
+        else:
+            raise TypeError("bee.Antenna must have a target")
+
+    def getinstance(self, parent=None):
+        # TODO RENAME - get implies get, not get and set
+        self.instance = AntennaIO(*self.args, **self.kwargs)
         return self.instance
 
     def set_parameters(self, name, parameters):
@@ -96,38 +113,45 @@ class antenna(beehelper):
     def __getattr__(self, attr):
         if attr == "guiparams" and not isinstance(self.target[0], str):
             return self.target[0]._wrapped_hive.guiparams[self.inout][self.target[1]]
+
         try:
-            ret = getattr(antenna_io, attr)
+            ret = getattr(AntennaIO, attr)
+
         except AttributeError:
             ret = (self, attr)
+
         return ret
 
 
-class output(beehelper):
+class Output(BeeHelper):
+
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
         self.instance = None
-        if len(self.args):
+
+        if self.args:
             self.target = self.args[0]
+
         elif "target" in self.kwargs:
             self.target = self.kwargs["target"]
         else:
-            raise TypeError("bee.output must have a target")
+            raise TypeError("bee.Output must have a target")
 
-    def getinstance(self, __parent__=None):
-        self.instance = output_io(*self.args, **self.kwargs)
+    def getinstance(self, parent=None):
+        self.instance = OutputIO(*self.args, **self.kwargs)
         return self.instance
 
     def set_parameters(self, name, parameters):
         pass
 
     def __getattr__(self, attr):
+        # TODO cache this
         if attr == "guiparams" and not isinstance(self.target[0], str):
             return self.target[0]._wrapped_hive.guiparams[self.inout][self.target[1]]
         try:
-            ret = getattr(output_io, attr)
+            ret = getattr(OutputIO, attr)
         except AttributeError:
             ret = (self, attr)
         return ret
-  
+

@@ -4,8 +4,8 @@ import spyder, Spyder
 from .spyderhive import SpyderMethod, SpyderConverter, spyderframe
 
 from ..types import stringtupleparser, boolparser, spyderparser
-from .. import antenna, output, \
-    parameter as _bee_parameter, get_parameter as _bee_get_parameter, \
+from .. import Antenna, Output, \
+    Parameter as _bee_parameter, ParameterGetter as _bee_get_parameter, \
     attribute as _bee_attribute
 import os
 

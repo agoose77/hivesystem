@@ -26,7 +26,7 @@ class _runtime_output_blockcontrol(object):
     def place(self):
         socketclass = libcontext.socketclasses.socket_container
         self.output_push_socket = socketclass(self._add_blockcontrol)
-        libcontext.socket(("bee", "output", self.segmentname, "blockcontrol"), self.output_push_socket)
+        libcontext.socket(("bee", "Output", self.segmentname, "blockcontrol"), self.output_push_socket)
 
 
 class output_blockcontrol(io_base):

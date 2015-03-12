@@ -231,8 +231,8 @@ class BlendManager:
 
     def discover_nodes_workermap(self):
         seg = [
-            "segments.antenna",
-            "segments.output",
+            "segments.Antenna",
+            "segments.Output",
             "segments.variable",
             "segments.buffer",
             "segments.transistor",

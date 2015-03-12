@@ -6,7 +6,7 @@ from libcontext.pluginclasses import *
 
 
 class commandsensor(worker):
-    outp = output("push", "str")
+    outp = Output("push", "str")
     b_outp = buffer("push", "str")
     connect(b_outp, outp)
     trig_outp = triggerfunc(b_outp)

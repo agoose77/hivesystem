@@ -19,7 +19,7 @@ def declare_subtree(catch, spydertypetree, setter, attriblist):
         mtype = getattr(Spyder, mtypename)
 
         catchf = functools.partial(catch, mname)
-        i = ("bee", "antenna", mname, mtypename)
+        i = ("bee", "Antenna", mname, mtypename)
         p = functools.partial(setter, attriblist + [mname])
         pp = tryfunc(catchf, p)
         libcontext.plugin(i, plugin_supplier(pp))
@@ -91,5 +91,5 @@ class setter(object):
                 if spydertypetree is not None:
                     declare_subtree(self.catchfunc, spydertypetree, self.do_set, [])
 
-        setter.guiparams["block"] = ("antenna", "push", spydertype)
+        setter.guiparams["block"] = ("Antenna", "push", spydertype)
         return setter

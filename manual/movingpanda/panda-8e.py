@@ -76,9 +76,9 @@ class myspyderframe(dragonfly.pandahive.spyderframe):
 
 
 class myscene(myspyderframe):
-    scene = bee.parameter("bee")
-    canvas = bee.parameter("bee")
-    mousearea = bee.parameter("bee")
+    scene = bee.Parameter("bee")
+    canvas = bee.Parameter("bee")
+    mousearea = bee.Parameter("bee")
 
     a = Spyder.AxisSystem()
     a *= 0.25

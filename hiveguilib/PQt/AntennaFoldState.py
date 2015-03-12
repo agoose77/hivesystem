@@ -85,7 +85,7 @@ class AntennaFoldState(object):
             ele = getattr(view, antenna_name, None)
             if ele is None: continue
             if not hasattr(ele, "widget"):
-                raise Exception("Unfoldable: %s.%s has no associated widget in parameter tab" % (workerid, antenna_name))
+                raise Exception("Unfoldable: %s.%s has no associated widget in Parameter tab" % (workerid, antenna_name))
             e = ele.widget
             classname = e.metaObject().className()
             if classname == "QLineEdit":

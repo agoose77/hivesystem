@@ -7,7 +7,7 @@ from libcontext.pluginclasses import *
 
 class get_camera(worker):
     camera_identifier = variable("id")
-    camera = output("pull", "id")
+    camera = Output("pull", "id")
     connect(camera_identifier, camera)
 
     def init(self):

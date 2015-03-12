@@ -6,8 +6,8 @@ from libcontext.pluginclasses import *
 
 
 class setPosY(worker):
-    setPos = antenna("push", "float")
-    entity = antenna("pull", "id")
+    setPos = Antenna("push", "float")
+    entity = Antenna("pull", "id")
     b_entity = buffer("pull", "id")
     connect(entity, b_entity)
     pos = variable("float")

@@ -27,7 +27,7 @@ class unweaver(object):
             outptyp = outp.value.connection_input_type()
             outptyp = types.mode_type(*outptyp)
             if outptyp != refetyp:
-                raise TypeError("Unweaver output type should be (%s, %s), is (%s, %s)" % \
+                raise TypeError("Unweaver Output type should be (%s, %s), is (%s, %s)" % \
                                 (refetyp.mode.value, refetyp.type.value, outptyp.mode.value, outptyp.type.value))
 
     def bind(self, classname, dic):

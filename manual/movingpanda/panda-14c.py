@@ -33,7 +33,7 @@ def id_generator():
 
 
 from dragonfly.canvas import box2d
-from bee.mstr import mstr
+from bee.stringvalue import StringValue
 
 
 class parameters: pass
@@ -110,7 +110,7 @@ class jumpworkerhive(bee.frame):
     startconnector = dragonfly.std.pushconnector("trigger")()
     connect(startconnector, i.start)
 
-    start = bee.antenna(startconnector.inp)
+    start = bee.Antenna(startconnector.inp)
 
     jump = jumpworker2(height=2)
     connect(i, jump)
@@ -201,7 +201,7 @@ class myhive(dragonfly.pandahive.pandahive):
     connect(random_matrix, w_spawn.inp2)
 
     hivereg = dragonfly.bind.hiveregister()
-    c_hivereg = bee.configure("hivereg")
+    c_hivereg = bee.Configure("hivereg")
 
     pandabinder = pandabind().worker()
     v_hivename = dragonfly.std.variable("id")("")

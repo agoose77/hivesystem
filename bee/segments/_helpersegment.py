@@ -6,8 +6,7 @@ from .. import Type, Object
 
 class reg_helpersegment(Type):
     reg = {}
-    # def __init__(self, *args, **kargs):
-    #   print("HELPERSUBNODE", name)
+
     __reg_enabled__ = True
 
     def __new__(cls, name, bases, dic):

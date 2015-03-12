@@ -35,7 +35,7 @@ class WorkerInstance(object):
         return self.profiles[self.curr_profile]
 
     def check_antenna(self, attribute):
-        if self.block is not None and self.block.io == "antenna":
+        if self.block is not None and self.block.io == "Antenna":
             if attribute in self.curr_blockvalues: return None  # OK
         prof = self.profiles[self.curr_profile]
         attribs, mapping = prof
@@ -52,7 +52,7 @@ class WorkerInstance(object):
         return ret
 
     def check_output(self, attribute_name):
-        if self.block is not None and self.block.io == "output":
+        if self.block is not None and self.block.io == "Output":
             if attribute_name in self.curr_blockvalues:
                 return None  # OK
 
@@ -106,10 +106,10 @@ class WorkerInstanceManager(object):
     def _morph_worker(self, workerid, attributes, maps):
         worker_instance = self._workerinstances[workerid]
         if worker_instance.block is not None:
-            if worker_instance.block.io == "antenna":
+            if worker_instance.block.io == "Antenna":
                 cmap = maps[0]
 
-            elif worker_instance.block.io == "output":
+            elif worker_instance.block.io == "Output":
                 cmap = maps[1]
 
             else:
@@ -194,7 +194,7 @@ class WorkerInstanceManager(object):
 
         do_map_start = True
         if wi_start.block is not None:
-            if wi_start.block.io == "output":
+            if wi_start.block.io == "Output":
                 if start[1] in wi_start.block.tree:
                     do_map_start = False
         if do_map_start:
@@ -205,7 +205,7 @@ class WorkerInstanceManager(object):
 
         do_map_end = True
         if wi_end.block is not None:
-            if wi_end.block.io == "antenna":
+            if wi_end.block.io == "Antenna":
                 if end[1] in wi_end.block.tree:
                     do_map_end = False
         if do_map_end:
@@ -243,12 +243,12 @@ class WorkerInstanceManager(object):
         """
         Returns whether a worker has one or more connections to the specified segio
          workerid: the ID of the worker
-         io: "antenna" or "output"
-         segio: the name of the antenna or output
+         io: "Antenna" or "Output"
+         segio: the name of the Antenna or Output
         """
-        assert io in ("antenna", "output"), io
+        assert io in ("Antenna", "Output"), io
         for con in self._canvas.get_connections():
-            if io == "antenna":
+            if io == "Antenna":
                 w, seg = con.end_node, con.end_attribute
             else:
                 w, seg = con.start_node, con.start_attribute

@@ -12,12 +12,12 @@ import bee
 from dragonfly.std import *
 import dragonfly.logic
 import dragonfly.blocks
-from bee import antenna, connect
+from bee import Antenna, connect
 
 
 class action2hive(bee.frame):
     actiondict = dragonfly.logic.dictionary("CharacterAction")()
-    actionplay = antenna(actiondict.inkey)
+    actionplay = Antenna(actiondict.inkey)
 
     action = dragonfly.blocks.block("CharacterAction")()
     set_action = dragonfly.blocks.setter("CharacterAction")()

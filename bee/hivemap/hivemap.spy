@@ -1,6 +1,6 @@
 Type HivemapIO {
   String io_id
-  Enum io("antenna","output")
+  Enum io("Antenna","Output")
   String worker
   String workerio
   String mode

@@ -6,7 +6,7 @@ from libcontext.pluginclasses import *
 
 
 class setHpr(worker):
-    setHpr = antenna("push", "Coordinate")
+    setHpr = Antenna("push", "Coordinate")
     hpr = variable("Coordinate")
     connect(setHpr, hpr)
 

@@ -6,14 +6,14 @@ from libcontext.pluginclasses import *
 
 
 class animation(worker):
-    loop = antenna("push", "trigger")
-    stop = antenna("push", "trigger")
+    loop = Antenna("push", "trigger")
+    stop = Antenna("push", "trigger")
 
     @modifier
     def m_loop(self):
         self.actor().animate(self.v_animation_name, loop=True)
 
-    animation_name = antenna("pull", "str")
+    animation_name = Antenna("pull", "str")
     t_animation_name = transistor("str")
     v_animation_name = variable("str")
     connect(animation_name, t_animation_name)

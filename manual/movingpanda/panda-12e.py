@@ -36,7 +36,7 @@ def id_generator():
 
 
 from dragonfly.canvas import box2d
-from bee.mstr import mstr
+from bee.stringvalue import StringValue
 
 
 class parameters: pass

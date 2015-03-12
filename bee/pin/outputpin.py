@@ -33,7 +33,7 @@ class outputpin(object):
                     try:
                         self._outputs.remove(outputfunc)
                     except ValueError:
-                        raise PullInputError("Outputpin %s: cannot remove output, output unknown" % self.beename)
+                        raise PullInputError("Outputpin %s: cannot remove Output, Output unknown" % self.beename)
 
                 def _refresh(self):
                     if self.refresh: self.value = None
@@ -53,7 +53,7 @@ class outputpin(object):
                 value = buffer(mode, type)
                 parameter(value, None)
                 connect(value, outp)
-                _push = triggerfunc(value, "output")
+                _push = triggerfunc(value, "Output")
 
                 def push(self):
                     v = self.value
@@ -69,7 +69,7 @@ class outputpin(object):
                     try:
                         self._outputs.remove(outputfunc)
                     except ValueError:
-                        raise PullInputError("Outputpin %s: cannot remove output, output unknown" % self.beename)
+                        raise PullInputError("Outputpin %s: cannot remove Output, Output unknown" % self.beename)
 
                 def _refresh(self):
                     if self.refresh: self.value = None

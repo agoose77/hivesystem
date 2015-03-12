@@ -13,4 +13,4 @@ class computer2a(computer):
     connect(delay, delayed_move)
     connect(delayed_move, ("p", "trigger_get_move"))
 
-    trigger_move = antenna(delayed_move.inp)
+    trigger_move = Antenna(delayed_move.inp)

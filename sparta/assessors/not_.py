@@ -19,7 +19,7 @@ class not_(bee.worker):
     def evaluate(self):
         self.v_outp = not self.b_inp
 
-    # Whenever the output is requested: update the inputs and evaluate
+    # Whenever the Output is requested: update the inputs and evaluate
     pretrigger(v_outp, b_inp)
     pretrigger(v_outp, evaluate)
 

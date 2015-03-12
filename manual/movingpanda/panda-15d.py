@@ -62,7 +62,7 @@ class myscene2(myscene):
 
 
 class pandalogichive2(pandalogichive):
-    c_hivereg = bee.configure("hivereg")
+    c_hivereg = bee.Configure("hivereg")
 
     for name in pandadict:
         mode, data, box, image, hivemap = pandadict[name]

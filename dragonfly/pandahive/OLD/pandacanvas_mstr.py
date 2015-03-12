@@ -55,7 +55,7 @@ class pandacanvas_mstr(object):
         tnode.setText(mstr.value)
         self._scale(tnode, node, box.x, box.y, box.sizex, box.sizey)
         # TODO: box update
-        #TODO: parameter update
+        #TODO: Parameter update
 
     def remove_mstr(self, mstrobject):
         mstr, node, tnode, box, parameters = mstrobject
@@ -64,7 +64,7 @@ class pandacanvas_mstr(object):
     def place(self):
         if panda3d is None: raise ImportError("Cannot locate Panda3D")
 
-        libcontext.plugin(("canvas", "draw", "mstr"), plugin_supplier(self.draw_mstr))
-        libcontext.plugin(("canvas", "update", "mstr"), plugin_supplier(self.update_mstr))
-        libcontext.plugin(("canvas", "remove", "mstr"), plugin_supplier(self.remove_mstr))
+        libcontext.plugin(("canvas", "draw", "StringValue"), plugin_supplier(self.draw_mstr))
+        libcontext.plugin(("canvas", "update", "StringValue"), plugin_supplier(self.update_mstr))
+        libcontext.plugin(("canvas", "remove", "StringValue"), plugin_supplier(self.remove_mstr))
   

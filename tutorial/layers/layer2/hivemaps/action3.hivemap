@@ -30,7 +30,7 @@ Hivemap (
   io = HivemapIOArray (
     HivemapIO (
       io_id = 'animplay',
-      io = 'antenna',
+      io = 'Antenna',
       worker = 'action3_play_animation_1',
       workerio = 'inp',
       mode = 'push',
@@ -42,7 +42,7 @@ Hivemap (
     ),
     HivemapIO (
       io_id = 'soundplay',
-      io = 'antenna',
+      io = 'Antenna',
       worker = 'action3_play_sound_1',
       workerio = 'inp',
       mode = 'push',

@@ -28,7 +28,7 @@ class mouse(bee.worker):
     y = output("pull", "float")
     connect(vy, y)
 
-    # Mark "x" and "y" as an advanced output segment, and capitalize the I/O names
+    # Mark "x" and "y" as an advanced Output segment, and capitalize the I/O names
     guiparams = {
         "identifier": {"name": "Identifier", "fold": True},
         "x": {"name": "X Position", "advanced": True},
@@ -37,7 +37,7 @@ class mouse(bee.worker):
         "_memberorder": ["identifier", "x", "y", "active"],
     }
 
-    # Method to manipulate the parameter form as it appears in the GUI
+    # Method to manipulate the Parameter form as it appears in the GUI
     @staticmethod
     def form(f):
         f.mode.name = "Detection mode"
@@ -61,7 +61,7 @@ class mouse(bee.worker):
         self.is_active_next = False
 
     def enable(self):
-        #Initialize the output values for the next tick
+        #Initialize the Output values for the next tick
         self.is_active_next = False
 
         #Add a high-priority update() listener on every tick

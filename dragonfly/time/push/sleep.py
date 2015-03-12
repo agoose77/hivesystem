@@ -28,7 +28,7 @@ class sleep(object):
                 connect(b, outp)
 
                 trigger(b, do_sleep, "input")
-                trigger(b, b, "input", "output")
+                trigger(b, b, "input", "Output")
             else:
                 trigger(inp, do_sleep)
                 trigger(inp, outp)

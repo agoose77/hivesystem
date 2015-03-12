@@ -18,7 +18,7 @@ class connect(helpersegment):
         typ2 = self.output.value.connection_input_type()
         typ2 = types.mode_type(*typ2)
         if typ1.mode.value != typ2.mode.value or not types.typecompare(typ1.type.value, typ2.type.value):
-            raise TypeError("Mismatch between input and output types: (%s, %s) and (%s, %s)" % \
+            raise TypeError("Mismatch between input and Output types: (%s, %s) and (%s, %s)" % \
                             (typ1.mode.value, typ1.type.value, typ2.mode.value, typ2.type.value))
 
     def bind(self, classname, dic):

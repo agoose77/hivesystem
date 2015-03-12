@@ -38,7 +38,7 @@ pandacanvas_mstr = build_canvasdrone(
     panda_mstr,
     "pandacanvas_mstr",
     "draw",
-    "mstr",
+    "StringValue",
     object,
 )
 

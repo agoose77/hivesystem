@@ -1,7 +1,7 @@
 import libcontext, functools, traceback, sys
-from .hivemodule import beehelper
+from .hivemodule import BeeHelper
 from .resolve import resolve
-from .beewrapper import beewrapper
+from .beewrapper import BeeWrapper
 
 
 class ConfigureBeeException(Exception):
@@ -31,7 +31,7 @@ class delayedcall(object):
         return delayedcall(self.parent, self.appendfunc, newattrs, self.stack)
 
 
-class configure_base(beehelper):
+class ConfigureBase(BeeHelper):
 
     __reg_enabled__ = False
 
@@ -54,7 +54,7 @@ class configure_base(beehelper):
         pass
 
 
-class configure(configure_base):
+class Configure(ConfigureBase):
 
     def __init__(self, target):
         self.target_original = target
@@ -95,11 +95,11 @@ class configure(configure_base):
         n = resolve(n, parameters=self.parameters)
 
         if n is self:
-            raise Exception("bee.configure target '%s' is self" % self.target)
+            raise Exception("bee.Configure target '%s' is self" % self.target)
 
         from .worker import workerframe
 
-        if isinstance(n, beewrapper):
+        if isinstance(n, BeeWrapper):
             assert n.instance is not None
             n = n.instance
 
@@ -134,7 +134,7 @@ class configure(configure_base):
                 s = "\n" + "".join(s1 + s2 + s3)
                 raise ConfigureBeeException(s)
 
-        if isinstance(n, configure_base):
+        if isinstance(n, ConfigureBase):
             n.configure()
 
     def set_parameters(self, name, parameters):
@@ -161,27 +161,36 @@ class configure(configure_base):
         self.configuration.append((at, stack, [], {}))
 
 
-class multiconfigure(configure_base):
+class ConfigureMultiple(ConfigureBase):
+
     def __init__(self, *targets):
         self.targets = []
-        for t in targets:
+
+        for target in targets:
             try:
-                assert isinstance(t, configure_base)
+                assert isinstance(target, ConfigureBase)
+
             except AssertionError:
-                if not isinstance(t, list): raise
-                t = [tt for tt in t]
-                t = multiconfigure(*t)
-            self.targets.append(t)
+                if not isinstance(target, list):
+                    raise
+
+                target = ConfigureMultiple(*target)
+
+            self.targets.append(target)
 
     def bind(self):
-        for t in self.targets: t.bind()
+        for t in self.targets:
+            t.bind()
 
     def configure(self, beedict):
-        for t in self.targets: t.configure(beedict)
+        for t in self.targets:
+            t.configure(beedict)
 
     def set_parameters(self, name, params):
-        for t in self.targets: t.set_parameters(name, params)
+        for t in self.targets:
+            t.set_parameters(name, params)
 
     def hive_init(self, beedict):
-        for t in self.targets: t.hive_init(beedict)
+        for t in self.targets:
+            t.hive_init(beedict)
 

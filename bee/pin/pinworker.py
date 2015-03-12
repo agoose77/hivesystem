@@ -1,15 +1,15 @@
-from ..hivemodule import _hivebuilder, appcontext
+from ..hivemodule import HiveBuilderMeta, appcontext
 from .. import frame, hive
 from ..drone import drone
 from ..worker import workerbuilder
 import libcontext
 
 
-class _pinworkerbuilder(_hivebuilder):
+class _pinworkerbuilder(HiveBuilderMeta):
     def __new__(metacls, name, bases, dic, *args, **kargs):
         from .inputpin import inputpin
         from .outputpin import outputpin
-        from .. import antenna, output
+        from .. import Antenna, Output
 
         for d in list(dic.keys()):
             b = dic[d]
@@ -17,13 +17,13 @@ class _pinworkerbuilder(_hivebuilder):
                 if isinstance(b, workerbuilder): b = b()
                 m = b.__metabee__
                 if m == inputpin:
-                    a = antenna(b.inp, nosub=True)
+                    a = Antenna(b.inp, nosub=True)
                     dic["@" + d] = a
                 elif m == outputpin:
-                    o = output(b.outp, nosub=True)
+                    o = Output(b.outp, nosub=True)
                     dic["@" + d] = o
                 dic[d] = b
-        return _hivebuilder.__new__(
+        return HiveBuilderMeta.__new__(
             metacls, name, bases, dic, specialmethods=["run"], **kargs
         )
 

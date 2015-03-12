@@ -13,11 +13,11 @@ class filter(object):
     def __new__(cls, type):
         if type == "trigger":
             class filter(worker):
-                inp = antenna("push", "trigger")
-                true = output("push", "trigger")
-                false = output("push", "trigger")
+                inp = Antenna("push", "trigger")
+                true = Output("push", "trigger")
+                false = Output("push", "trigger")
 
-                filter = antenna("pull", "bool")
+                filter = Antenna("pull", "bool")
                 t_filter = transistor("bool")
                 connect(filter, t_filter)
                 trigger(inp, t_filter)
@@ -31,19 +31,19 @@ class filter(object):
                 connect(tester_false, false)
         else:
             class filter(worker):
-                inp = antenna("push", type)
+                inp = Antenna("push", type)
 
                 b = buffer("push", type)
                 connect(inp, b)
-                true = output("push", type)
+                true = Output("push", type)
                 connect(b, true)
 
                 b_false = buffer("push", type)
                 connect(inp, b_false)
-                false = output("push", type)
+                false = Output("push", type)
                 connect(b_false, false)
 
-                filter = antenna("pull", "bool")
+                filter = Antenna("pull", "bool")
                 t_filter = transistor("bool")
                 connect(filter, t_filter)
 

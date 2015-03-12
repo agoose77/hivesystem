@@ -1,14 +1,15 @@
 import functools
 import libcontext
 import sys, inspect
-from .beewrapper import reg_beehelper, beehelper, beewrapper
+from .beewrapper import reg_beehelper, BeeHelper, BeeWrapper
 
-from . import emptyclass, Type, Object
+from . import EmptyClass, Type, Object
 
 from . import _hivesubclass
 
 reservedbeenames = ["getinstance", "build", "place", "close", "make_context", "init", "context"]
 evbeenames = ["evin", "evout", "everr", "evexc"]
+
 
 try:
     from weakref import WeakSet
@@ -16,12 +17,15 @@ except ImportError:
     from weakref import WeakKeyDictionary
 
     class WeakSet(WeakKeyDictionary):
+
         def add(self, key):
             self[key] = None
+
+
 allreg = WeakSet()
 
 
-class evcontextholder(Object):
+class EventContextHolder(Object):
 
     def __init__(self, evclass, contextclass, evname):
         self.evclass = evclass
@@ -37,26 +41,28 @@ class evcontextholder(Object):
         return getattr(self.ev, attr)
 
 
-class evwrapper(Object):
+class EventWrapper(Object):
 
     def __init__(self, evclass, contextclass, evname):
         self.evclass = evclass
         self.contextclass = contextclass
         self.evname = evname
 
-    def getinstance(self, __parent__=None): return evcontextholder(self.evclass, self.contextclass, self.evname)
+    def getinstance(self, __parent__=None):
+        return EventContextHolder(self.evclass, self.contextclass, self.evname)
 
-    def set_parameters(self, name, parameters): pass
-
-
-from .configure import configure_base as configureclass
-from .parameter import parameter as bee_parameter
-from .attribute import attribute as bee_attribute
+    def set_parameters(self, name, parameters):
+        pass
 
 
-class hivewrapper(beewrapper):
+from .configure import ConfigureBase as BeeConfigureBase
+from .parameter import Parameter as BeeParameter
+from .attribute import attribute as BeeAttribute
 
-    def hivecombine(self):
+
+class HiveWrapper(BeeWrapper):
+
+    def combine_hive(self):
         try:
             if self._wrapped_hive.__hivecombined__:
                 return
@@ -88,7 +94,7 @@ class hivewrapper(beewrapper):
 
     def getinstance(self, __parent__=None):
         for name, bee in self._wrapped_hive.beewrappers:
-            if isinstance(bee, configureclass):
+            if isinstance(bee, BeeConfigureBase):
                 continue
 
             if not hasattr(bee, "combine"):
@@ -100,8 +106,8 @@ class hivewrapper(beewrapper):
             bee.getinstance(__parent__)
             bee.combine()
 
-        self.hivecombine()
-        ret = beewrapper.getinstance(self, __parent__)
+        self.combine_hive()
+        ret = BeeWrapper.getinstance(self, __parent__)
         if hasattr(self, "hmworkername") and \
                 not isinstance(self.hmworkername, tuple):
             ret.hmworkername = self.hmworkername
@@ -109,20 +115,17 @@ class hivewrapper(beewrapper):
         return ret
 
 
-class hivecontext_base(libcontext.subcontext):
-    __getting_attr__ = False
+class HiveContextBase(libcontext.subcontext):
 
     def __getattr__(self, attr):
-        if self.__getting_attr__:
-            raise AttributeError
-
-        self.__getting_attr__ = True
         try:
-            ret = getattr(self._wrapping_hive, attr)
+            wrapping_hive = object.__getattribute__(self, "_wrapping_hive")
+            value = getattr(wrapping_hive, attr)
+
         except AttributeError:
-            ret = (self, attr)
-        self.__getting_attr__ = False
-        return ret
+            value = (self, attr)
+
+        return value
 
     def build(self, hivename):
         pass
@@ -143,7 +146,7 @@ class hivecontext_base(libcontext.subcontext):
 from . import types
 
 
-class emptyhivecontext(hivecontext_base):
+class EmptyHiveContext(HiveContextBase):
     beewrappers = []
     guiparams = {}
     parameters = []
@@ -178,18 +181,18 @@ class emptyhivecontext(hivecontext_base):
         self.configured = False
 
         for bee_item in self.beewrappers:
-            if not isinstance(bee_item, bee_attribute):
+            if not isinstance(bee_item, BeeAttribute):
                 continue
 
             bee_item[1].set_parent(self)
 
         for bee in self.beewrappers:
-            if hasattr(bee, "combine") and not isinstance(bee.combine, tuple) and not isinstance(bee, configureclass):
+            if hasattr(bee, "combine") and not isinstance(bee.combine, tuple) and not isinstance(bee, BeeConfigureBase):
                 continue
 
-            if isinstance(bee[1], bee_parameter):
+            if isinstance(bee[1], BeeParameter):
                 continue
-            if isinstance(bee[1], bee_attribute):
+            if isinstance(bee[1], BeeAttribute):
                 b = bee[1]
 
             else:
@@ -207,7 +210,7 @@ class emptyhivecontext(hivecontext_base):
             #if posterior: continue
             from .spyderhive.spyderhive import spyderconfigureplaceclass as scpc
 
-            if isinstance(bee[1], configureclass) and not isinstance(bee[1], scpc): continue
+            if isinstance(bee[1], BeeConfigureBase) and not isinstance(bee[1], scpc): continue
             n = bee[1]
             if hasattr(n, "beeimports") and isinstance(n.beeimports, dict):
                 for k in n.beeimports:
@@ -216,7 +219,7 @@ class emptyhivecontext(hivecontext_base):
                         n.beeimports[k] = self.beedict[v]
                         #for bee in self.configurebees:
         for bee in self.bees:
-            if not isinstance(bee[1], configureclass):
+            if not isinstance(bee[1], BeeConfigureBase):
                 continue
 
             n = bee[1]
@@ -242,13 +245,13 @@ class emptyhivecontext(hivecontext_base):
 
         #for bee in self.bees:
         #  n = bee[1]
-        #  if hasattr(n, "configure") and not isinstance(n.configure, tuple):
+        #  if hasattr(n, "Configure") and not isinstance(n.Configure, tuple):
         #    self.configurebees.append(bee)
         for bee in self.bees:
             #if bee in self.configurebees: continue
             from .spyderhive.spyderhive import spyderconfigureplaceclass as scpc
 
-            if isinstance(bee[1], configureclass) and not isinstance(bee[1], scpc): continue
+            if isinstance(bee[1], BeeConfigureBase) and not isinstance(bee[1], scpc): continue
             n = bee[1]
             if hasattr(n, "make_context"):
                 n.make_context()
@@ -259,7 +262,7 @@ class emptyhivecontext(hivecontext_base):
             #if bee in self.configurebees: continue
             from .spyderhive.spyderhive import spyderconfigureplaceclass as scpc
 
-            if isinstance(bee[1], configureclass) and not isinstance(bee[1], scpc): continue
+            if isinstance(bee[1], BeeConfigureBase) and not isinstance(bee[1], scpc): continue
             n = bee[1]
             if hasattr(n, "set_parent"):
                 if not isinstance(n.set_parent, tuple):
@@ -269,7 +272,7 @@ class emptyhivecontext(hivecontext_base):
             try:
                 from .spyderhive.spyderhive import spyderconfigureplaceclass as scpc
 
-                if isinstance(bee[1], configureclass) and not isinstance(bee[1], scpc):
+                if isinstance(bee[1], BeeConfigureBase) and not isinstance(bee[1], scpc):
                     continue
                 n = bee[1]
                 if hasattr(n, "build"):
@@ -296,19 +299,21 @@ class emptyhivecontext(hivecontext_base):
 
         for bee_name, bee in self.bees:
 
-            if isinstance(bee, bee_attribute):
+            if isinstance(bee, BeeAttribute):
                 continue
 
-            is_helper = isinstance(bee, beehelper)
-            is_io = isinstance(bee, io._io)
+            is_helper = isinstance(bee, BeeHelper)
+            is_io = isinstance(bee, io.IOBase)
 
-            if is_helper or is_io:
-                if is_io:
-                    bee.place0()
+            if is_helper:
+                continue
+
+            if is_io:
+                bee.pre_place()
 
                 continue
 
-            if isinstance(bee, configureclass):
+            if isinstance(bee, BeeConfigureBase):
                 continue
 
             bee.place()
@@ -323,9 +328,9 @@ class emptyhivecontext(hivecontext_base):
         from .spyderhive.spyderhive import spyderconfigureplaceclass as scpc
 
         for bee_name, bee in self.bees:
-            posterior1 = isinstance(bee, (beehelper, io.antenna_io, io.output_io))
+            posterior1 = isinstance(bee, (BeeHelper, io.AntennaIO, io.OutputIO))
 
-            if isinstance(bee, configureclass) and not isinstance(bee, scpc):
+            if isinstance(bee, BeeConfigureBase) and not isinstance(bee, scpc):
                 continue
 
             if not posterior1:
@@ -359,12 +364,12 @@ class emptyhivecontext(hivecontext_base):
 
         return self_or_class.beename
 
-    def hive_init(self, bee_dict=None): # removed beedict parameter
+    def hive_init(self, bee_dict=None): # removed beedict Parameter
         all_parameter_values = self._allparamvalues
         bee_dictionary = self.beedict
 
         for bee_name, bee in self.bees:
-            if not isinstance(bee, configureclass):
+            if not isinstance(bee, BeeConfigureBase):
                 if not hasattr(bee, "_hivecontext"):
                     continue
 
@@ -373,13 +378,13 @@ class emptyhivecontext(hivecontext_base):
 
             from .spyderhive.spyderhive import spyderconfigureplaceclass as scpc
 
-            if isinstance(bee, configureclass) and not isinstance(bee, scpc):
+            if isinstance(bee, BeeConfigureBase) and not isinstance(bee, scpc):
                 bee.set_parameters(bee_name, all_parameter_values)
 
             bee.hive_init(bee_dictionary)
 
 
-class hivecontext(emptyhivecontext):
+class hivecontext(EmptyHiveContext):
     def __place2__(self):
         from .worker import workerframe
         from .connect import connect
@@ -395,7 +400,7 @@ class hivecontext(emptyhivecontext):
             if isinstance(bee_name, int):
                 continue
 
-            if (isinstance(bee, hivecontext_base) and bee._has_exc) or isinstance(bee, workerframe):
+            if (isinstance(bee, HiveContextBase) and bee._has_exc) or isinstance(bee, workerframe):
                 c = connect((bee_name, "evexc"), "evexc").getinstance()
                 self.bees.append((mx, c))
                 mx += 1
@@ -438,37 +443,36 @@ def filter_reg_beehelper(arg):
 
 
 def filter_evwrapper(arg):
-    if isinstance(arg, evwrapper): return arg
+    if isinstance(arg, EventWrapper): return arg
     return None
 
 
 def filter_isparameter(arg):
-    if isinstance(arg, bee_parameter): return arg
+    if isinstance(arg, BeeParameter): return arg
     return None
 
 
 def filter_isattribute(arg):
-    if isinstance(arg, bee_attribute): return arg
+    if isinstance(arg, BeeAttribute): return arg
     return None
 
 
 unregister = None
 
 
-class _hivebuilder(reg_beehelper):
+class HiveBuilderMeta(reg_beehelper):
     __registers__ = [get_reg_beehelper]
     __registerfilters__ = [filter_reg_beehelper, filter_evwrapper, filter_isparameter, filter_isattribute]
-    __hivewrapper__ = hivewrapper
+    __hivewrapper__ = HiveWrapper
 
     def __init__(self, name, bases, dic, *args, **kargs):
         Type.__init__(self, name, bases, dic)
 
     def __new__(metacls, name, bases, dic, specialmethods=[], **kargs):
-        #print("HIVE-BUILD?", metacls, name)
         if "__metaclass__" in dic and dic["__metaclass__"] is not metacls:
             mc = dic["__metaclass__"]
             return mc.__new__(mc, name, bases, dic, specialmethods, **kargs)
-        #print("HIVE-BUILD", metacls, name)
+
         from . import io
 
         hivebases = list(bases)
@@ -520,7 +524,7 @@ class _hivebuilder(reg_beehelper):
             if key == "_hivecontext" or key == "__module__":
                 continue
 
-            if not isinstance(value, bee_attribute):
+            if not isinstance(value, BeeAttribute):
                 continue
 
             max_overridden += 1
@@ -532,7 +536,7 @@ class _hivebuilder(reg_beehelper):
 
         dic = hivedic
         fr = inspect.currentframe()
-        if len(specialmethods) == 0:  #KLUDGE: see pin/pin.py
+        if not specialmethods:  #KLUDGE: see pin/pin.py
             fr = fr.f_back
 
         else:
@@ -556,9 +560,9 @@ class _hivebuilder(reg_beehelper):
         regargs = [a for a in regargs if not isinstance(a, unregister)]
         args += regargs
 
-        if emptyclass in bases:
+        if EmptyClass in bases:
             dic["__helpers__"] = args
-            bases = tuple([b for b in bases if b != emptyclass])
+            bases = tuple([b for b in bases if b != EmptyClass])
             return type.__new__(metacls, name, bases, dict(dic))
 
         bees = []
@@ -585,12 +589,12 @@ class _hivebuilder(reg_beehelper):
 
         guiparams = {"__beename__": name, "__ev__": []}
         for beename, bee in bees:
-            if isinstance(bee, evwrapper):
+            if isinstance(bee, EventWrapper):
                 guiparams["__ev__"].append(bee.evname)
 
         parameters = []
         for beename, bee in bees:
-            if isinstance(bee, bee_parameter):
+            if isinstance(bee, BeeParameter):
                 parameters.append((beename, bee.parameterclass, bee.gui_defaultvalue))
                 v = None
                 if bee.gui_defaultvalue != "no-defaultvalue":
@@ -603,9 +607,9 @@ class _hivebuilder(reg_beehelper):
                 continue
 
             pnam = None
-            if isinstance(bee, io.antenna):
+            if isinstance(bee, io.Antenna):
                 pnam = "antennas"
-            elif isinstance(bee, io.output):
+            elif isinstance(bee, io.Output):
                 pnam = "outputs"
             if pnam is not None:
                 if pnam not in guiparams:
@@ -636,7 +640,7 @@ class _hivebuilder(reg_beehelper):
         for n in bees:
 
             if hasattr(n[1], "hiveguiparams"):
-                if not hasattr(n[1], "configure") or isinstance(n[1].configure, tuple):
+                if not hasattr(n[1], "Configure") or isinstance(n[1].configure, tuple):
                     f = n[1].hiveguiparams
                     if hasattr(f, "__call__"):
                         f(n[0], guiparams)
@@ -686,7 +690,7 @@ class _hivebuilder(reg_beehelper):
         beenames = [b[0] for b in beedictlist]
         from . import io
 
-        beedictlist = [b for b in beedictlist if not isinstance(b[1], io.antenna) and not isinstance(b[1], io.output)]
+        beedictlist = [b for b in beedictlist if not isinstance(b[1], io.Antenna) and not isinstance(b[1], io.Output)]
         hivedict = dict(beedictlist)
         hivedict.update(hivedict0)
 
@@ -710,12 +714,12 @@ class _hivebuilder(reg_beehelper):
         return ret
 
 
-_hivebuilder.__thisclass__ = _hivebuilder
+HiveBuilderMeta.__thisclass__ = HiveBuilderMeta
 
 
-class emptyclosedhive(emptyclass):
-    __metaclass__ = _hivebuilder
-    _hivecontext = emptyhivecontext
+class EmptyClosedHive(EmptyClass):
+    __metaclass__ = HiveBuilderMeta
+    _hivecontext = EmptyHiveContext
     _import_parent_sockets = []
     _import_parent_plugins = []
     _import_parent_sockets_optional = []
@@ -725,7 +729,7 @@ class emptyclosedhive(emptyclass):
     _has_exc = True
 
 
-class emptyhive(emptyclosedhive, emptyclass):
+class emptyhive(EmptyClosedHive, EmptyClass):
     _import_parent_sockets_optional = [("bee", "init")]
 
 
@@ -764,10 +768,10 @@ class exceptionforwarder(drone):
 
 
 class evmixin(emptyhive):
-    evin = evwrapper(libcontext.evsubcontext, libcontext.evincontext, "evin")
-    evout = evwrapper(libcontext.evsubcontext, libcontext.evoutcontext, "evout")
-    everr = evwrapper(libcontext.evsubcontext, libcontext.evoutcontext, "everr")
-    evexc = evwrapper(libcontext.evsubcontext, libcontext.evexccontext, "evexc")
+    evin = EventWrapper(libcontext.evsubcontext, libcontext.evincontext, "evin")
+    evout = EventWrapper(libcontext.evsubcontext, libcontext.evoutcontext, "evout")
+    everr = EventWrapper(libcontext.evsubcontext, libcontext.evoutcontext, "everr")
+    evexc = EventWrapper(libcontext.evsubcontext, libcontext.evexccontext, "evexc")
 
 
 class hive(emptyhive, evmixin):
@@ -776,15 +780,15 @@ class hive(emptyhive, evmixin):
     exceptionforwarder = exceptionforwarder()
 
 
-class closedhive(emptyclosedhive, evmixin):
+class closedhive(EmptyClosedHive, evmixin):
     _hivecontext = hivecontext
     eventhandler = eventhandler()
     exceptionforwarder = exceptionforwarder()
 
 
-class emptyframe(emptyclass):
-    __metaclass__ = _hivebuilder
-    _hivecontext = emptyhivecontext
+class emptyframe(EmptyClass):
+    __metaclass__ = HiveBuilderMeta
+    _hivecontext = EmptyHiveContext
     _import_parent_sockets = []
     _import_parent_plugins = []
     _import_parent_sockets_optional = []
@@ -865,7 +869,7 @@ def appcontext(appbee, *args, **kwargs):
     return Type("appcontext", (apphivecontext,), {"appbee": appbee(*args, **kwargs)})
 
 
-class unregister(beehelper):
+class unregister(BeeHelper):
     def __init__(self, value):
         self.value = value
 

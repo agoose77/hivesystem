@@ -30,7 +30,7 @@ class trigger(bee.worker):
         "_memberorder": ["trig", "active"],
     }
 
-    # Every tick, set the current output value to False
+    # Every tick, set the current Output value to False
     def deactivate(self):
         self.is_active = False
 

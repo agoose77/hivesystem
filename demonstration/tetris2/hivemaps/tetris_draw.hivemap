@@ -80,7 +80,7 @@ Hivemap (
   io = HivemapIOArray (
     HivemapIO (
       io_id = 'draw',
-      io = 'antenna',
+      io = 'Antenna',
       worker = 'update',
       workerio = 'update',
       mode = 'push',
@@ -92,7 +92,7 @@ Hivemap (
     ),
     HivemapIO (
       io_id = 'start',
-      io = 'antenna',
+      io = 'Antenna',
       worker = 'do_draw',
       workerio = 'trig',
       mode = 'push',

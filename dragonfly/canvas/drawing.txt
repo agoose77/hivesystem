@@ -4,23 +4,23 @@ an object,
 (possibly) an identifier
 
 show: the bounding box is not necessary, it is determined from the value of the object
-  show1: identifier is not specified, identifier is returned (pull output)
+  show1: identifier is not specified, identifier is returned (pull Output)
   show2: (object, identifier) is specified as push input. If an object with that identifier has been shown, it is overwritten
-  show3: identifier is specified as parameter, object is specified as push input
+  show3: identifier is specified as Parameter, object is specified as push input
 draw: a bounding box is provided explicily
   draw1: (object, bounding box) is specified as push input, identifier is returned
   draw2: (object, bounding box, identifier) as push input. If an object with that identifier has been drawn, it is overwritten
-  draw3: identifier is specified as parameter, object is specified as push input. A bounding box must have been reserved for the identifier.
+  draw3: identifier is specified as Parameter, object is specified as push input. A bounding box must have been reserved for the identifier.
     If static=True (default), the bounding box must have been specified when the draw3 worker is placed, using canvas.reserve
     If static=False, the reservation must have been made only at runtime, not at place time, either using canvas.reserve or the reserve worker
-  draw4: identifier is specified as parameter, (object, bounding box) is specified as push input
+  draw4: identifier is specified as Parameter, (object, bounding box) is specified as push input
 
 When something is drawn or shown, a weakref dictionary stores the identifier:object or identifier:(object, bounding box) pairs.
 
 update1: takes an identifier as push input, which must have been drawn or shown before. The object is redrawn or reshown. This is only useful if the object has been modified since the last draw or show. 
-update2: takes an identifier and a bounding box OR parameter object as push input; the identifier must have been drawn before. The object is redrawn.
-update3: as update1, but the identifier is a parameter
-update4: as update2, but the identifier is a parameter
+update2: takes an identifier and a bounding box OR Parameter object as push input; the identifier must have been drawn before. The object is redrawn.
+update3: as update1, but the identifier is a Parameter
+update4: as update2, but the identifier is a Parameter
 
 remove1: takes an identifier as push input, which must have been drawn or shown before. The object is removed from the canvas.
 remove2: takes an identifier as push input. If the identifier has been drawn or shown before, the object is removed from the canvas.
@@ -90,7 +90,7 @@ In the "show" system, the object is decoupled from the drawing; changing the obj
   This plugin must contain a function that accepts a datatype and box2d,
     and returns an identifier, ideally one that contains the datatype name so
     that identifier collisions are prevented.
-  The identifier is placed on the worker's pull output.
+  The identifier is placed on the worker's pull Output.
   The "show2" worker is identical to the "show" worker, except that it does not take a "box2d": the drawing engine is supposed to extract this information from the object that is to be drawn. The "show2" worker requires a single ("canvas","show2", <datatype>) plugin.
   
   An "unshow" worker just takes an identifier. It requires one or more ("canvas", "unshow") plugins. Each plugin should contain a function that accepts an identifier, and returns True if the identifier is recognized and the corresponding object removed from the drawing engine.
@@ -98,5 +98,5 @@ In the "show" system, the object is decoupled from the drawing; changing the obj
 In the "draw" system, the drawing engine receives a reference to the object that is to be drawn. The object can be modified by the hive system, and the drawing engine will update the drawing upon receiving a signal.
 
 The "draw1", "draw2" and "undraw" workers just work as their "show" counterparts. In addition, the "redraw" worker takes a push identifier and sends a redraw signal to the drawing engine. The "drawbox" worker takes a pull identifier and requests the drawing engine for box2d 
-Finally, the "draw3" worker works like the "draw" worker, but it does not return an identifier. Rather, it has a fixed identifier as its parameter: it assumes that the drawing engine already knows about: i.e. a ("canvas","draw3",<identifier>) plugin must be available. The draw worker does present its identifier as an additional pull output, for use by the "redraw" and "undraw" workers.
+Finally, the "draw3" worker works like the "draw" worker, but it does not return an identifier. Rather, it has a fixed identifier as its Parameter: it assumes that the drawing engine already knows about: i.e. a ("canvas","draw3",<identifier>) plugin must be available. The draw worker does present its identifier as an additional pull Output, for use by the "redraw" and "undraw" workers.
  

@@ -41,7 +41,7 @@ class pandacanvas_image(object):
     def update_image(self, imageobject):
         node, image, box, parameters = imageobject
         # TODO: box update
-        #TODO: parameter update
+        #TODO: Parameter update
         tex = loader.loadTexture(image.value)
         node.setTexture(tex)
 

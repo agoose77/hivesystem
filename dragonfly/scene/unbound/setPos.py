@@ -7,8 +7,8 @@ from Spyder import Coordinate
 
 
 class setPos(worker):
-    setPos = antenna("push", "Coordinate")
-    entity = antenna("pull", "id")
+    setPos = Antenna("push", "Coordinate")
+    entity = Antenna("pull", "id")
     b_entity = buffer("pull", "id")
     connect(entity, b_entity)
     pos = variable("Coordinate")

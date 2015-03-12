@@ -38,7 +38,7 @@ class pandacanvas_bgrid(object):
     def update_bgrid(self, gridobject):
         node, pandagrid, box, parameters = gridobject
         # TODO: box update
-        #TODO: parameter update
+        #TODO: Parameter update
         #TODO:  pandagrid.update_parameters(parameters)
         pandagrid.update(node)
 

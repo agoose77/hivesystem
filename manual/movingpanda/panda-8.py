@@ -41,7 +41,7 @@ class parameters: pass
 
 
 class myscene(dragonfly.pandahive.spyderframe):
-    pandaicon_ = bee.get_parameter("pandaicon")
+    pandaicon_ = bee.ParameterGetter("pandaicon")
 
     a = Spyder.AxisSystem()
     a *= 0.25

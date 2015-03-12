@@ -11,11 +11,11 @@ def get_worker(name, xyz):
         Relative movement along %s axis
         """ % xyz
         __beename__ = name
-        moverel = antenna("push", "float")
+        moverel = Antenna("push", "float")
         movement = variable("float")
         connect(moverel, movement)
 
-        entity = antenna("pull", "id")
+        entity = Antenna("pull", "id")
         b_entity = buffer("pull", "id")
         connect(entity, b_entity)
 

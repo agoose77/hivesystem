@@ -29,7 +29,7 @@ from workers.action3drones import soundmanager
 
 #define action3 hive
 import bee
-from bee import antenna, connect
+from bee import Antenna, connect
 
 
 class action3hive(bee.frame):
@@ -43,5 +43,5 @@ class action3hive(bee.frame):
     action3_play_animation_1 = action3_play_animation()
     action3_play_sound_1 = action3_play_sound()
 
-    animplay = antenna(action3_play_animation_1.inp)
-    soundplay = antenna(action3_play_sound_1.inp)
+    animplay = Antenna(action3_play_animation_1.inp)
+    soundplay = Antenna(action3_play_sound_1.inp)

@@ -19,7 +19,7 @@ def declare_subtree(catch, spydertypetree, getter, attriblist):
         mtype = getattr(Spyder, mtypename)
 
         catchf = functools.partial(catch, mname)
-        i = ("bee", "output", mname, mtypename)
+        i = ("bee", "Output", mname, mtypename)
         p = functools.partial(getter, attriblist + [mname])
         pp = tryfunc(catchf, p)
         libcontext.plugin(i, plugin_supplier(pp))
@@ -75,5 +75,5 @@ class getter(object):
                 if spydertypetree is not None:
                     declare_subtree(self.catchfunc, spydertypetree, self.do_get, [])
 
-        getter.guiparams["block"] = ("output", "pull", spydertype)
+        getter.guiparams["block"] = ("Output", "pull", spydertype)
         return getter

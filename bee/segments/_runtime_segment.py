@@ -78,7 +78,7 @@ class _runtime_segment(object):
         if inputmode not in ("push", "pull"):
             raise ValueError("Unknown input mode %s" % inputmode)
         if outputmode not in ("push", "pull"):
-            raise ValueError("Unknown output mode %s" % outputmode)
+            raise ValueError("Unknown Output mode %s" % outputmode)
         self.inputmode = inputmode
         self.outputmode = outputmode
         self.beename = beename
@@ -170,7 +170,7 @@ class _runtime_segment(object):
 
 
     def output(self):
-        raise Exception("_runtime_segment output function must be overridden")
+        raise Exception("_runtime_segment Output function must be overridden")
 
     def _trigger_push_output00(self):
         value = self.output()
@@ -241,17 +241,17 @@ class _runtime_segment(object):
 
         pluginclass = libcontext.pluginclasses.plugin_single_required
         socketclass = libcontext.socketclasses.socket_single_required
-        for mode in "input", "output", "update":
+        for mode in "input", "Output", "update":
             modes = {True: mode + "_pre", False: mode}
             for trigger, pre in getattr(self, "_triggering_" + mode):
                 triggerings.add((mode, pre))
                 func = functools.partial(self.add_triggering, modes[pre])
                 libcontext.socket(("bee", "segment", "connection", get_ident(trigger.identifier)), socketclass(func))
 
-        for mode in "input", "output", "update":
+        for mode in "input", "Output", "update":
             attr = "_trigger"
             if mode == "input": attr += "_" + self.inputmode
-            if mode == "output": attr += "_" + self.outputmode
+            if mode == "Output": attr += "_" + self.outputmode
             attr += "_" + mode
             funcs = {
                 (False, False): getattr(self, attr + "00"),
@@ -521,7 +521,7 @@ class _runtime_antenna_push(object):
     def place(self):
         pluginclass = libcontext.pluginclasses.plugin_supplier
         self.antenna_push_plugin = pluginclass(self.input)
-        libcontext.plugin(("bee", "antenna", self.segmentname, self.type), self.antenna_push_plugin)
+        libcontext.plugin(("bee", "Antenna", self.segmentname, self.type), self.antenna_push_plugin)
         socketclass = libcontext.socketclasses.socket_single_required
         for connection in self._connection:
             libcontext.socket(("bee", "segment", "connection", get_ident(connection.identifier)),
@@ -550,7 +550,7 @@ class _runtime_antenna_pull(object):
 
     def place(self):
         socketclass = libcontext.socketclasses.socket_single_optional
-        libcontext.socket(("bee", "antenna", self.segmentname, self.type), socketclass(self.set_input))
+        libcontext.socket(("bee", "Antenna", self.segmentname, self.type), socketclass(self.set_input))
 
         pluginclass = libcontext.pluginclasses.plugin_single_required
         for connection in self._connection:
@@ -587,7 +587,7 @@ class _runtime_output_push(object):
 
     def place(self):
         socketclass = libcontext.socketclasses.socket_supplier
-        libcontext.socket(("bee", "output", self.segmentname, self.type), socketclass(self.add_output))
+        libcontext.socket(("bee", "Output", self.segmentname, self.type), socketclass(self.add_output))
         pluginclass = libcontext.pluginclasses.plugin_single_required
         for connection in self._connection:
             libcontext.plugin(("bee", "segment", "connection", get_ident(connection.identifier)),
@@ -617,7 +617,7 @@ class _runtime_output_pull(object):
     def place(self):
         pluginclass = libcontext.pluginclasses.plugin_supplier
         self.output_pull_plugin = pluginclass(self.output)
-        libcontext.plugin(("bee", "output", self.segmentname, self.type), self.output_pull_plugin)
+        libcontext.plugin(("bee", "Output", self.segmentname, self.type), self.output_pull_plugin)
 
         socketclass = libcontext.socketclasses.socket_single_required
         connection = self._connection[0]

@@ -143,12 +143,12 @@ class HivemapManager(object):
         for b in hmio:
             x, y = b.position.x, b.position.y
             target = self._workermanager.get_workertemplate(b.worker)
-            if b.io == "antenna":
+            if b.io == "Antenna":
                 try:
                     mode = target.antennas[b.workerio][0]
                 except KeyError:
                     assert target.block is not None
-                    assert target.block.io == "antenna"
+                    assert target.block.io == "Antenna"
                     mode = target.block.mode
                 source = (b.io_id, "outp")
                 target = (b.worker, b.workerio)
@@ -157,7 +157,7 @@ class HivemapManager(object):
                     mode = target.outputs[b.workerio][0]
                 except KeyError:
                     assert target.block is not None
-                    assert target.block.io == "output"
+                    assert target.block.io == "Output"
                     mode = target.block.mode
                 source = (b.worker, b.workerio)
                 target = (b.io_id, "inp")
@@ -176,7 +176,7 @@ class HivemapManager(object):
         if hmpar is None: hmpar = []
         for b in hmpar:
             x, y = b.position.x, b.position.y
-            workertype = "bees.parameter"
+            workertype = "bees.Parameter"
             params = {}
             params["internal_name"] = b.intern_id
             params["typename"] = b.paramtypename
@@ -359,7 +359,7 @@ class HivemapManager(object):
                         print("Warning: %s '%s' has multiple outgoing connections, selecting the first..." % (
                         workertype, bee_id))
 
-                    mio = "antenna"
+                    mio = "Antenna"
                     hook = "inhook"
                     targetcon = wcon_out[0]
                     mapattr = "_inmapr"
@@ -375,7 +375,7 @@ class HivemapManager(object):
                         print("Warning: %s '%s' has multiple incoming connections, selecting the first..." % (
                         workertype, bee_id))
 
-                    mio = "output"
+                    mio = "Output"
                     hook = "outhook"
                     targetcon = wcon_in[0]
                     mapattr = "_outmapr"
@@ -425,7 +425,7 @@ class HivemapManager(object):
                                                          position=node.position)
                 hpyattributes.append(py_attribute)
 
-            elif workertype == "bees.parameter":
+            elif workertype == "bees.Parameter":
                 params = workermanager.get_parameters(bee_id)[1]
                 if params is None:
                     params = {}

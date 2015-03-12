@@ -22,12 +22,12 @@ from bee.segments import *
 
 class tetris_init_main(bee.worker):
     gridx = variable("int")
-    parameter(gridx)
+    Parameter(gridx)
     gridy = variable("int")
-    parameter(gridy)
+    Parameter(gridy)
 
-    start = antenna("push", "trigger")
-    outp = output("push", ("object", "bgrid"))
+    start = Antenna("push", "trigger")
+    outp = Output("push", ("object", "bgrid"))
     grid = variable(("object", "bgrid"))
     t_outp = transistor(("object", "bgrid"))
     connect(grid, t_outp)
@@ -42,12 +42,12 @@ class tetris_init_main(bee.worker):
     trigger(start, m_start)
 
 
-from bee import antenna, output, connect, attribute, configure, parameter, get_parameter
+from bee import Antenna, Output, connect, attribute, Configure, Parameter, ParameterGetter
 
 
 class tetris_select_block(bee.frame):
-    blocks = parameter("object")
-    blocks_ = get_parameter("blocks")
+    blocks = Parameter("object")
+    blocks_ = ParameterGetter("blocks")
     w_blocks = dragonfly.gen.gentuple2(blocks_)
     sel = dragonfly.random.choice()
     connect(w_blocks, sel)
@@ -74,8 +74,8 @@ class tetris_select_block(bee.frame):
     connect(trigger, rotate)
     connect(trigger, do_select2)
 
-    select = antenna(trigger.inp)
-    selected = output(do_select2.outp)
+    select = Antenna(trigger.inp)
+    selected = Output(do_select2.outp)
 
 
 class tetris_draw(bee.frame):
@@ -103,10 +103,10 @@ class tetris_draw(bee.frame):
     connect(trigger, t_blockgrid)
     connect(trigger, update)
 
-    start = antenna(do_draw.trig)
-    maingrid = antenna(maingridcontrol.grid)
-    blockgrid = antenna(t_blockgrid.inp)
-    draw = antenna(trigger.inp)
+    start = Antenna(do_draw.trig)
+    maingrid = Antenna(maingridcontrol.grid)
+    blockgrid = Antenna(t_blockgrid.inp)
+    draw = Antenna(trigger.inp)
 
 
 class parameters(object):
@@ -135,7 +135,7 @@ class main(dragonfly.pandahive.pandahive):
     scorearea_ = attribute("scorearea")
     scorearea_id_ = attribute("scorearea_id")
 
-    c0 = configure("canvas")  # must have a lower-alphabet name than "canvas"
+    c0 = Configure("canvas")  # must have a lower-alphabet name than "canvas"
     c0.reserve(mainarea_id_, ("object", "bgrid"), box=mainarea_, parameters=mainarea_parameters_)
 
     maingrid = dragonfly.std.variable(("object", "bgrid"))(emptygrid)

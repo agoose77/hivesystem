@@ -30,7 +30,7 @@ typemap = {
     "object": str,
     "pythoncode": str,
     "expression": str,
-    "mstr": str,
+    "StringValue": str,
 }
 
 parse_paramtypelist_error_index = None
@@ -95,7 +95,7 @@ def typetuple(t):
 
 def get_paramtypelist(workername, paramdic):
     """
-    Interprets guiparams/metaguiparams into a list of parameter types
+    Interprets guiparams/metaguiparams into a list of Parameter types
     Input possibilities:
       1. ((type, constructor, [str-defaultvalue]), defaultvalue)
       2. type (must be in paramdic, str or Spyder object if not) => ((type, paramdic[type]), None)
@@ -130,8 +130,8 @@ def get_paramtypelist(workername, paramdic):
                 if isinstance(ppp[0], str):
                     ok = True
                     desc = parameter_object
-                elif isinstance(ppp[0], tuple):  #HiveGUI, parameter segments
-                    print("Warning: Tuple parameter segments not supported: %s" % str(ppp[0]))
+                elif isinstance(ppp[0], tuple):  #HiveGUI, Parameter segments
+                    print("Warning: Tuple Parameter segments not supported: %s" % str(ppp[0]))
 
             elif isinstance(parameter_object[0], str):
                 ok = True
@@ -190,7 +190,7 @@ def get_paramtypelist(workername, paramdic):
         if ok:
             ret.append(desc)
         if not ok:
-            print("Warning: cannot interpret %s due to parameter '%s': '%s'" % (workername, parameter_name, parameter_object))
+            print("Warning: cannot interpret %s due to Parameter '%s': '%s'" % (workername, parameter_name, parameter_object))
             return None, None
     return paramnames, ret
 

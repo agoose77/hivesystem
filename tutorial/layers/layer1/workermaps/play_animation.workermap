@@ -32,7 +32,7 @@ Workermap (
     ),
     WorkerSegment (
       segid = 'inp',
-      segtype = 'segments.antenna.push_antenna_str',
+      segtype = 'segments.Antenna.push_antenna_str',
       position = Coordinate2D (
         x = -272.0,
         y = 132.0,

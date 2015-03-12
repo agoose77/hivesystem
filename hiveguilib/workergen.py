@@ -79,7 +79,7 @@ def gen_unweaver(segid, params, metaparams, codestate, m):
             outp = con.start.io
             other = con.end.segid
             if outp in outputs:
-                raise Exception("Unweaver %s.%s cannot have more than one output" % (segid, outp))
+                raise Exception("Unweaver %s.%s cannot have more than one Output" % (segid, outp))
             outputs[outp] = other
     count = 0
     outtype = []
@@ -94,7 +94,7 @@ def gen_unweaver(segid, params, metaparams, codestate, m):
     for nr, n in enumerate(range(len(outtype))):
         outp = "outp%d" % (nr + 1)
         if outp not in outputs:
-            raise Exception("Unweaver %s.%s must have an output" % (segid, outp))
+            raise Exception("Unweaver %s.%s must have an Output" % (segid, outp))
         targets.append(outputs[outp])
 
     line = "%s = unweaver(%s, %s)\n\n" % (segid, tuple(outtype), ", ".join(targets))
@@ -103,7 +103,7 @@ def gen_unweaver(segid, params, metaparams, codestate, m):
 
 def gen_antenna2(mode, type_, segid, params, metaparams, codestate, m):
     if not type_.startswith("("): type_ = "'" + type_ + "'"
-    line = "%s = antenna('%s', %s)\n\n" % (segid, mode, type_)
+    line = "%s = Antenna('%s', %s)\n\n" % (segid, mode, type_)
     codestate.classcode += line
 
 
@@ -119,7 +119,7 @@ def gen_pull_antenna(segid, params, metaparams, codestate, m):
 
 def gen_output2(mode, type_, segid, params, metaparams, codestate, m):
     if not type_.startswith("("): type_ = "'" + type_ + "'"
-    line = "%s = output('%s', %s)\n" % (segid, mode, type_)
+    line = "%s = Output('%s', %s)\n" % (segid, mode, type_)
     codestate.classcode += line
     if type_ == "'trigger'":
         if "triggerfunc" in params:
@@ -146,10 +146,10 @@ def gen_variable2(type_, segid, params, metaparams, codestate, m):
         value = params["val"]
         k = "startvalue"
         if "is_parameter" in params and params["is_parameter"] == "True":
-            k = "parameter"
+            k = "Parameter"
         codestate.classcode += "%s(%s, %s)\n\n" % (k, segid, value)
     elif "is_parameter" in params and params["is_parameter"] == "True":
-        codestate.classcode += "parameter(%s)\n\n" % segid
+        codestate.classcode += "Parameter(%s)\n\n" % segid
     else:
         codestate.classcode += "\n"
 
@@ -166,10 +166,10 @@ def gen_push_buffer2(type_, segid, params, metaparams, codestate, m):
         value = params["val"]
         k = "startvalue"
         if "is_parameter" in params and params["is_parameter"] == "True":
-            k = "parameter"
+            k = "Parameter"
         codestate.classcode += "%s(%s, %s)\n\n" % (k, segid, value)
     elif "is_parameter" in params and params["is_parameter"] == "True":
-        codestate.classcode += "parameter(%s)\n\n" % segid
+        codestate.classcode += "Parameter(%s)\n\n" % segid
     else:
         codestate.classcode += "\n"
     if "triggerfunc" in params:
@@ -190,10 +190,10 @@ def gen_pull_buffer2(type_, segid, params, metaparams, codestate, m):
         value = params["val"]
         k = "startvalue"
         if "is_parameter" in params and params["is_parameter"] == "True":
-            k = "parameter"
+            k = "Parameter"
         codestate.classcode += "%s(%s, %s)\n\n" % (k, segid, value)
     elif "is_parameter" in params and params["is_parameter"] == "True":
-        codestate.classcode += "parameter(%s)\n\n" % segid
+        codestate.classcode += "Parameter(%s)\n\n" % segid
     else:
         codestate.classcode += "\n"
     if "triggerfunc" in params:
@@ -262,33 +262,33 @@ generators = {
 
     "unweaver.unweaver": gen_unweaver,
     "weaver.weaver": gen_weaver,
-    "antenna.push_antenna": gen_push_antenna,
-    "antenna.push_antenna_trigger": partial(gen_antenna2, "push", "trigger"),
-    "antenna.push_antenna_int": partial(gen_antenna2, "push", "int"),
-    "antenna.push_antenna_float": partial(gen_antenna2, "push", "float"),
-    "antenna.push_antenna_bool": partial(gen_antenna2, "push", "bool"),
-    "antenna.push_antenna_str": partial(gen_antenna2, "push", "str"),
-    "antenna.push_antenna_id": partial(gen_antenna2, "push", "id"),
-    "antenna.pull_antenna": gen_pull_antenna,
-    "antenna.pull_antenna_int": partial(gen_antenna2, "pull", "int"),
-    "antenna.pull_antenna_float": partial(gen_antenna2, "pull", "float"),
-    "antenna.pull_antenna_bool": partial(gen_antenna2, "pull", "bool"),
-    "antenna.pull_antenna_str": partial(gen_antenna2, "pull", "str"),
-    "antenna.pull_antenna_id": partial(gen_antenna2, "pull", "id"),
+    "Antenna.push_antenna": gen_push_antenna,
+    "Antenna.push_antenna_trigger": partial(gen_antenna2, "push", "trigger"),
+    "Antenna.push_antenna_int": partial(gen_antenna2, "push", "int"),
+    "Antenna.push_antenna_float": partial(gen_antenna2, "push", "float"),
+    "Antenna.push_antenna_bool": partial(gen_antenna2, "push", "bool"),
+    "Antenna.push_antenna_str": partial(gen_antenna2, "push", "str"),
+    "Antenna.push_antenna_id": partial(gen_antenna2, "push", "id"),
+    "Antenna.pull_antenna": gen_pull_antenna,
+    "Antenna.pull_antenna_int": partial(gen_antenna2, "pull", "int"),
+    "Antenna.pull_antenna_float": partial(gen_antenna2, "pull", "float"),
+    "Antenna.pull_antenna_bool": partial(gen_antenna2, "pull", "bool"),
+    "Antenna.pull_antenna_str": partial(gen_antenna2, "pull", "str"),
+    "Antenna.pull_antenna_id": partial(gen_antenna2, "pull", "id"),
 
-    "output.push_output": gen_push_output,
-    "output.push_output_trigger": partial(gen_output2, "push", "trigger"),
-    "output.push_output_int": partial(gen_output2, "push", "int"),
-    "output.push_output_float": partial(gen_output2, "push", "float"),
-    "output.push_output_bool": partial(gen_output2, "push", "bool"),
-    "output.push_output_str": partial(gen_output2, "push", "str"),
-    "output.push_output_id": partial(gen_output2, "push", "id"),
-    "output.pull_output": gen_pull_output,
-    "output.pull_output_int": partial(gen_output2, "pull", "int"),
-    "output.pull_output_float": partial(gen_output2, "pull", "float"),
-    "output.pull_output_bool": partial(gen_output2, "pull", "bool"),
-    "output.pull_output_str": partial(gen_output2, "pull", "str"),
-    "output.pull_output_id": partial(gen_output2, "pull", "id"),
+    "Output.push_output": gen_push_output,
+    "Output.push_output_trigger": partial(gen_output2, "push", "trigger"),
+    "Output.push_output_int": partial(gen_output2, "push", "int"),
+    "Output.push_output_float": partial(gen_output2, "push", "float"),
+    "Output.push_output_bool": partial(gen_output2, "push", "bool"),
+    "Output.push_output_str": partial(gen_output2, "push", "str"),
+    "Output.push_output_id": partial(gen_output2, "push", "id"),
+    "Output.pull_output": gen_pull_output,
+    "Output.pull_output_int": partial(gen_output2, "pull", "int"),
+    "Output.pull_output_float": partial(gen_output2, "pull", "float"),
+    "Output.pull_output_bool": partial(gen_output2, "pull", "bool"),
+    "Output.pull_output_str": partial(gen_output2, "pull", "str"),
+    "Output.pull_output_id": partial(gen_output2, "pull", "id"),
 
     "variable.variable": gen_variable,
     "variable.variable_int": partial(gen_variable2, "int"),
@@ -440,7 +440,7 @@ def workergen(name, m):
                 k = "trigger"
             elif connection_name.start.io == "on_output":
                 k = "trigger"
-                arg = "output"
+                arg = "Output"
         elif t1.startswith("push_buffer"):
             if connection_name.start.io == "pre_update":
                 k = "pretrigger"

@@ -15,7 +15,7 @@ class _advanced_python_base(bee.worker):
         f.push_activates.name = "Activates on push"
         f.push_activates.tooltip = "Whenever a push input is triggered, the processor activates"
         f.pull_activates.name = "Activates on pull"
-        f.pull_activates.tooltip = "Whenever a pull output is requested, the processor activates"
+        f.pull_activates.tooltip = "Whenever a pull Output is requested, the processor activates"
         f.memberorder = "persistent", "push_activates", "pull_activates", "code"
 
     def place(self):
@@ -28,13 +28,13 @@ Activated by trigger. Can have any number of inputs and outputs, which can be pu
 When the Python processor is activated, all push inputs are evaluated, and made available to the code as variables of the same name.
 Push inputs that have not been set since the previous invocation are set to None, unless the processor is persistent.
 Within the code, a pull input's value must be explicitly requested using v(), where v is the name of the pull input
-Within the code, a push output must be explicitly firedusing v(), where v is the name of the push output
-After the code has run, its locals() are inspected for pull output variables. All pull output variables must be set (unless persistent).
+Within the code, a push Output must be explicitly firedusing v(), where v is the name of the push Output
+After the code has run, its locals() are inspected for pull Output variables. All pull Output variables must be set (unless persistent).
 
 Parameters:
 Persistent: if True, all push inputs and pull outputs have persistent values from one invocation to the next.
 Activate by push: if True, every change on a push input triggers the execution of the controller.
-Activate by pull: if True, every value request on a pull output (pre-)triggers the execution of the controller
+Activate by pull: if True, every value request on a pull Output (pre-)triggers the execution of the controller
 """
     metaguiparams = {
         "inputs": "AdvancedNodeIOArray",
@@ -69,8 +69,8 @@ Activate by pull: if True, every value request on a pull output (pre-)triggers t
             if inp.io_name in io_names: raise ValueError("Duplicate input name: %s" % inp.io_name)
             io_names.add(inp.io_name)
         for outp in outputs:
-            if outp.io_name in reserved: raise ValueError("Reserved output name: %s" % outp.io_name)
-            if outp.io_name in io_names: raise ValueError("Duplicate input/output name: %s" % outp.io_name)
+            if outp.io_name in reserved: raise ValueError("Reserved Output name: %s" % outp.io_name)
+            if outp.io_name in io_names: raise ValueError("Duplicate input/Output name: %s" % outp.io_name)
             io_names.add(outp.io_name)
         dic = {
             "trig": antenna("push", "trigger"),

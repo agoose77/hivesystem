@@ -1,9 +1,9 @@
 from . import types
-from .hivemodule import beehelper
+from .hivemodule import BeeHelper
 from .types import get_parameterclass
 
 
-class parameter(object):
+class Parameter(object):
 
     def __init__(self, typename, gui_defaultvalue="no-defaultvalue"):
         self.typename = typename

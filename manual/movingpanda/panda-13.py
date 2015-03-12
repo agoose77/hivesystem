@@ -33,7 +33,7 @@ def id_generator():
 
 
 from dragonfly.canvas import box2d
-from bee.mstr import mstr
+from bee.stringvalue import StringValue
 
 
 class parameters: pass
@@ -213,7 +213,7 @@ class myhive(dragonfly.pandahive.pandahive):
     connect(random_matrix, w_spawn.inp2)
 
     hivereg = dragonfly.bind.hiveregister()
-    c_hivereg = bee.configure("hivereg")
+    c_hivereg = bee.Configure("hivereg")
     c_hivereg.register_hive("pandawalk", pandawalkhive)
 
     pandabinder = pandabind().worker()

@@ -16,14 +16,14 @@ class untoggler(object):
             outptyp = self.output1.value.connection_input_type()
             outptyp = types.mode_type(*outptyp)
             if outptyp != types.mode_type("push", "trigger"):
-                raise TypeError('Untoggler output 1 should be of type ("push", "trigger"), is (%s, %s)' % \
+                raise TypeError('Untoggler Output 1 should be of type ("push", "trigger"), is (%s, %s)' % \
                                 (outptyp.mode.value, outptyp.type.value))
 
         if self.output2.bound:
             outptyp = self.output2.value.connection_input_type()
             outptyp = types.mode_type(*outptyp)
             if outptyp != types.mode_type("push", "trigger"):
-                raise TypeError('Untoggler output 2 should be of type ("push", "trigger"), is (%s, %s)' % \
+                raise TypeError('Untoggler Output 2 should be of type ("push", "trigger"), is (%s, %s)' % \
                                 (outptyp.mode.value, outptyp.type.value))
 
     def bind(self, classname, dic):

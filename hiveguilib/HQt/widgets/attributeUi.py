@@ -61,12 +61,12 @@ class AttributeUi(QtGui.QGraphicsWidget):
             self._inputHook.setVisible(params.inhook.visible)
         self._outputHook = None
         if params.outhook is not None:
-            self._outputHook = ConnectionHook(self, "output", \
+            self._outputHook = ConnectionHook(self, "Output", \
                                               params.outhook.shape, params.outhook.style,
                                               hoverText=params.outhook.hover_text,
                                               orderDependent=params.outhook.order_dependent
             )
-            self.setHooksColor("output", QtGui.QColor(*params.outhook.color))
+            self.setHooksColor("Output", QtGui.QColor(*params.outhook.color))
             self._outputHook.setVisible(params.outhook.visible)
 
         self._label.setBrush(parentNodeUi.labelsColor())

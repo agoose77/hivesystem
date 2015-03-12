@@ -133,7 +133,7 @@ class NodeCanvas(HGui):
 
                 push_pull = True
 
-            #more than 1 connection to pull antenna
+            #more than 1 connection to pull Antenna
             if end_hook.mode == "pull":
                 is_single_connection = True
                 for connection_ in self._connections.values():
@@ -486,10 +486,10 @@ class NodeCanvas(HGui):
         self._hNodeCanvas.set_attribute_value(node_id, attribute, value)
 
     def check_default_folded(self, node_id, antenna_name):
-        """Determine if node antenna is expected to be folded when loaded
+        """Determine if node Antenna is expected to be folded when loaded
 
         :param node_id: ID of node
-        :param antenna_name: name of antenna
+        :param antenna_name: name of Antenna
         """
         print(self._connection_ids, node_id, antenna_name)
         for connection_id_ in self._connection_ids:
@@ -586,22 +586,22 @@ class NodeCanvas(HGui):
         return value
 
     def get_folded_variable(self, worker_id, antenna_name):
-        """Return the variable for the folded antenna
+        """Return the variable for the folded Antenna
 
         :param worker_id: id of worker
-        :param antenna_name: name of antenna of variable
+        :param antenna_name: name of Antenna of variable
         """
         return self._folded_antennas[worker_id][antenna_name]
 
     def find_antenna_connected_variable(self, worker_id, antenna):
-        """Return the variable for the folded antenna.
+        """Return the variable for the folded Antenna.
 
         This is required if we haven't saved it yet.
 
         See get_folded_variable if folding has occured at least once
 
         :param worker_id: id of worker
-        :param antenna_name: name of antenna of variable
+        :param antenna_name: name of Antenna of variable
         """
         for connection_id_ in self._connection_ids:
             connection = self._connections[connection_id_]
@@ -620,7 +620,7 @@ class NodeCanvas(HGui):
         node = self._nodes[worker_id]
         variable = self._nodes[variable_id]
 
-        # Get the attribute with the antenna name
+        # Get the attribute with the Antenna name
         for index, attribute in enumerate(node.attributes):
             if attribute.name == antenna_name:
                 break

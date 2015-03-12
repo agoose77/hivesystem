@@ -6,11 +6,11 @@ from .chessUCI import chessUCI
 
 
 class computer2(frame):
-    par1_player = parameter("str")
-    par2_engine_binary = parameter("str")
-    par3_engine_dir = parameter("str", None)
+    par1_player = Parameter("str")
+    par2_engine_binary = Parameter("str")
+    par3_engine_dir = Parameter("str", None)
 
-    p = chessUCI(get_parameter("par1_player"), get_parameter("par2_engine_binary"), get_parameter("par3_engine_dir"))
+    p = chessUCI(ParameterGetter("par1_player"), ParameterGetter("par2_engine_binary"), ParameterGetter("par3_engine_dir"))
     start = startsensor()
     connect(start, p.trigger_get_move)
 
@@ -19,7 +19,7 @@ class computer2(frame):
     connect(delay, delayed_move)
     connect(delayed_move, p.trigger_get_move)
 
-    turn = antenna(p.turn)
-    trigger_move = antenna(delayed_move.inp)
-    make_move = antenna(p.make_move)
-    move = output(p.get_move)
+    turn = Antenna(p.turn)
+    trigger_move = Antenna(delayed_move.inp)
+    make_move = Antenna(p.make_move)
+    move = Output(p.get_move)
