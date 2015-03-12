@@ -67,7 +67,7 @@ def push(contextname):
 def pop():
     global _curr_context, _contextstack
     _curr_context = None
-    if len(_contextstack):
+    if _contextstack:
         _curr_context = _contextstack[-1]
         _contextstack.pop()
 

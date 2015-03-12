@@ -84,9 +84,12 @@ def namesortfunc_match(name):
 
 
 def bee_or_evexc(nam):
-    if not isinstance(nam, tuple): return False
-    if not len(nam): return False
-    if nam == ("bee", "init"): return False
+    if not isinstance(nam, tuple):
+        return False
+    if not len(nam):
+        return False
+    if nam == ("bee", "init"):
+        return False
     return nam[0] in ("bee", "evexc")
 
 
@@ -115,6 +118,7 @@ def retrieve_plugins(context, plugin, visited=[]):
     ret = None
     if plugin in context.plugins:
         ret = [(context.contextname, p) for p in context.plugins[plugin]]
+
     for contextinstance, name, newname, optional in context.plugin_imports:
         if contextinstance in visited: continue
         # report(name,newname, plugin)
@@ -164,7 +168,8 @@ from .socket_base import socket_base
 def namesortfunc2(c):
     name = c[0]
     name = encode_context(name)
-    if isinstance(name, str): name = (name,)
+    if isinstance(name, str):
+        name = (name,)
     return (len(name), name)
 
 

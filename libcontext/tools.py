@@ -1,7 +1,7 @@
-class lazyattr(object):
+class LazyReference(object):
     """
     Supply an object and an attribute that the object doesn't have yet
-    The lazyattr will be a wrapper around that object
+    The LazyReference object will be a wrapper around that object
     """
 
     def __init__(self, obj, attr):
@@ -10,5 +10,7 @@ class lazyattr(object):
         self._wrapped = None
 
     def __getattr__(self, attr):
-        if self._wrapped is None: self._wrapped = getattr(self._obj, self._attr)
+        if self._wrapped is None:
+            self._wrapped = getattr(self._obj, self._attr)
+
         return getattr(self._wrapped, attr)
