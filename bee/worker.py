@@ -6,7 +6,7 @@ import inspect
 import libcontext
 import functools
 
-from . import emptyclass, mytype
+from . import emptyclass, Type
 from .event import exception
 from .resolve import resolve
 
@@ -130,7 +130,7 @@ class workerbuilder(reg_beehelper):
     __runtime_workerclass__ = runtime_worker
 
     def __init__(self, name, bases, dic, *args, **kwargs):
-        mytype.__init__(self, name, bases, dic)
+        Type.__init__(self, name, bases, dic)
 
     def __new__(metacls, forbidden_name, bases, cls_dict, **kargs):
         forbidden = ("__init__", "__place__", "_runtime_segment_classes", "_beename", "_runtime_segments",
@@ -245,7 +245,7 @@ class workerbuilder(reg_beehelper):
                 moduledict[segment_name] = segment.decorated
 
         rnc = metacls.__runtime_workerclass__
-        rworker = mytype("runtime_worker:" + forbidden_name, tuple(worker_bases) + (runtime_worker,), moduledict)
+        rworker = Type("runtime_worker:" + forbidden_name, tuple(worker_bases) + (runtime_worker,), moduledict)
         nbc = metacls.__workerframeclass__
         rworkerframe = type(nbc.__name__ + ":" + forbidden_name, (nbc,), {"bee": rworker, "guiparams": guiparams,
                                                                           "__beedic__": dict(cls_dict),

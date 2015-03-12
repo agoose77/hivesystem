@@ -10,7 +10,7 @@ from .raiser import raiser
 
 from .bind import *
 from .bindbridge import bindbridge
-from . import myobject, mytype
+from . import Object, Type
 
 
 def get_reg_bindhelper(fr, dicvalues):
@@ -41,7 +41,7 @@ class staticbindbuilder(bindbuilder):
 
     def __new__(cls, name, bases, cls_dict):
         if name == "staticbind_baseclass":
-            return mytype.__new__(cls, name, bases, cls_dict)
+            return Type.__new__(cls, name, bases, cls_dict)
 
         inherited_class_dict = {}
 
@@ -234,13 +234,13 @@ python3 = (sys.version_info[0] == 3)
 if python3:
     from .bind import bind_baseclass
 
-    class staticbind_baseclass(bind_baseclass, myobject):
+    class staticbind_baseclass(bind_baseclass, Object):
         __metaclass__ = staticbindbuilder
         hive = None  # make some prebinders that change self.hive if you need dynamic binding
         worker = None
 
 else:
-    class staticbind_baseclass(myobject):
+    class staticbind_baseclass(Object):
         __metaclass__ = staticbindbuilder
         hive = None  # make some prebinders that change self.hive if you need dynamic binding
         worker = None

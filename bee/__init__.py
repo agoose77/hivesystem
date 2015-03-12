@@ -8,7 +8,7 @@ from . import hivemap
 
 _hivesubclass = {}
 
-from .mytype import mytype, myobject
+from .type import Type, Object
 from .emptyclass import emptyclass
 from .worker import worker
 from .drone import drone, combodrone, combodronewrapper
@@ -26,7 +26,7 @@ from .parameter import parameter
 from .get_parameter import get_parameter
 from .attribute import attribute
 from .resolve import resolve, resolvelist
-from .reference import reference
+from .reference import Reference
 
 from .combohive import combohive
 

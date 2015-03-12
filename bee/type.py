@@ -1,20 +1,20 @@
 import sys
 
-python2 = (sys.version_info[0] == 2)
-python3 = (sys.version_info[0] == 3)
+is_python2 = (sys.version_info[0] == 2)
+is_python3 = (sys.version_info[0] == 3)
 
-if python2:
-    mytype = type
-    myobject = object
+if is_python2:
+    Type = type
+    Object = object
 
-elif python3:
+elif is_python3:
     cache = set()
 
-    class mytype(type):
+    class Type(type):
 
         """Custom metaclass to handle Python 2 and Python 3 syntax differences.
 
-        Supports __metaclass__ syntax, provided metaclass derives from mytype
+        Supports __metaclass__ syntax, provided metaclass derives from Type
         """
 
         def __new__(metacls, name, bases, cls_dict, **kargs):
@@ -38,7 +38,7 @@ elif python3:
                 returned_cls = super().__new__(metacls, name, bases, cls_dict, **kargs)
 
             # We allow ourselves to call type
-            elif meta is mytype:
+            elif meta is Type:
                 returned_cls = type(name, bases, cls_dict)
 
             # Inherited metaclass must first be called
@@ -52,7 +52,8 @@ elif python3:
 
             return returned_cls
 
+    class Object(metaclass=Type):
+        """Base class for Python3 objects
 
-    class myobject(metaclass=mytype):
-
-        pass
+        Provides compatibility with explicit Python2 inheritance of object
+        """

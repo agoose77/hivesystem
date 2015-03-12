@@ -2,10 +2,10 @@ from ..hivemodule import *
 from .. import hivemodule
 from ..configure import configure_base
 
-from .. import emptyclass, mytype, myobject
+from .. import emptyclass, Type, Object
 
 
-class spyderwrapper(myobject):
+class spyderwrapper(Object):
     def __init__(self, obj):
         self.obj = obj
         self.combined = False
@@ -115,7 +115,7 @@ def spyderresultwrapper(l):
     raise Exception  # should never happen...
 
 
-class reg_spydermethod_or_converter(mytype):
+class reg_spydermethod_or_converter(Type):
     reg = {}
 
     def __new__(cls, name, bases, dic):
@@ -135,7 +135,7 @@ class reg_spydermethod_or_converter(mytype):
         return init
 
 
-class spydermethod_or_converter(myobject):
+class spydermethod_or_converter(Object):
     __metaclass__ = reg_spydermethod_or_converter
 
 
@@ -178,7 +178,8 @@ class _spyderhivebuilder(hivemodule._hivebuilder):
 _spyderhivebuilder.__thisclass__ = _spyderhivebuilder
 
 
-class spyderhivecontextmixin(myobject):
+class spyderhivecontextmixin(Object):
+
     def __init__(self, *args, **kargs):
         self.buildmodifiers.append(self.process_spyderobjects)
         self.args = args
@@ -282,7 +283,7 @@ class spyderinithive(closedhive, emptyclass):
 from .. import init as bee_init
 
 
-class spyderdicthivecontextmixin(myobject):
+class spyderdicthivecontextmixin(Object):
     def __init__(self, *args, **kargs):
         self.buildmodifiers.append(self.process_spyderobjects)
         self.args = args

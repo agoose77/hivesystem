@@ -43,14 +43,14 @@ def get_reg_bindhelper(fr, dicvalues):
     return ret
 
 
-from . import mytype
+from . import Type
 
 
-class bindbuilder(mytype):
+class bindbuilder(Type):
 
     def __new__(metacls, name, bases, cls_dict):
         if name.endswith("bind_baseclass"):
-            return mytype.__new__(metacls, name, bases, cls_dict)
+            return Type.__new__(metacls, name, bases, cls_dict)
 
         new_cls_dict = {"bindname": bindantenna("id")}
 
@@ -343,10 +343,10 @@ class bindbuilder(mytype):
 
 from .segments._helpersegment import reg_helpersegment
 
-from . import myobject
+from . import Object
 
 
-class bind_baseclass(myobject):
+class bind_baseclass(Object):
 
     __metaclass__ = bindbuilder
 
@@ -360,7 +360,7 @@ class reg_bindhelper(reg_helpersegment):
         return reg_helpersegment.__new__(metacls, name, bases, dic, **kargs)
 
 
-class bindhelper(myobject):
+class bindhelper(Object):
 
     __metaclass__ = reg_bindhelper
 

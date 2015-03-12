@@ -1,5 +1,5 @@
-from . import myobject
+from . import Object
 
 
-class emptyclass(myobject):
+class emptyclass(Object):
     pass

@@ -3,7 +3,7 @@ import libcontext
 import sys, inspect
 from .beewrapper import reg_beehelper, beehelper, beewrapper
 
-from . import emptyclass, mytype, myobject
+from . import emptyclass, Type, Object
 
 from . import _hivesubclass
 
@@ -21,7 +21,8 @@ except ImportError:
 allreg = WeakSet()
 
 
-class evcontextholder(myobject):
+class evcontextholder(Object):
+
     def __init__(self, evclass, contextclass, evname):
         self.evclass = evclass
         self.contextclass = contextclass
@@ -36,7 +37,8 @@ class evcontextholder(myobject):
         return getattr(self.ev, attr)
 
 
-class evwrapper(myobject):
+class evwrapper(Object):
+
     def __init__(self, evclass, contextclass, evname):
         self.evclass = evclass
         self.contextclass = contextclass
@@ -53,11 +55,15 @@ from .attribute import attribute as bee_attribute
 
 
 class hivewrapper(beewrapper):
+
     def hivecombine(self):
         try:
-            if self._wrapped_hive.__hivecombined__ == True: return
+            if self._wrapped_hive.__hivecombined__:
+                return
+
         except AttributeError:
             pass
+
         b = self._wrapped_hive.beewrappers
         currcombobees = [v[0] for v in b if isinstance(v[0], str) and v[0].startswith("combobee")]
         combobeesnrs = [v[len("combobee"):] for v in currcombobees]
@@ -80,14 +86,20 @@ class hivewrapper(beewrapper):
                 raise TypeError("Combobee %s is of the wrong type: '%s'" % (beename, bee))
         self._wrapped_hive.__hivecombined__ = True
 
-
     def getinstance(self, __parent__=None):
         for name, bee in self._wrapped_hive.beewrappers:
-            if isinstance(bee, configureclass): continue
-            if not hasattr(bee, "combine"): continue
-            if isinstance(bee.combine, tuple): continue
+            if isinstance(bee, configureclass):
+                continue
+
+            if not hasattr(bee, "combine"):
+                continue
+
+            if isinstance(bee.combine, tuple):
+                continue
+
             bee.getinstance(__parent__)
             bee.combine()
+
         self.hivecombine()
         ret = beewrapper.getinstance(self, __parent__)
         if hasattr(self, "hmworkername") and \
@@ -101,7 +113,9 @@ class hivecontext_base(libcontext.subcontext):
     __getting_attr__ = False
 
     def __getattr__(self, attr):
-        if self.__getting_attr__: raise AttributeError
+        if self.__getting_attr__:
+            raise AttributeError
+
         self.__getting_attr__ = True
         try:
             ret = getattr(self._wrapping_hive, attr)
@@ -173,7 +187,8 @@ class emptyhivecontext(hivecontext_base):
             if hasattr(bee, "combine") and not isinstance(bee.combine, tuple) and not isinstance(bee, configureclass):
                 continue
 
-            if isinstance(bee[1], bee_parameter): continue
+            if isinstance(bee[1], bee_parameter):
+                continue
             if isinstance(bee[1], bee_attribute):
                 b = bee[1]
 
@@ -446,7 +461,7 @@ class _hivebuilder(reg_beehelper):
     __hivewrapper__ = hivewrapper
 
     def __init__(self, name, bases, dic, *args, **kargs):
-        mytype.__init__(self, name, bases, dic)
+        Type.__init__(self, name, bases, dic)
 
     def __new__(metacls, name, bases, dic, specialmethods=[], **kargs):
         #print("HIVE-BUILD?", metacls, name)
@@ -647,7 +662,7 @@ class _hivebuilder(reg_beehelper):
             assert spec in dic, spec
             rdic[spec] = dic[spec]
 
-        rhive = mytype(hivecontextname + ":" + name, (_hivecontext,), rdic)
+        rhive = Type(hivecontextname + ":" + name, (_hivecontext,), rdic)
         combobee_bases_unique = []
         for base_cls in combobee_bases:
             ok = True
@@ -847,7 +862,7 @@ class apphivecontext(inithivecontext):
 
 
 def appcontext(appbee, *args, **kwargs):
-    return mytype("appcontext", (apphivecontext,), {"appbee": appbee(*args, **kwargs)})
+    return Type("appcontext", (apphivecontext,), {"appbee": appbee(*args, **kwargs)})
 
 
 class unregister(beehelper):

@@ -11,10 +11,10 @@ class reg_beehelper(reg_helpersegment):
         return reg_helpersegment.__new__(metacls, name, bases, dic, **kargs)
 
 
-from . import myobject
+from . import Object
 
 
-class beehelper(myobject):
+class beehelper(Object):
     __metaclass__ = reg_beehelper
 
 

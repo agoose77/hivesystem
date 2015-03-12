@@ -1,6 +1,6 @@
 from .beewrapper import beewrapper, reg_beehelper
 
-from . import emptyclass, mytype
+from . import emptyclass, Type
 
 
 class dronebuilder(reg_beehelper):
@@ -8,7 +8,7 @@ class dronebuilder(reg_beehelper):
     __reqdronefunc__ = "place"
 
     def __init__(self, name, bases, cls_dict, *args, **kargs):
-        mytype.__init__(self, name, bases, cls_dict)
+        Type.__init__(self, name, bases, cls_dict)
 
     def __new__(metacls, name, bases, cls_dict, **kargs):
         if emptyclass in bases:

@@ -77,6 +77,7 @@ class event(tuple):
 
 
 class exception(event):
+
     def __new__(self, *value):
         ret = event.__new__(self, *value)
         ret.cleared = False

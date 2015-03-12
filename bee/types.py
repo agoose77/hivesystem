@@ -29,7 +29,7 @@ _typemap = {
 
 from .event import event
 from .mstr import mstr
-from .reference import reference
+from .reference import Reference
 
 import spyder
 
@@ -137,7 +137,7 @@ def generic_constructor(type_=None):
             if isinstance(v, beewrapper):
                 return v
 
-            if isinstance(v, reference):
+            if isinstance(v, Reference):
                 return v.obj
 
             try:
@@ -154,7 +154,7 @@ def generic_constructor(type_=None):
         if isinstance(v, beewrapper):
             return v
 
-        if isinstance(v, reference):
+        if isinstance(v, Reference):
             return v.obj
 
         try:

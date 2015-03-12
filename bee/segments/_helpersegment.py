@@ -1,10 +1,10 @@
 from __future__ import print_function
 import inspect, functools
 
-from .. import mytype, myobject
+from .. import Type, Object
 
 
-class reg_helpersegment(mytype):
+class reg_helpersegment(Type):
     reg = {}
     # def __init__(self, *args, **kargs):
     #   print("HELPERSUBNODE", name)
@@ -29,7 +29,7 @@ class reg_helpersegment(mytype):
         return init
 
 
-class helpersegment(myobject):
+class helpersegment(Object):
     __metaclass__ = reg_helpersegment
 
 

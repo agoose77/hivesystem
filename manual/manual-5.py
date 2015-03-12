@@ -32,14 +32,14 @@ params.color = (0.7, 0.7, 0.7, 0)
 gridparamtype = (("object", "bgrid"), ("object", "box2d"), "object")
 
 #create our main hive class
-from bee import connect, reference
+from bee import connect, Reference
 
 
 class myhive(dragonfly.pandahive.pandahive):
     canvas = dragonfly.pandahive.pandacanvas()
 
     start = dragonfly.sys.startsensor()
-    grid = dragonfly.std.variable(gridparamtype)((reference(grid), box, params))
+    grid = dragonfly.std.variable(gridparamtype)((Reference(grid), box, params))
     draw = dragonfly.canvas.draw(("object", "bgrid"))()
     do_draw = dragonfly.std.transistor(gridparamtype)()
     connect(grid, do_draw)

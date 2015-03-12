@@ -1,9 +1,9 @@
 from .beewrapper import reg_beehelper
 
-from . import myobject
+from . import Object
 
 
-class attribute(myobject):
+class attribute(Object):
     __metaclass__ = reg_beehelper
 
     def __init__(self, *args):
@@ -17,9 +17,13 @@ class attribute(myobject):
         self.parent = parent
 
     def __call__(self, parent=None, prebuild=False):
-        if prebuild == True:
-            if self.parent is None: return self
-            if parent is not None and parent is not self.parent: return self
+        if prebuild:
+            if self.parent is None:
+                return self
+
+            if parent is not None and parent is not self.parent:
+                return self
+
         if self.parent is None:
             raise ValueError("bee.attribute('%s') doesn't know its parent hive, please place it as a named bee inside a"
                              " hive" % str(self.args))
@@ -35,9 +39,11 @@ class attribute(myobject):
                 ret = self.parent[arg]
             else:
                 ret = getattr(self.parent, arg)
+
         for arg in self.args[1:]:
             if arg == "__call__":
                 ret = ret()
+
             else:
                 if isinstance(arg, int):
                     ret = ret[arg]
